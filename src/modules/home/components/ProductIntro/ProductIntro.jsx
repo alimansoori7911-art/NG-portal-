@@ -3,7 +3,7 @@ import productImage from '../../../../assets/images/sections/product-intro.png'
 
 function ProductIntro() {
     return (
-        <section className={styles.section}>
+        <section id="product-intro" className={styles.section}>
             <h2 className={styles.mainTitle}>معرفی محصول</h2>
 
             <div className={styles.imageWrapper}>

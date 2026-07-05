@@ -2,26 +2,21 @@ import styles from './HeroSection.module.css'
 import logo from '../../../../assets/images/logo/logowhite.png'
 import heroTop from '../../../../assets/images/hero/hero-top.png'
 import heroBottom from '../../../../assets/images/hero/hero-bottom.png'
+import { ChevronDown } from 'lucide-react'
 
-function HeroSection({ bgImage }) {
+function HeroSection() {
+    const handleScroll = () => {
+        document.getElementById('product-intro')?.scrollIntoView({ behavior: 'smooth' })
+    }
+
     return (
         <section className={styles.hero}>
-            <div
-                className={styles.box}
-                style={{
-                    backgroundImage: `url(${bgImage})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                }}
-            >
+            <div className={styles.box}>
 
-                {/* لوگو */}
                 <div className={styles.logoWrapper}>
                     <img src={logo} alt="NGcorion" className={styles.logo} />
                 </div>
 
-                {/* متن */}
                 <div className={styles.textWrapper}>
                     <h1 className={styles.title}>
                         هوشمندتر کار کنید، سریع‌تر رشد کنید
@@ -31,20 +26,25 @@ function HeroSection({ bgImage }) {
                     </p>
                 </div>
 
-                {/* دکمه */}
                 <button className={styles.ctaBtn}>
                     همین حالا خرید کنید
                 </button>
 
-                {/* عکس‌های داشبورد — 3تایی بالا، 4تایی پایین */}
                 <div className={styles.heroImages}>
-                    <div className={styles.heroRow3}>
-                        <img src={heroBottom} alt="نمایش داشبورد" className={styles.heroImg} />
-                    </div>
                     <div className={styles.heroRow4}>
-                        <img src={heroTop} alt="نمایش داشبورد" className={styles.heroImg} />
+                        <img src={heroTop} alt="داشبورد" />
+                    </div>
+                    <div className={styles.heroRow3}>
+                        <img src={heroBottom} alt="داشبورد" />
                     </div>
                 </div>
+
+                <button className={styles.scrollBtn} onClick={handleScroll}>
+                    NGcorion چیست؟
+                    <span className={styles.scrollBtnIcon}>
+    <ChevronDown size={18} />
+  </span>
+                </button>
 
             </div>
         </section>
