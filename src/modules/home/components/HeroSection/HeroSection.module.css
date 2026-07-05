@@ -15,11 +15,11 @@
     gap: var(--spacing-xl);
     background: linear-gradient(
             to top,
-            rgba(0, 50, 150, 0.45) 0%,
+            rgba(0, 71, 200, 0.35) 0%,
             rgba(0, 8, 20, 0.98) 55%
     );
     border: none;
-    border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    border-radius: 0 0 50px 50px;
     padding: var(--spacing-3xl) var(--spacing-xl) var(--spacing-xl);
     box-shadow:
             inset 4px 0 20px rgba(0, 8, 20, 0.8),
@@ -118,7 +118,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-2xl);
+    padding: 10px;
     background: rgba(0, 8, 20, 0.8);
     border: 1px solid rgba(71, 146, 255, 0.3);
     border-radius: var(--radius-full);
@@ -127,9 +127,9 @@
     font-family: var(--font-family);
     cursor: pointer;
     transition: background var(--transition-normal);
-    width: 50%;
+    width: 35%;
     position: relative;
-    transform: translateY(90%);
+    transform: translateY(100%);
     z-index: 2;
 }
 

@@ -1,13 +1,36 @@
+import { useEffect, useRef, useState } from 'react'
 import styles from './ProductIntro.module.css'
 import productImage from '../../../../assets/images/sections/product-intro.png'
 
 function ProductIntro() {
+    const imgRef = useRef(null)
+    const [visible, setVisible] = useState(false)
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setVisible(true)
+                    observer.disconnect()
+                }
+            },
+            { threshold: 0.3 }
+        )
+        if (imgRef.current) observer.observe(imgRef.current)
+        return () => observer.disconnect()
+    }, [])
+
     return (
         <section id="product-intro" className={styles.section}>
             <h2 className={styles.mainTitle}>معرفی محصول</h2>
 
             <div className={styles.imageWrapper}>
-                <img src={productImage} alt="معرفی محصول NGcorion" className={styles.image} />
+                <img
+                    ref={imgRef}
+                    src={productImage}
+                    alt="معرفی محصول NGcorion"
+                    className={`${styles.image} ${visible ? styles.visible : ''}`}
+                />
             </div>
 
             <div className={styles.textWrapper}>
