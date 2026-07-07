@@ -65,7 +65,7 @@
     padding: var(--spacing-md) var(--spacing-3xl);
     background: rgba(30, 30, 40, 0.9);
     color: var(--color-white);
-    font-size: var(--font-size-md);
+    font-size: var(--font-size-xl);
     font-family: var(--font-family);
     font-weight: 500;
     border: none;
@@ -156,15 +156,15 @@
 .logo {
     width: 320px;
     height: auto;
-    animation: blurIn 1.2s ease forwards;
+    animation: blurIn 2s ease forwards;
 }
 
 .heroRow4 img {
     width: 90%;
     height: auto;
     border-radius: var(--radius-lg);
-    animation: blurIn 1.5s ease forwards;
-    animation-delay: 0.3s;
+    animation: blurIn 2.5s ease forwards;
+    animation-delay: 0.5s;
     opacity: 0;
 }
 
@@ -172,8 +172,8 @@
     width: 85%;
     height: auto;
     border-radius: var(--radius-lg);
-    animation: blurIn 1.5s ease forwards;
-    animation-delay: 0.5s;
+    animation: blurIn 2.5s ease forwards;
+    animation-delay: 0.8s;
     opacity: 0;
 }
 

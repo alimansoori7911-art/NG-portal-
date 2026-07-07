@@ -40,11 +40,11 @@
     padding: var(--spacing-3xl);
     background: linear-gradient(
             180deg,
-            rgba(0, 71, 200, 0.7) 0%,
+            rgba(0, 100, 255, 0.75) 0%,
             rgba(0, 30, 100, 0.5) 25%,
             rgba(0, 8, 20, 0.95) 50%,
             rgba(0, 30, 100, 0.5) 75%,
-            rgba(0, 71, 200, 0.7) 100%
+            rgba(0, 100, 255, 0.75) 100%
     );
     background-size: 100% 200%;
     background-position: 0% 0%;

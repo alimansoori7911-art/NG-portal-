@@ -31,7 +31,9 @@ function CompanyBrand() {
                 </div>
 
                 {/* لوگو وسط */}
-                <div className={styles.logoWrapper}>
+                <div className={styles.logoContainer}>
+                    <div className={styles.spinRing}></div>
+                    <div className={styles.spinRingInner}></div>
                     <img src={logoMotion} alt="NGcorion" className={styles.logo} />
                 </div>
 

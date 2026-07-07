@@ -24,18 +24,19 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-lg);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: none;
     border-radius: var(--radius-md);
-    color: var(--color-white);
+    color: #001D47;
     font-size: var(--font-size-md);
     font-family: var(--font-family);
-    background: rgba(255, 255, 255, 0.1);
+    background: #E0EDFF;
     cursor: pointer;
+    font-weight: 600;
     transition: background var(--transition-fast);
 }
 
 .accountBtn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #ADCFFF;
 }
 
 .nav {
@@ -46,27 +47,26 @@
 
 .navItem {
     padding: var(--spacing-sm) var(--spacing-lg);
-    border: 1px solid rgba(71, 146, 255, 0.3);
+    border: none;
     border-radius: var(--radius-md);
     color: var(--color-white);
     font-size: var(--font-size-md);
     font-family: var(--font-family);
-    background: transparent;
+    background: rgba(71, 146, 255, 0.12);
     cursor: pointer;
-    transition: background var(--transition-fast), border-color var(--transition-fast);
+    transition: background var(--transition-fast);
 }
 
 .navItem:hover {
-    background: rgba(71, 146, 255, 0.1);
-    border-color: var(--color-primary-light);
+    background: rgba(71, 146, 255, 0.15);
 }
 
 .homeBtn {
     padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid rgba(71, 146, 255, 0.3);
+    border: none;
     border-radius: var(--radius-md);
     color: var(--color-white);
-    background: transparent;
+    background: rgba(71, 146, 255, 0.12);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -75,7 +75,7 @@
 }
 
 .homeBtn:hover {
-    background: rgba(71, 146, 255, 0.1);
+    background: rgba(71, 146, 255, 0.15);
 }
 
 .menuBtn {
