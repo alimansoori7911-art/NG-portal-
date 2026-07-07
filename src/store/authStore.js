@@ -14,9 +14,8 @@
 // ─────────────────────────────────────────────────────────────
 
 import { create } from "zustand";
-import { authService } from "../services/Authservice.js";
-import { tokenManager } from "../services/Tokenmanager.js";
-
+import { authService } from "../services/authService";
+import { tokenManager } from "../services/tokenManager";
 export const useAuthStore = create((set, get) => ({
     // ── State ──
     user: null,

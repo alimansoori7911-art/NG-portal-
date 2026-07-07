@@ -39,9 +39,15 @@ export const authService = {
 
     // ── ثبت‌نام ───────────────────────────────────────────────
     // ورودی: { email, username, phone_number, password }
+    // claimToken: از verifyOtp با action=register میاد (عمر ۵ دقیقه)
+    //             و در هدر Authorization ارسال میشه.
     // خروجی: { access_token, user }
-    register(payload) {
-        return api.post("/auth/register", payload).then(unwrap);
+    register(payload, claimToken) {
+        return api
+            .post("/auth/register", payload, {
+                headers: { Authorization: `Bearer ${claimToken}` },
+            })
+            .then(unwrap);
     },
 
     // ── OTP ──────────────────────────────────────────────────
@@ -61,8 +67,8 @@ export const authService = {
 
     // خروجی بسته به action فرق می‌کنه:
     //  login  → { access_token, user }
-    //  reset_password → { reset_token }
-    //  register → { claim_token }
+    //  reset_password → { reset_token }  (عمر ۵ دقیقه)
+    //  register → { claim_token }        (عمر ۵ دقیقه)
     verifyOtp({ action, otp, phone_number, email, username }) {
         return api
             .post("/auth/otp/verify", { action, otp, phone_number, email, username })

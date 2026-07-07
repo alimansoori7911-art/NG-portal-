@@ -55,4 +55,11 @@
     /* transition */
     --transition-fast: 150ms ease;
     --transition-normal: 300ms ease;
+    /* رنگ‌های بخش احراز هویت */
+    --color-surface: #040C19;
+    --color-border: #203A60;
+    --color-text-muted: #335C99;
+    --color-link: #668FCC;
+    --color-action: #4073BF;
+    --color-action-hover: #3465AB;
 }

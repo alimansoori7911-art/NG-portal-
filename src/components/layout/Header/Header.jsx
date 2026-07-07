@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Home, User, Menu } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import styles from './Header.module.css'
 
 const NAV_ITEMS = [
@@ -12,7 +13,7 @@ const NAV_ITEMS = [
 
 function Header() {
     const [mobileOpen, setMobileOpen] = useState(false)
-
+    const navigate = useNavigate()
     return (
         <header className={styles.header}>
 
@@ -30,7 +31,7 @@ function Header() {
 
             {/* سمت راست — حساب کاربری + همبرگر موبایل */}
             <div className={styles.right}>
-                <button className={styles.accountBtn}>
+                <button className={styles.accountBtn} onClick={() => navigate('/login')}>
                     <User size={16} />
                     <span>حساب کاربری</span>
                 </button>

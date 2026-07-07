@@ -1,0 +1,32 @@
+.title {
+    margin: 0 0 96px;
+    color: var(--color-primary-lighter);
+    font-size: 40px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+    width: 100%;
+}
+
+.link {
+    color: var(--color-link);
+    font-size: var(--font-size-sm);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.link:hover {
+    color: var(--color-primary-lighter);
+}
+
+.footerText {
+    margin-top: 24px;
+    color: var(--color-link);
+    font-size: var(--font-size-sm);
+}

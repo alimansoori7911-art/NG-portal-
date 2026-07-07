@@ -10,7 +10,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import axios from "axios";
-import { tokenManager } from "./tokenManager";
+import { tokenManager } from "./tokenManager.js";
 
 // آدرس سرور از فایل .env خونده میشه (مثلاً: VITE_API_BASE_URL=http://localhost:8000)
 // مزیتش اینه که برای dev و production فقط یک فایل env عوض میشه، نه کد.
@@ -21,10 +21,12 @@ const api = axios.create({
 });
 
 // ── ۱) Request Interceptor ───────────────────────────────────
-// قبل از «هر» درخواست اجرا میشه؛ اگر توکن داریم، به هدر اضافه می‌کنیم.
+// قبل از «هر» درخواست اجرا میشه؛ اگر توکن داریم و درخواست خودش
+// هدر Authorization نداره (مثل register که claim_token می‌فرسته)،
+// توکن رو به هدر اضافه می‌کنیم.
 api.interceptors.request.use((config) => {
     const token = tokenManager.get();
-    if (token) {
+    if (token && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
