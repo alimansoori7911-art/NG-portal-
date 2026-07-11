@@ -5,13 +5,13 @@ import OtpInput from "../components/OtpInput/OtpInput";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
-import { authService } from "../../../services/authService";
+import { authService, parseValidationErrors } from "../../../services/authService";
 import { useAuthStore } from "../../../store/authStore";
 import styles from "./RegisterPage.module.css";
 
 const OTP_LENGTH = 5;
 const RESEND_SECONDS = 120;
-const CLAIM_TTL_MS = 5 * 60 * 1000; // عمر claim_token در بک‌اند ۳۰۰ ثانیه است
+const CLAIM_TTL_MS = 5 * 60 * 1000;
 
 const isValidPhone = (v) => /^(\+98|0)?9\d{9}$/.test(v.trim());
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
@@ -24,16 +24,13 @@ export default function RegisterPage() {
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
 
-    // مرحله ۱
     const [phone, setPhone] = useState("");
 
-    // مرحله ۲
     const [otp, setOtp] = useState("");
     const [otpError, setOtpError] = useState("");
-    const [otpKey, setOtpKey] = useState(0); // برای ریست خانه‌ها بعد از ارسال مجدد
+    const [otpKey, setOtpKey] = useState(0);
     const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
 
-    // مرحله ۳
     const [claim, setClaim] = useState({ token: null, issuedAt: 0 });
     const [form, setForm] = useState({
         username: "",
@@ -46,7 +43,6 @@ export default function RegisterPage() {
     });
     const [fieldErrors, setFieldErrors] = useState({});
 
-    // شمارنده‌ی معکوس ارسال مجدد
     useEffect(() => {
         if (step !== 2 || secondsLeft <= 0) return;
         const id = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
@@ -58,11 +54,9 @@ export default function RegisterPage() {
             action: "register",
             phone_number: phone.trim(),
         });
-        // در محیط dev (بدون سرویس پیامک) کد داخل پاسخ برمی‌گردد
         if (data?.otp) console.info("[DEV] کد تأیید:", data.otp);
     };
 
-    // ── مرحله ۱: ارسال کد ──
     const handleSendCode = async (e) => {
         e.preventDefault();
         setApiError("");
@@ -88,7 +82,7 @@ export default function RegisterPage() {
         if (secondsLeft > 0 || loading) return;
         setApiError("");
         setOtpError("");
-        setOtpKey((k) => k + 1); // خانه‌های کد خالی شوند
+        setOtpKey((k) => k + 1);
         setLoading(true);
         try {
             await requestCode();
@@ -100,7 +94,6 @@ export default function RegisterPage() {
         }
     };
 
-    // ── مرحله ۲: تأیید کد ──
     const handleVerify = async (e) => {
         e.preventDefault();
         setApiError("");
@@ -125,7 +118,6 @@ export default function RegisterPage() {
         }
     };
 
-    // ── مرحله ۳: ثبت اطلاعات ──
     const setField = (name) => (e) => {
         setForm((f) => ({ ...f, [name]: e.target.value }));
         setFieldErrors((fe) => ({ ...fe, [name]: "" }));
@@ -140,7 +132,6 @@ export default function RegisterPage() {
         return Object.keys(errors).length === 0;
     };
 
-    // بازگشت به مرحله‌ی کد وقتی claim منقضی شده
     const backToOtp = async (message) => {
         setApiError(message);
         setOtpKey((k) => k + 1);
@@ -166,14 +157,17 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            // TODO: فیلدهای first_name / last_name / national_code / organization
-            // فعلاً در RegisterInput بک‌اند وجود ندارند (به فایل نکات بک‌اند مراجعه شود)
             const data = await authService.register(
                 {
                     username: form.username.trim(),
                     email: form.email.trim(),
                     password: form.password,
                     phone_number: phone.trim(),
+                    // فیلدهای اضافه وقتی بک‌اند آماده شد فعال می‌شوند
+                    // first_name: form.first_name,
+                    // last_name: form.last_name,
+                    // national_code: form.national_code,
+                    // organization: form.organization,
                 },
                 claim.token
             );
@@ -182,8 +176,14 @@ export default function RegisterPage() {
         } catch (err) {
             if (err.status === 401 || err.status === 403) {
                 backToOtp("مهلت تأیید تمام شد؛ کد جدید برایتان ارسال شد.");
-            } else if (err.status === 409) {
-                setApiError("نام کاربری یا ایمیل قبلاً ثبت شده است.");
+            } else if (err.status === 409 || err.code === "VALIDATION_ERROR") {
+                // خطای فیلد تکراری یا validation → زیر فیلد مربوطه نشان داده می‌شود
+                const errors = parseValidationErrors(err.details);
+                if (Object.keys(errors).length > 0) {
+                    setFieldErrors(errors);
+                } else {
+                    setApiError(err.message);
+                }
             } else {
                 setApiError(err.message);
             }
@@ -192,7 +192,6 @@ export default function RegisterPage() {
         }
     };
 
-    // ── رندر مراحل ──
     return (
         <>
             <Alert onClose={() => setApiError("")}>{apiError}</Alert>
@@ -269,12 +268,14 @@ export default function RegisterPage() {
                                 inputMode="numeric"
                                 value={form.national_code}
                                 onChange={setField("national_code")}
+                                error={fieldErrors.national_code}
                             />
                             <Input
                                 label="نام"
                                 persian
                                 value={form.first_name}
                                 onChange={setField("first_name")}
+                                error={fieldErrors.first_name}
                             />
                             <Input
                                 label="* ایمیل"
@@ -289,6 +290,7 @@ export default function RegisterPage() {
                                 persian
                                 value={form.last_name}
                                 onChange={setField("last_name")}
+                                error={fieldErrors.last_name}
                             />
                             <Input
                                 label="* رمز عبور"
@@ -304,6 +306,7 @@ export default function RegisterPage() {
                                 persian
                                 value={form.organization}
                                 onChange={setField("organization")}
+                                error={fieldErrors.organization}
                             />
                         </div>
                         <Button type="submit" loading={loading} className={styles.submitWide}>
