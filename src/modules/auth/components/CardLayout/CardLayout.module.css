@@ -1,0 +1,89 @@
+.page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 6vh 24px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--color-bg-darkest);
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    /* نسبت کارت باریک از فیگما: ۵۲۲×۷۴۵ */
+    height: 100%;
+    aspect-ratio: 522 / 745;
+    max-width: 94vw;
+    padding: 24px;
+    box-sizing: border-box;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+}
+
+/* حالت عریض (فرم ثبت اطلاعات) */
+.wide {
+    aspect-ratio: auto;
+    width: min(1100px, 94vw);
+    height: auto;
+    max-height: 100%;
+    overflow-y: auto;
+}
+
+.logoHeader {
+    /* خط جداکننده تمام عرض کارت را بگیرد */
+    margin: 0 -24px;
+    padding: 4px 0 20px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.logo {
+    width: 88px;
+    object-fit: contain;
+}
+
+.back {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 76%;
+    margin: 0 auto;
+}
+
+.wide .content {
+    width: 82%;
+    padding: 40px 0;
+}
+
+@media (max-width: 900px) {
+    .page {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+        padding: 24px 16px;
+    }
+
+    .card {
+        aspect-ratio: auto;
+        width: 100%;
+        height: auto;
+        min-height: 85vh;
+    }
+
+    .content,
+    .wide .content {
+        width: 100%;
+    }
+}

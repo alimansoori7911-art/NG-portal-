@@ -1,0 +1,78 @@
+.title {
+    margin: 0 0 56px;
+    color: var(--color-primary-lighter);
+    font-size: 30px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 26px;
+    width: 100%;
+}
+
+.footerText {
+    margin-top: 28px;
+    color: var(--color-link);
+    font-size: var(--font-size-sm);
+}
+
+.link {
+    color: var(--color-link);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.link:hover {
+    color: var(--color-primary-lighter);
+}
+
+.linkButton {
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--color-link);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+
+.linkButton:hover {
+    color: var(--color-primary-lighter);
+}
+
+/* ── فرم عریض مرحله ۳ ── */
+.wideForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 28px;
+    width: 100%;
+}
+
+.submitWide {
+    max-width: 380px;
+    margin-top: 40px;
+}
+
+@media (max-width: 700px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 40px;
+    }
+}

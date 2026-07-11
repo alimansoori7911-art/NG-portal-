@@ -2,6 +2,11 @@
     width: 100%;
 }
 
+.field {
+    position: relative;
+    width: 100%;
+}
+
 .input {
     width: 100%;
     height: 52px;
@@ -14,13 +19,20 @@
     font-family: inherit;
     font-size: var(--font-size-sm);
     transition: border-color var(--transition-fast);
-    /* متن تایپ‌شده (نام کاربری/رمز لاتین) چپ‌چین */
+    /* متن تایپ‌شده‌ی لاتین چپ‌چین */
     direction: ltr;
     text-align: left;
 }
 
 /* تا وقتی placeholder نمایانه، جهت راست‌چین بمونه تا بعد از پاک کردن متن نپره سمت چپ */
 .input:placeholder-shown {
+    direction: rtl;
+    text-align: right;
+}
+
+/* فیلدهایی که محتوایشان فارسی است همیشه راست‌چین */
+.persian,
+.persian:placeholder-shown {
     direction: rtl;
     text-align: right;
 }
@@ -34,12 +46,45 @@
     border-color: var(--color-action);
 }
 
+.input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Label شناور ── */
+.label {
+    position: absolute;
+    top: 50%;
+    right: 24px;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    pointer-events: none;
+    transition: all var(--transition-fast);
+}
+
+/* وقتی فیلد فوکوس یا پر شد، label کوچک میشه و میره روی قاب */
+.floating:focus + .label,
+.floating:not(:placeholder-shown) + .label {
+    top: 0;
+    right: 16px;
+    font-size: var(--font-size-xs);
+    color: var(--color-link);
+    background: var(--color-surface);
+    padding: 0 6px;
+}
+
+/* ── خطا ── */
 .hasError,
 .hasError:focus {
     border-color: var(--color-error);
 }
 
 .hasError::placeholder {
+    color: var(--color-error);
+}
+
+.hasError + .label {
     color: var(--color-error);
 }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Home, User, Menu } from 'lucide-react'
+import { Home, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import styles from './Header.module.css'
 
