@@ -5,18 +5,23 @@ const PILOT_PLAN = {
     title: 'pilot',
     subtitle: 'تست و ارزیابی',
     licenseCode: 'NGC-LIC-BASE-1Y',
+    hoverColor: 'var(--color-primary-light)',
+    hoverWidth: '1px',
 }
 
 const PLANS = [
-    { id: 'unlimited', title: 'unlimited', subtitle: 'Enterprise', licenseCode: 'NGC-LIC-ULT-1Y' },
-    { id: 'plus', title: 'Plus', subtitle: 'سازمان‌های بزرگ', licenseCode: 'NGC-LIC-PROP-1Y' },
-    { id: 'pro', title: 'Pro', subtitle: 'سازمان‌های متوسط', licenseCode: 'NGC-LIC-PRO-1Y' },
-    { id: 'base', title: 'Base', subtitle: 'سازمان‌های کوچک', licenseCode: 'NGC-LIC-BASE-1Y' },
+    { id: 'unlimited', title: 'unlimited', subtitle: 'Enterprise', licenseCode: 'NGC-LIC-ULT-1Y', hoverColor: 'var(--color-primary-ghost)', hoverWidth: '2px' },
+    { id: 'plus', title: 'Plus', subtitle: 'سازمان‌های بزرگ', licenseCode: 'NGC-LIC-PROP-1Y', hoverColor: 'var(--color-primary-pale)', hoverWidth: '1.5px' },
+    { id: 'pro', title: 'Pro', subtitle: 'سازمان‌های متوسط', licenseCode: 'NGC-LIC-PRO-1Y', hoverColor: 'var(--color-primary-lighter)', hoverWidth: '1.25px' },
+    { id: 'base', title: 'Base', subtitle: 'سازمان‌های کوچک', licenseCode: 'NGC-LIC-BASE-1Y', hoverColor: 'var(--color-primary-soft)', hoverWidth: '1px' },
 ]
 
 function PlanCard({ plan, large }) {
     return (
-        <div className={`${styles.card} ${large ? styles.cardLarge : ''}`}>
+        <div
+            className={`${styles.card} ${large ? styles.cardLarge : ''}`}
+            style={{ '--hover-color': plan.hoverColor, '--hover-width': plan.hoverWidth }}
+        >
             <div className={styles.cardTop}>
                 <h3 className={styles.cardTitle}>{plan.title}</h3>
                 <p className={styles.cardSubtitle}>{plan.subtitle}</p>

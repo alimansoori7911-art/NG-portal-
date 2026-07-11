@@ -18,15 +18,17 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* مسیرهای عمومی */}
+                {/* صفحه‌ی اصلی سایت — برای همه (لاگین یا مهمان) باز است */}
+                <Route path="/" element={<HomePage />} />
+
+                {/* مسیرهای احراز هویت */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-                {/* مسیرهای نیازمند ورود */}
+                {/* مسیرهای نیازمند ورود (پنل کاربری) — از اینجا به بعد اضافه می‌شوند */}
                 <Route element={<ProtectedRoute />}>
-                    <Route path="/" element={<HomePage />} />
-                    {/* مسیرهای بعدی پنل اینجا اضافه می‌شوند */}
+                    {/* مثال: <Route path="/dashboard" element={<Dashboard />} /> */}
                 </Route>
             </Routes>
         </BrowserRouter>

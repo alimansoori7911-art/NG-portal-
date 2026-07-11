@@ -125,22 +125,45 @@
     color: var(--color-white);
     font-size: var(--font-size-sm);
     font-family: var(--font-family);
-    cursor: pointer;
-    transition: background var(--transition-normal);
+    cursor: default;
     width: 35%;
     position: relative;
     transform: translateY(100%);
     z-index: 2;
 }
 
-.scrollBtn:hover {
-    background: rgba(71, 146, 255, 0.1);
-}
+/* عمداً بدون :hover — طبق درخواست، این دکمه نباید واکنش هاور داشته باشد */
 
 .scrollBtnIcon {
     position: absolute;
     left: var(--spacing-lg);
 }
+
+/* ── متن تایپ‌شونده ── */
+.typedText {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.caret {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-right: 3px;
+    background: var(--color-white);
+    animation: blink 0.9s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+
 /* انیمیشن blur به clear */
 @keyframes blurIn {
     0% {

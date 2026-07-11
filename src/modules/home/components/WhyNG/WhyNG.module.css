@@ -33,10 +33,10 @@
 }
 
 .title {
-    font-size: var(--font-size-3xl);
     font-weight: 700;
     color: #1474FF;
-    line-height: 1.4;
+    font-size: 2.75rem;
+    line-height: 1.3;
 }
 
 .description {
@@ -48,21 +48,21 @@
 
 .ctaBtn {
     padding: var(--spacing-md) var(--spacing-3xl);
-    background: var(--color-bg-dark);
+    background: #2D3643;
     color: var(--color-white);
     font-size: var(--font-size-md);
     font-family: var(--font-family);
     font-weight: 600;
-    border: 1px solid rgba(71, 146, 255, 0.3);
+    border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background var(--transition-normal), border-color var(--transition-normal);
-    width: 100%;
+    transition: background var(--transition-normal);
+    align-self: flex-start;
+    white-space: nowrap;
 }
 
 .ctaBtn:hover {
-    background: var(--color-primary-dark);
-    border-color: var(--color-primary-light);
+    background: #3a4553;
 }
 
 @media (max-width: 768px) {
@@ -75,6 +75,10 @@
         align-items: center;
     }
 
+    .ctaBtn {
+        align-self: center;
+    }
+
     .image {
         max-width: 250px;
     }
@@ -83,5 +87,10 @@
 @media (max-width: 480px) {
     .title {
         font-size: var(--font-size-xl);
+    }
+
+    .ctaBtn {
+        width: 100%;
+        white-space: normal;
     }
 }
