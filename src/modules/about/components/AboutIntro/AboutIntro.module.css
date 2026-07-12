@@ -1,0 +1,224 @@
+.section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-3xl) var(--spacing-xl);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-primary-pale);
+    text-align: center;
+    text-shadow: 0 0 25px rgba(71, 146, 255, 0.6);
+}
+
+.subtitle {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--color-primary-light);
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ═══════════ کاروسل ═══════════ */
+
+.carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 900px;
+    height: 280px;
+}
+
+.card {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    width: 460px;
+    max-width: 80vw;
+    padding: var(--spacing-xl);
+    box-sizing: border-box;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    transition: transform var(--transition-normal), opacity var(--transition-normal), filter var(--transition-normal);
+}
+
+.cardActive {
+    background: rgba(0, 8, 20, 0.85);
+    border: 1px solid var(--color-primary-light);
+    box-shadow: 0 0 40px rgba(20, 116, 255, 0.5), inset 0 0 30px rgba(20, 116, 255, 0.08);
+    opacity: 1;
+    z-index: 3;
+    height: 280px;
+}
+
+.cardDimmed {
+    background: rgba(0, 8, 20, 0.6);
+    border: 1px solid rgba(71, 146, 255, 0.15);
+    opacity: 0.4;
+    z-index: 1;
+    height: 240px;
+    transform-origin: center;
+    scale: 0.94;
+    pointer-events: none;
+}
+
+.cardTitle {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-primary-light);
+}
+
+.cardActive .cardTitle {
+    font-size: 1.75rem;
+}
+
+.cardDesc {
+    font-size: var(--font-size-sm);
+    color: var(--color-white);
+    opacity: 0.8;
+    line-height: 1.9;
+    max-width: 380px;
+}
+
+/* ═══════════ دکمه‌ها + نوار پیشرفت ═══════════ */
+
+.tabs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    max-width: 1100px;
+    margin-top: var(--spacing-xl);
+    z-index: 2;
+}
+
+.tabBtn {
+    position: relative;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: rgba(0, 8, 20, 0.6);
+    color: var(--color-white);
+    opacity: 0.7;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    border: 1px solid rgba(71, 146, 255, 0.3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    white-space: nowrap;
+    transform: translateY(0);
+    transition: background var(--transition-normal), opacity var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
+}
+
+.tabBtn:hover {
+    opacity: 1;
+    border-color: var(--color-primary-light);
+}
+
+.tabBtnActive {
+    background: rgba(20, 116, 255, 0.12);
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-lighter);
+    opacity: 1;
+    font-weight: 700;
+    transform: translateY(-14px);
+}
+
+/* نوار پیشرفت — بیرون و زیر دکمه‌ی فعال، نه داخل پدینگش */
+.progressTrack {
+    position: absolute;
+    bottom: -12px;
+    left: 8px;
+    right: 8px;
+    height: 3px;
+    background: rgba(71, 146, 255, 0.2);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progressFill {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: var(--color-primary-light);
+    border-radius: var(--radius-full);
+    animation: fillProgress 5s linear forwards;
+}
+
+@keyframes fillProgress {
+    from {
+        width: 0%;
+    }
+    to {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .progressFill {
+        animation: none;
+        width: 100%;
+    }
+}
+
+/* ═══════════ ریسپانسیو ═══════════ */
+
+@media (max-width: 900px) {
+    .carousel {
+        height: 260px;
+    }
+
+    .card {
+        width: 380px;
+    }
+}
+
+@media (max-width: 640px) {
+    .title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .subtitle {
+        font-size: var(--font-size-md);
+    }
+
+    /* در موبایل کارت‌های کناری حذف می‌شوند؛ فقط کارت فعال دیده می‌شود */
+    .carousel {
+        height: auto;
+        min-height: 220px;
+    }
+
+    .cardDimmed {
+        display: none;
+    }
+
+    .cardActive {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        transform: none !important;
+    }
+
+    .tabs {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .tabBtn {
+        width: 100%;
+        text-align: center;
+    }
+}

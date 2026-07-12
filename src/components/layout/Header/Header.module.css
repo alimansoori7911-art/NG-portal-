@@ -45,6 +45,10 @@
     gap: var(--spacing-sm);
 }
 
+.navItemWrapper {
+    position: relative;
+}
+
 .navItem {
     padding: var(--spacing-sm) var(--spacing-lg);
     border: none;
@@ -97,6 +101,105 @@
     transition: transform var(--transition-normal);
 }
 
+/* ═══════════ دراپ‌داون دسکتاپ (مگامنو) ═══════════ */
+/* باکس بیرونی بلافاصله زیر دکمه شروع می‌شود (بدون فاصله)، تا هاور موقع
+   عبور ماوس از دکمه به سمت پنل قطع نشود. فاصله‌ی بصری با padding-top است. */
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding-top: 12px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    z-index: 50;
+}
+
+.navItemWrapper:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/*
+  پنل: بدون حاشیه/باکس‌بندی بین آیتم‌ها — فقط تایپوگرافی با فاصله‌ی زیاد،
+  دقیقاً مطابق طرح فیگما. دو ستون تقریباً هم‌عرض با gap بزرگ بینشان.
+*/
+.dropdownPanel {
+    display: flex;
+    width: 380px;
+    max-width: 90vw;
+    background: #0D1726;
+    border: 1px solid rgba(71, 146, 255, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    gap: var(--spacing-xl);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    transform: translateY(-8px);
+    transition: transform var(--transition-normal);
+}
+
+.navItemWrapper:hover .dropdownPanel {
+    transform: translateY(0);
+}
+
+/* ستون راست (درباره ما) — هم‌تراز با بالای ستون چپ (نه وسط‌چین کل پنل) */
+.dropdownRight {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* ستون چپ — دو آیتم زیر هم با فاصله‌ی زیاد، بدون خط جداکننده */
+.dropdownLeft {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* هر آیتم: بدون پس‌زمینه یا حاشیه‌ی ثابت — فقط هاور نشانگر تعاملی بودن است */
+.dropdownItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    margin: calc(var(--spacing-sm) * -1);
+    background: none;
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-white);
+    text-align: right;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.dropdownItem:hover {
+    background: rgba(71, 146, 255, 0.25);
+}
+
+.dropdownTitle {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--color-white);
+    transition: color var(--transition-fast);
+}
+
+.dropdownItem:hover .dropdownTitle {
+    color: var(--color-primary-ghost);
+}
+
+.dropdownDesc {
+    font-size: var(--font-size-xs);
+    color: var(--color-white);
+    opacity: 0.6;
+    line-height: 1.8;
+}
+
+/* ═══════════ منوی موبایل ═══════════ */
+
 .mobileNav {
     display: none;
     flex-direction: column;
@@ -108,10 +211,18 @@
     background: rgba(0, 8, 20, 0.95);
     padding: var(--spacing-md) var(--spacing-3xl);
     border-bottom: 1px solid rgba(71, 146, 255, 0.15);
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 .mobileNav.open {
     display: flex;
+}
+
+.mobileNavGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
 }
 
 .mobileNavItem {
@@ -129,6 +240,31 @@
 
 .mobileNavItem:hover {
     background: rgba(71, 146, 255, 0.1);
+}
+
+.mobileDropdown {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+}
+
+.mobileDropdownItem {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-right: 2px solid rgba(71, 146, 255, 0.4);
+    color: var(--color-white);
+    opacity: 0.85;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    background: rgba(71, 146, 255, 0.05);
+    cursor: pointer;
+    text-align: right;
+}
+
+.mobileDropdownItem:hover {
+    background: rgba(71, 146, 255, 0.12);
+    opacity: 1;
 }
 
 @media (max-width: 768px) {

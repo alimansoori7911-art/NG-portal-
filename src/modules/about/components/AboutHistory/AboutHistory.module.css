@@ -1,0 +1,165 @@
+.section {
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-3xl) var(--spacing-xl);
+}
+
+/*
+  چیدمان فیزیکی (متن چپ، دایره راست) عمداً LTR است تا مطابق فیگما بماند.
+  ستون دایره‌ها ۷۶ پیکسل عرض دارد و خط دقیقاً از مرکز همین ستون
+  (۳۸ پیکسل مانده به لبه‌ی راست) عبور می‌کند تا از وسط دایره‌ها رد شود.
+*/
+.timeline {
+    direction: ltr;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 460px;
+    /* جبران عدم تقارن (متن چپ، دایره و فلش راست) تا از نظر بصری وسط دیده شود */
+    margin-right: 180px;
+}
+
+.lineTrack {
+    position: absolute;
+    top: 70px;
+    bottom: 70px;
+    right: 38px;
+    width: 2px;
+    transform: translateX(50%);
+    background: rgba(120, 130, 150, 0.25);
+}
+
+.lineFill {
+    width: 100%;
+    background: var(--color-primary-light);
+    transition: height var(--transition-normal);
+}
+
+.item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 140px;
+}
+
+.text {
+    flex: 1;
+    padding-right: var(--spacing-lg);
+    direction: rtl;
+    text-align: right;
+    opacity: 0.35;
+    transition: opacity var(--transition-normal);
+}
+
+.textLit {
+    opacity: 1;
+}
+
+.title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-white);
+    margin-bottom: 4px;
+}
+
+.textLit .title {
+    color: var(--color-primary-light);
+}
+
+.desc {
+    font-size: var(--font-size-xs);
+    color: var(--color-white);
+    opacity: 0.7;
+}
+
+.circle {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #1a2334;
+    border: 1px solid transparent;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    direction: ltr;
+    transition: border-color var(--transition-normal), color var(--transition-normal),
+    box-shadow var(--transition-normal), background var(--transition-normal);
+}
+
+.circleLit {
+    background: var(--color-bg-darkest);
+    border: 2px solid var(--color-primary-light);
+    color: var(--color-primary-light);
+    box-shadow: 0 0 18px rgba(20, 116, 255, 0.45);
+}
+
+/* فلش‌ها — ثابت در وسط عمودی تایم‌لاین، سمت راست ستون دایره‌ها */
+.arrows {
+    position: absolute;
+    top: 50%;
+    right: -14px;
+    transform: translate(100%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.arrowBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: #131c2c;
+    border: none;
+    border-radius: 50%;
+    color: var(--color-white);
+    cursor: pointer;
+    transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.arrowBtn:hover:not(:disabled) {
+    background: rgba(71, 146, 255, 0.3);
+}
+
+.arrowBtn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .timeline {
+        max-width: 100%;
+        /* جا برای فلش‌ها که بیرون از تایم‌لاین هستند */
+        padding-left: 0;
+        margin-right: 48px;
+    }
+
+    .circle {
+        width: 60px;
+        height: 60px;
+        font-size: var(--font-size-xs);
+    }
+
+    .lineTrack {
+        right: 30px;
+        top: 60px;
+        bottom: 60px;
+    }
+
+    .item {
+        min-height: 115px;
+    }
+
+    .title {
+        font-size: var(--font-size-md);
+    }
+}
