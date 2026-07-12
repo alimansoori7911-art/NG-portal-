@@ -1,8 +1,11 @@
 import styles from './Footer.module.css'
 import logo from '../../../assets/images/logo/logowhite.png'
 import { Mail, Phone, Send } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 function Footer() {
+    const navigate = useNavigate()
+
     return (
         <footer className={styles.footer}>
             <div className={styles.container}>
@@ -40,9 +43,18 @@ function Footer() {
 
                 {/* ستون وسط — لینک‌های سریع */}
                 <div className={styles.col}>
-                    <h4 className={`${styles.colTitle} ${styles.withBorder}`}>لینک های سریع</h4>                    <ul className={styles.linkList}>
-                        <li><button className={styles.link}>تماس با ما</button></li>
-                        <li><button className={styles.link}>درباره ما</button></li>
+                    <h4 className={`${styles.colTitle} ${styles.withBorder}`}>لینک های سریع</h4>
+                    <ul className={styles.linkList}>
+                        <li>
+                            <button className={styles.link} onClick={() => navigate('/contact')}>
+                                تماس با ما
+                            </button>
+                        </li>
+                        <li>
+                            <button className={styles.link} onClick={() => navigate('/company')}>
+                                درباره ما
+                            </button>
+                        </li>
                         <li><button className={styles.link}>سوالات متداول</button></li>
                     </ul>
                 </div>
