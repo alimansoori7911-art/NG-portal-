@@ -262,4 +262,4 @@ function ContactPage() {
     )
 }
 
-export default Contact
+export default ContactPage

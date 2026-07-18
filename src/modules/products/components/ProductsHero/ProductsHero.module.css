@@ -1,0 +1,137 @@
+/*
+  پس‌زمینه‌ی انیمیشنی:
+  خود .hero آبی تیره‌ی ثابت است (حالت اولیه‌ای که کاربر موقع ورود می‌بیند).
+  گرادینت در یک لایه‌ی ::before جدا قرار دارد که با انیمیشن، آهسته
+  (طی ۴ ثانیه، با نیم ثانیه تأخیر) ظاهر می‌شود.
+*/
+.hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xl);
+    min-height: 100vh;
+    padding: 140px var(--spacing-xl) var(--spacing-3xl);
+    box-sizing: border-box;
+    text-align: center;
+    background: var(--color-bg-darkest);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+            to bottom,
+            #000814 0%,
+            #000814 35%,
+            #001a40 60%,
+            #0043a4 100%
+    );
+    opacity: 0;
+    animation: gradientReveal 4s ease-out 0.5s forwards;
+}
+
+@keyframes gradientReveal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero::before {
+        animation: none;
+        opacity: 1;
+    }
+}
+
+.title {
+    max-width: 780px;
+    font-size: clamp(1.35rem, 3.2vw, 2rem);
+    font-weight: 700;
+    color: var(--color-primary-light);
+    line-height: 1.6;
+}
+
+.desc {
+    max-width: 700px;
+    font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+    color: var(--color-white);
+    line-height: 2;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-md);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* اندازه‌ی دقیق فیگما: ارتفاع ۴۰px، عرض ~۲۹۵px (~۲۷٪ عرض صفحه) */
+.btnSecondary,
+.btnPrimary {
+    height: 40px;
+    min-width: clamp(220px, 27vw, 300px);
+    padding: 0 var(--spacing-lg);
+    border-radius: var(--radius-md);
+    font-family: var(--font-family);
+    font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    border: none;
+    transition: background var(--transition-normal);
+}
+
+/* رنگ‌های دقیق فیگما — از توکن‌های موجود پروژه */
+.btnPrimary {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.btnPrimary:hover {
+    background: var(--color-primary-medium);
+}
+
+.btnSecondary {
+    background: #2D3643;
+    color: var(--color-white);
+}
+
+.btnSecondary:hover {
+    background: #3a4553;
+}
+
+@media (max-width: 640px) {
+    .hero {
+        padding-top: 110px;
+        gap: var(--spacing-lg);
+    }
+
+    .title {
+        font-size: 1.3rem;
+    }
+
+    .desc {
+        font-size: 0.9rem;
+    }
+
+    .actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .btnSecondary,
+    .btnPrimary {
+        width: 100%;
+        min-width: unset;
+    }
+}

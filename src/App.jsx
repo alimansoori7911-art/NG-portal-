@@ -9,6 +9,8 @@ import ForgotPasswordPage from "./modules/auth/pages/ForgotPasswordPage";
 import AboutPage from "./modules/about/pages/AboutPage";
 import ContactPage from "./modules/contact/pages/ContactPage";
 import TermsPage from "./modules/terms/pages/TermsPage";
+import ProductsPage from "./modules/products/pages/ProductsPage";
+import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 
 function App() {
     const initialize = useAuthStore((s) => s.initialize);
@@ -24,6 +26,10 @@ function App() {
 
                 {/* شرکت / درباره ما */}
                 <Route path="/company" element={<AboutPage />} />
+
+                {/* محصولات */}
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/products/buy" element={<ProductsBuyPage />} />
 
                 {/* Placeholder — بعداً با فیگمای مخصوص خودشان کامل می‌شوند */}
                 <Route path="/contact" element={<ContactPage />} />
