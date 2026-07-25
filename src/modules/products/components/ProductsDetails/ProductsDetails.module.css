@@ -1,94 +1,191 @@
+/* ═══════════════════════════════════════
+   wrapper — نگه‌دارنده خط عمودی
+   ═══════════════════════════════════════ */
 .wrapper {
+    position: relative;
     display: flex;
     flex-direction: column;
+    direction: rtl;
 }
 
+/* خط عمودی — کلفت‌تر و خاکستری ملایم */
+.wrapper::before {
+    content: '';
+    position: absolute;
+    top: 5vh;
+    bottom: 5vh;
+    right: max(32px, calc(50% - 575px + 32px));
+    width: 2px;
+    border-radius: 2px;
+    background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(156, 163, 175, 0.35) 5%,
+            rgba(156, 163, 175, 0.35) 95%,
+            transparent 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ═══════════════════════════════════════
+   section — یک آیتم = یک صفحه کامل
+   ═══════════════════════════════════════ */
 .section {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-3xl);
+    gap: clamp(40px, 5vw, 90px);
     max-width: 1150px;
     width: 100%;
     margin: 0 auto;
-    padding: calc(var(--spacing-3xl) * 1.5) var(--spacing-xl);
+    padding: 0 var(--spacing-xl);
     box-sizing: border-box;
+    min-height: 100vh;
     scroll-margin-top: 90px;
 }
 
-.content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    text-align: right;
-}
-
-.title {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    font-size: clamp(1.15rem, 2vw, 1.5rem);
-    font-weight: 700;
-    color: var(--color-primary-light);
-}
-
-.bullet {
-    flex-shrink: 0;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-primary-light);
-    box-shadow: 0 0 10px rgba(20, 116, 255, 0.8);
-}
-
-.subtitle {
-    font-size: clamp(0.9rem, 1.4vw, 1.05rem);
-    font-weight: 700;
-    color: var(--color-white);
-}
-
-.paragraph {
-    max-width: 560px;
-    font-size: clamp(0.8rem, 1.2vw, 0.9rem);
-    color: var(--color-white);
-    opacity: 0.75;
-    line-height: 2.1;
-}
-
+/* ═══════════════════════════════════════
+   imageWrapper — سمت چپ + glow پشت لوگو
+   ═══════════════════════════════════════ */
 .imageWrapper {
-    flex: 0 0 clamp(220px, 28vw, 340px);
+    order: 1;
+    flex: 0 0 clamp(160px, 18vw, 230px);
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    isolation: isolate;
+}
+
+/* هاله آبی ملایم پشت لوگو — مثل فیگما */
+.imageWrapper::before {
+    content: '';
+    position: absolute;
+    inset: -25%;
+    background: radial-gradient(
+            circle at center,
+            rgba(20, 116, 255, 0.22) 0%,
+            rgba(0, 71, 173, 0.12) 40%,
+            transparent 70%
+    );
+    z-index: -1;
+    pointer-events: none;
 }
 
 .image {
     width: 100%;
     height: auto;
-    opacity: 0.9;
+    display: block;
+    opacity: 0.92;
     user-select: none;
     -webkit-user-drag: none;
 }
 
+/* ═══════════════════════════════════════
+   content — سمت راست
+   bullet روی خط می‌ماند، متن‌ها با padding از خط جدا می‌شوند
+   ═══════════════════════════════════════ */
+.content {
+    order: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    text-align: right;
+    position: relative;
+    /* متن‌ها از خط عمودی فاصله بگیرند */
+    padding-right: 28px;
+}
+
+/* ═══════════════════════════════════════
+   title + bullet
+   ═══════════════════════════════════════ */
+.title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size:clamp(1.2rem, 2.2vw, 1.8rem);
+    font-weight: 700;
+    color: var(--color-primary-light);
+    position: relative;
+    z-index: 1;
+}
+
+/* bullet — absolute تا دقیقاً روی خط بنشیند
+   (خط در right:32px نسبت به section است؛
+    content با padding-right:28px + bullet offset -28px => روی خط) */
+.bullet {
+    position: absolute;
+    right: -28px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-primary-light);
+    box-shadow:
+            0 0 0 3px rgba(0, 71, 173, 0.35),
+            0 0 12px rgba(20, 116, 255, 0.7);
+    z-index: 2;
+}
+
+/* ═══════════════════════════════════════
+   زیرتایتل و پاراگراف
+   ═══════════════════════════════════════ */
+.subtitle {
+    font-size: clamp(0.88rem, 1.2vw, 0.98rem);
+    font-weight: 700;
+    color: var(--color-white);
+    margin-top: var(--spacing-xs);
+}
+
+.paragraph {
+    max-width: 500px;
+    font-size: clamp(0.78rem, 1vw, 0.875rem);
+    color: var(--color-white);
+    opacity: 0.7;
+    line-height: 2.2;
+}
+
+/* ═══════════════════════════════════════
+   موبایل
+   ═══════════════════════════════════════ */
 @media (max-width: 800px) {
+    .wrapper::before {
+        display: none;
+    }
+
     .section {
-        flex-direction: column-reverse;
+        flex-direction: column;
         gap: var(--spacing-xl);
-        padding: var(--spacing-3xl) var(--spacing-xl);
+        padding: var(--spacing-3xl) var(--spacing-md);
+        min-height: auto;
     }
 
     .imageWrapper {
+        order: 0;
         flex: none;
-        width: min(60%, 260px);
+        width: min(55%, 190px);
     }
 
     .content {
+        order: 1;
         align-items: center;
         text-align: center;
+        padding-right: 0;
     }
 
     .title {
         justify-content: center;
+    }
+
+    .bullet {
+        position: static;
+        transform: none;
+    }
+
+    .paragraph {
+        max-width: 100%;
     }
 }

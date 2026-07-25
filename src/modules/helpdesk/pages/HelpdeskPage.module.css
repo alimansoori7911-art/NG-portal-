@@ -1,0 +1,213 @@
+.page {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px var(--spacing-3xl) var(--spacing-xl);
+    text-align: center;
+    overflow: hidden;
+}
+
+/* ═══════════ گوی نورانی ═══════════ */
+/* مطابق فیگما: هاله جمع‌وجور و رنگ‌دار (نه پخش و محو)، حباب حدود ۳۰٪ قطر آن.
+   نسبت حباب به هاله مهم‌ترین عاملِ شبیه‌شدن به طرح است. */
+
+.orb {
+    position: relative;
+    width: min(420px, 46vh, 82vw);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: clamp(8px, 2vh, 24px);
+    flex-shrink: 0;
+}
+
+.glowOuter,
+.glowMid,
+.glowCore {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: var(--radius-full);
+    pointer-events: none;
+}
+
+/* لایه ۱ — بدنه‌ی اصلی هاله؛ آبی اشباع که تا لبه آرام محو می‌شود */
+.glowOuter {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+            circle,
+            rgba(122, 176, 255, 0.72) 0%,
+            rgba(71, 146, 255, 0.62) 26%,
+            rgba(20, 116, 255, 0.42) 48%,
+            rgba(0, 92, 224, 0.20) 68%,
+            rgba(0, 71, 173, 0.06) 84%,
+            rgba(0, 8, 20, 0) 97%
+    );
+    filter: blur(26px);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+/* لایه ۲ — حلقه‌ی روشن دور حباب */
+.glowMid {
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(
+            circle,
+            rgba(173, 207, 255, 0.78) 0%,
+            rgba(122, 176, 255, 0.62) 40%,
+            rgba(71, 146, 255, 0.30) 72%,
+            rgba(20, 116, 255, 0) 100%
+    );
+    filter: blur(22px);
+}
+
+/* لایه ۳ — هاله‌ی نزدیک پشت حباب؛ ملایم، بدون سفیدی سوخته */
+.glowCore {
+    width: 36%;
+    height: 36%;
+    background: radial-gradient(
+            circle,
+            rgba(200, 224, 255, 0.55) 0%,
+            rgba(150, 195, 255, 0.35) 55%,
+            rgba(122, 176, 255, 0) 100%
+    );
+    filter: blur(16px);
+}
+
+/* حباب — درشت و واضح، حدود ۳۰٪ قطر هاله مطابق فیگما */
+.orbImage {
+    position: relative;
+    z-index: 1;
+    width: 30%;
+    height: auto;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.94;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.03);
+    }
+}
+
+/* ═══════════ متن ═══════════ */
+
+.title {
+    font-size: clamp(1.375rem, 2.6vw + 0.4rem, 2.5rem);
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--color-primary-soft);
+    margin-bottom: clamp(8px, 1.6vh, 20px);
+    position: relative;
+    z-index: 2;
+}
+
+.description {
+    max-width: 560px;
+    font-size: clamp(0.8125rem, 0.5vw + 0.7rem, 0.9375rem);
+    line-height: 1.9;
+    color: var(--color-white);
+    opacity: 0.75;
+    margin-bottom: clamp(18px, 3.5vh, 44px);
+    position: relative;
+    z-index: 2;
+}
+
+/* ═══════════ دکمه‌ها ═══════════ */
+
+.actions {
+    display: flex;
+    gap: 22px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.actionBtn {
+    min-width: 250px;
+    height: 44px;
+    padding: 0 var(--spacing-lg);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #2E3438;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.actionBtn:hover {
+    background: #1B3A6B;
+    border-color: rgba(71, 146, 255, 0.45);
+}
+
+.actionBtn:focus-visible {
+    outline: 2px solid var(--color-primary-lighter);
+    outline-offset: 2px;
+}
+
+/* ═══════════ ریسپانسیو ═══════════ */
+
+@media (max-width: 768px) {
+    .page {
+        padding: 72px var(--spacing-xl) var(--spacing-lg);
+    }
+
+    .glowOuter {
+        filter: blur(20px);
+    }
+
+    .actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+        gap: var(--spacing-md);
+    }
+
+    .actionBtn {
+        min-width: 0;
+        width: 100%;
+        height: 42px;
+    }
+}
+
+@media (max-height: 700px) {
+    .page {
+        padding-top: 64px;
+    }
+
+    .orb {
+        width: min(330px, 40vh, 76vw);
+    }
+
+    .description {
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-height: 560px) {
+    .orb {
+        width: min(260px, 34vh, 60vw);
+    }
+
+    .actionBtn {
+        height: 38px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glowOuter {
+        animation: none;
+    }
+}

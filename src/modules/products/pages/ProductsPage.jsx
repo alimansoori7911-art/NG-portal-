@@ -3,6 +3,8 @@ import Footer from '../../../components/layout/Footer/Footer'
 import ProductsHero from '../components/ProductsHero/ProductsHero'
 import ProductsWhatIs from '../components/ProductsWhatIs/ProductsWhatIs'
 import ProductsDetails from '../components/ProductsDetails/ProductsDetails'
+import ProductsPlans from '../components/ProductsPlans/ProductsPlans'
+import ProductsDemo from '../components/Productsdemo/ProductsDemo.jsx'
 import styles from './ProductsPage.module.css'
 
 function ProductsPage() {
@@ -20,10 +22,10 @@ function ProductsPage() {
 
                 {/* placeholder — بخش پلن‌ها و درخواست دمو با فیگمای خودشان ساخته می‌شوند */}
                 <div id="plans" className={styles.section}>
-                    <div className={styles.placeholder}>پلن‌ها — به‌زودی</div>
+                    <ProductsPlans />
                 </div>
                 <div id="demo" className={styles.section}>
-                    <div className={styles.placeholder}>درخواست دمو — به‌زودی</div>
+                    <ProductsDemo />
                 </div>
             </main>
             <Footer />

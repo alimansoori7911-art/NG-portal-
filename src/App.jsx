@@ -11,6 +11,9 @@ import ContactPage from "./modules/contact/pages/ContactPage";
 import TermsPage from "./modules/terms/pages/TermsPage";
 import ProductsPage from "./modules/products/pages/ProductsPage";
 import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
+import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
+import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
+import TicketsPage from "./modules/helpdesk/pages/TicketsPage";
 
 function App() {
     const initialize = useAuthStore((s) => s.initialize);
@@ -31,6 +34,10 @@ function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/products/buy" element={<ProductsBuyPage />} />
 
+                {/* تیکتینگ Help Desk */}
+                <Route path="/helpdesk" element={<HelpdeskPage />} />
+                <Route path="/helpdesk/new" element={<NewTicketPage />} />
+                <Route path="/helpdesk/tickets" element={<TicketsPage />} />
                 {/* Placeholder — بعداً با فیگمای مخصوص خودشان کامل می‌شوند */}
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
@@ -42,6 +49,7 @@ function App() {
                 <Route element={<ProtectedRoute />}>
                     {/* مثال: <Route path="/dashboard" element={<Dashboard />} /> */}
                 </Route>
+
             </Routes>
         </BrowserRouter>
     );

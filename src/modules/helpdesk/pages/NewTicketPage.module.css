@@ -1,0 +1,99 @@
+/* ارتفاع دقیقاً اندازه‌ی ویوپورت — تمام فرم در نگاه اول دیده می‌شود */
+.page {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(74px, 9vh, 108px) var(--spacing-xl) clamp(16px, 3vh, 40px);
+    overflow: hidden;
+}
+
+.card {
+    width: 100%;
+    max-width: 810px;
+    background: rgba(4, 12, 25, 0.55);
+    border: 1px solid rgba(71, 146, 255, 0.18);
+    border-radius: var(--radius-xl);
+    padding: clamp(20px, 3.4vh, 48px) clamp(20px, 3vw, 48px);
+}
+
+.title {
+    font-size: clamp(1.25rem, 1.6vw + 0.7rem, 1.75rem);
+    font-weight: 700;
+    text-align: center;
+    color: var(--color-primary-pale);
+    margin-bottom: clamp(14px, 2.6vh, 40px);
+}
+
+/* گرید دو ستونه — در RTL آیتم اول سمت راست قرار می‌گیرد */
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 2vh, 24px);
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+/* ═══════════ فشرده‌سازی فیلدها روی صفحه‌های کوتاه ═══════════ */
+/* ارتفاع 52px داخل Input و Select هاردکد است؛ اینجا فقط برای همین صفحه
+   بازنویسی می‌شود تا سایر فرم‌های پروژه دست‌نخورده بمانند.
+   سلکتور `.grid > * > button` تنها دکمه‌ی trigger سلکت را هدف می‌گیرد،
+   نه گزینه‌های داخل پنل بازشونده (که یک سطح عمیق‌ترند). */
+
+.grid input,
+.grid > * > button {
+    height: clamp(42px, 5.6vh, 52px);
+}
+
+.grid textarea {
+    min-height: clamp(78px, 15vh, 160px);
+    padding-top: clamp(12px, 1.8vh, 20px);
+    padding-bottom: clamp(12px, 1.8vh, 20px);
+}
+
+/* لیبل توضیحات هم‌تراز با پدینگ جدید بالای textarea */
+.grid textarea + label {
+    top: clamp(12px, 1.8vh, 20px);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(12px, 2vh, 24px);
+    margin-top: clamp(14px, 2.6vh, 32px);
+}
+
+.actions button {
+    height: clamp(40px, 5.2vh, 44px);
+}
+
+/* ═══════════ موبایل ═══════════ */
+/* روی صفحه‌های باریک، فرم تک‌ستونه می‌شود و ارتفاعش ذاتاً از ویوپورت
+   بیشتر است؛ پس اسکرول اینجا عمدی و لازم است. */
+@media (max-width: 768px) {
+    .page {
+        height: auto;
+        min-height: 100dvh;
+        padding: 90px var(--spacing-md) var(--spacing-2xl);
+        overflow: visible;
+    }
+
+    .grid input,
+    .grid > * > button,
+    .actions button {
+        height: 48px;
+    }
+
+    .grid textarea {
+        min-height: 130px;
+    }
+
+    .grid,
+    .actions {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+}

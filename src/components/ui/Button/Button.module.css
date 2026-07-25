@@ -45,7 +45,18 @@
 .ghost:hover:not(:disabled) {
     border-color: var(--color-action);
 }
+/* دکمه‌ی خالی با قاب آبی روشن — مطابق «مشاهده تیکت ها» در فیگما */
+.outline {
+    width: 100%;
+    background: transparent;
+    border-color: var(--color-primary-soft);
+    color: var(--color-white);
+}
 
+.outline:hover:not(:disabled) {
+    background: rgba(71, 146, 255, 0.12);
+    border-color: var(--color-primary-light);
+}
 /* لودینگ سه‌نقطه‌ای */
 .dots {
     display: inline-flex;

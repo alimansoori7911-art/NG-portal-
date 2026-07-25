@@ -4,7 +4,23 @@ import { useNavigate } from 'react-router-dom'
 import styles from './Header.module.css'
 
 const NAV_ITEMS = [
-    { label: 'محصولات', path: '/products' },
+    {
+        label: 'محصولات',
+        path: '/products',
+        items: [
+            {
+                label: 'محصول',
+                description: 'با راهکارهای امنیتی NGcorion و قابلیت‌های هر محصول آشنا شوید',
+                path: '/products',
+                highlighted: true,
+            },
+            {
+                label: 'تیکتینگ Help Desk',
+                description: 'درخواست پشتیبانی ثبت کنید و روند رسیدگی تیکت‌ها را دنبال کنید',
+                path: '/helpdesk',
+            },
+        ],
+    },
     { label: 'خدمات', path: '/services' },
     { label: 'منابع', path: '/resources' },
     {

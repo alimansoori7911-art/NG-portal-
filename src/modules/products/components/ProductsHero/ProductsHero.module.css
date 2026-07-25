@@ -1,18 +1,14 @@
-/*
-  پس‌زمینه‌ی انیمیشنی:
-  خود .hero آبی تیره‌ی ثابت است (حالت اولیه‌ای که کاربر موقع ورود می‌بیند).
-  گرادینت در یک لایه‌ی ::before جدا قرار دارد که با انیمیشن، آهسته
-  (طی ۴ ثانیه، با نیم ثانیه تأخیر) ظاهر می‌شود.
-*/
+
 .hero {
     position: relative;
     isolation: isolate;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-xl);
     min-height: 100vh;
-    padding: 140px var(--spacing-xl) var(--spacing-3xl);
+    padding: 90px var(--spacing-xl) var(--spacing-3xl);
     box-sizing: border-box;
     text-align: center;
     background: var(--color-bg-darkest);
@@ -111,7 +107,7 @@
 
 @media (max-width: 640px) {
     .hero {
-        padding-top: 110px;
+        padding-top: 90px;
         gap: var(--spacing-lg);
     }
 
