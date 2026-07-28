@@ -2,29 +2,105 @@
 // ─────────────────────────────────────────────────────────────
 // نمونه‌ی مرکزی Axios برای کل پروژه.
 //
-// سه کار مهم اینجا انجام میشه:
+// چهار کار مهم اینجا انجام میشه:
 //   ۱. ساخت instance با تنظیمات پایه (baseURL و ارسال کوکی‌ها)
-//   ۲. Request Interceptor: چسباندن خودکار توکن به هدر هر درخواست
-//   ۳. Response Interceptor: اگر جواب 401 بود، یک‌بار توکن رو
-//      رفرش می‌کنه و درخواست ناموفق رو دوباره می‌فرسته.
+//   ۲. Request Interceptor: چسباندن خودکار توکن + رفرش پیش‌دستانه
+//   ۳. Response Interceptor: رفرش خودکار در صورت ۴۰۱
+//   ۴. هماهنگی بین تب‌ها تا چند تب همزمان رفرش نکنند
 // ─────────────────────────────────────────────────────────────
 
 import axios from "axios";
 import { tokenManager } from "./tokenManager.js";
 
-// آدرس سرور از فایل .env خونده میشه (مثلاً: VITE_API_BASE_URL=http://localhost:8000)
-// مزیتش اینه که برای dev و production فقط یک فایل env عوض میشه، نه کد.
+const baseURL = import.meta.env.VITE_API_BASE_URL;
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
-    withCredentials: true, // 👈 حیاتی: بدون این، کوکی HttpOnly رفرش‌توکن ارسال نمیشه
+    baseURL,
+    withCredentials: true, // 👈 حیاتی: بدون این، کوکی HttpOnly ارسال نمیشه
     headers: { "Content-Type": "application/json" },
 });
 
-// ── ۱) Request Interceptor ───────────────────────────────────
-// قبل از «هر» درخواست اجرا میشه؛ اگر توکن داریم و درخواست خودش
-// هدر Authorization نداره (مثل register که claim_token می‌فرسته)،
-// توکن رو به هدر اضافه می‌کنیم.
-api.interceptors.request.use((config) => {
+/*
+  instance خام و بدون interceptor، فقط برای درخواست رفرش.
+  اگر از خود api استفاده می‌کردیم و رفرش ۴۰۱ می‌گرفت، interceptor
+  دوباره فعال می‌شد و حلقه‌ی بازگشتی ایجاد می‌کرد.
+*/
+const refreshClient = axios.create({
+    baseURL,
+    withCredentials: true,
+    headers: { "Content-Type": "application/json" },
+});
+
+// ── هماهنگی بین تب‌ها ────────────────────────────────────────
+// بک‌اند refresh token را rotate می‌کند؛ اگر دو تب همزمان رفرش کنند،
+// دومی نشست اولی را باطل می‌کند. با این کانال، هر تب توکن تازه را
+// به بقیه اعلام می‌کند تا آن‌ها درخواست تکراری نفرستند.
+const channel =
+    typeof BroadcastChannel !== "undefined"
+        ? new BroadcastChannel("auth-token")
+        : null;
+
+if (channel) {
+    channel.onmessage = (event) => {
+        if (event.data?.type === "token" && event.data.token) {
+            tokenManager.set(event.data.token);
+        }
+        if (event.data?.type === "cleared") {
+            tokenManager.clear();
+        }
+    };
+}
+
+function broadcastToken(token) {
+    channel?.postMessage({ type: "token", token });
+}
+
+export function broadcastLogout() {
+    channel?.postMessage({ type: "cleared" });
+}
+
+// ── رفرش با ددوپ ────────────────────────────────────────────
+// اگر چند درخواست همزمان ۴۰۱ بگیرند، نباید چند بار /auth/refresh
+// صدا زده بشه. با نگه‌داشتن «یک Promise مشترک»، همه منتظر همون
+// یک رفرش می‌مونن.
+let refreshPromise = null;
+
+async function refreshAccessToken() {
+    if (!refreshPromise) {
+        refreshPromise = refreshClient
+            .post("/auth/refresh")
+            .then((res) => {
+                const newToken = res.data?.data?.access_token;
+                tokenManager.set(newToken);
+                broadcastToken(newToken);
+                return newToken;
+            })
+            .finally(() => {
+                refreshPromise = null;
+            });
+    }
+    return refreshPromise;
+}
+
+// ── ۱) Request Interceptor ──────────────────────────────────
+api.interceptors.request.use(async (config) => {
+    const isAuthEndpoint =
+        config.url?.includes("/auth/refresh") ||
+        config.url?.includes("/auth/login");
+
+    /*
+      توکن دسترسی عمر کوتاهی دارد (۷ دقیقه). اگر منقضی شده باشد،
+      به‌جای فرستادن درخواستِ محکوم‌به‌۴۰۱، همین‌جا پیش‌دستانه رفرش
+      می‌کنیم. این یک رفت‌وبرگشت اضافه را حذف می‌کند.
+    */
+    if (!isAuthEndpoint && tokenManager.get() && tokenManager.isExpired()) {
+        try {
+            await refreshAccessToken();
+        } catch {
+            // اگر شکست خورد، مسیر عادی ۴۰۱ در response interceptor ادامه می‌دهد
+        }
+    }
+
     const token = tokenManager.get();
     if (token && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -32,62 +108,40 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// ── ۲) Response Interceptor + رفرش خودکار توکن ───────────────
-// نکته: اگر چند درخواست هم‌زمان 401 بگیرن، نباید چند بار /auth/refresh
-// صدا زده بشه. با نگه‌داشتن «یک Promise مشترک»، همه منتظر همون
-// یک رفرش می‌مونن. (این الگو رو خوب یاد بگیر، خیلی پرکاربرده)
-let refreshPromise = null;
-
-async function refreshAccessToken() {
-    if (!refreshPromise) {
-        refreshPromise = api
-            .post("/auth/refresh")
-            .then((res) => {
-                const newToken = res.data?.data?.access_token;
-                tokenManager.set(newToken);
-                return newToken;
-            })
-            .finally(() => {
-                refreshPromise = null; // برای دفعه‌ی بعد آزادش می‌کنیم
-            });
-    }
-    return refreshPromise;
-}
-
+// ── ۲) Response Interceptor ─────────────────────────────────
 api.interceptors.response.use(
-    // جواب موفق → بدون تغییر رد میشه
     (response) => response,
 
-    // جواب خطا → اینجا تصمیم می‌گیریم
     async (error) => {
         const originalRequest = error.config;
         const status = error.response?.status;
 
         // شرایط تلاش برای رفرش:
-        //  - خطا 401 باشه
-        //  - قبلاً برای همین درخواست رفرش نکرده باشیم (جلوگیری از حلقه بی‌نهایت)
-        //  - خودِ درخواست، login یا refresh نباشه (اونا 401 واقعی دارن)
+        //  - خطا ۴۰۱ باشد
+        //  - قبلاً برای همین درخواست رفرش نکرده باشیم (جلوگیری از حلقه)
+        //  - خودِ درخواست، login یا refresh نباشد (آن‌ها ۴۰۱ واقعی دارند)
         const isAuthRoute =
-            originalRequest.url?.includes("/auth/login") ||
-            originalRequest.url?.includes("/auth/refresh");
+            originalRequest?.url?.includes("/auth/login") ||
+            originalRequest?.url?.includes("/auth/refresh");
 
-        if (status === 401 && !originalRequest._retry && !isAuthRoute) {
-            originalRequest._retry = true; // پرچم: این درخواست یک‌بار رفرش خورده
+        if (status === 401 && originalRequest && !originalRequest._retry && !isAuthRoute) {
+            originalRequest._retry = true;
             try {
                 await refreshAccessToken();
-                return api(originalRequest); // 🔁 تکرار درخواست اصلی با توکن جدید
+                return api(originalRequest); // 🔁 تکرار درخواست اصلی
             } catch {
-                // رفرش هم شکست خورد → یعنی نشست واقعاً منقضی شده
+                // رفرش هم شکست خورد → نشست واقعاً منقضی شده
                 tokenManager.clear();
-                // به بقیه‌ی اپ خبر میدیم (authStore به این event گوش میده)
+                broadcastLogout();
                 window.dispatchEvent(new Event("auth:session-expired"));
             }
         }
 
         // ── نرمالایز کردن خطا ──
-        // بک‌اند خطاها رو در قالب { data: { error: { code, message } } } می‌فرسته.
-        // اینجا یک شیء تمیز می‌سازیم تا کامپوننت‌ها راحت error.message رو نشون بدن.
-        const apiError = error.response?.data?.data?.error;
+        // بک‌اند خطاها را در قالب { data: { error: {...} }, meta } می‌فرستد.
+        const body = error.response?.data;
+        const apiError = body?.data?.error;
+
         return Promise.reject({
             status: status ?? 0,
             code: apiError?.code ?? "UNKNOWN",
@@ -95,6 +149,9 @@ api.interceptors.response.use(
                 apiError?.message ??
                 (status ? "خطایی رخ داد. لطفاً دوباره تلاش کنید." : "ارتباط با سرور برقرار نشد."),
             details: apiError?.details ?? null,
+            // meta برای سیگنال‌هایی مثل redirect_to لازم است
+            meta: body?.meta ?? null,
+            retryAfter: Number(error.response?.headers?.["retry-after"]) || null,
         });
     }
 );

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Phone, Mail, Check } from 'lucide-react'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
@@ -9,6 +8,7 @@ import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
 import { contactService } from '../../../services/contactService'
 import { useAuthStore, getDisplayName } from '../../../store/authStore'
+import { HTTP, MSG } from '../../../constants/auth'
 import styles from './ContactPage.module.css'
 
 // آیکون اینستاگرام به‌صورت SVG دستی — مستقل از نسخه‌ی نصب‌شده‌ی lucide-react
@@ -41,77 +41,98 @@ const CONTACT_CARDS = [
     { icon: InstagramIcon, label: 'اینستاگرام', value: '@ngcorion' },
 ]
 
-function ContactPage() {
-    const navigate = useNavigate()
-    const { user, status } = useAuthStore()
-    const isLoggedIn = status === 'authenticated'
+const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+const isValidPhone = (v) => /^(\+98|0)?9\d{9}$/.test(v.trim())
 
-    const [view, setView] = useState('form') // form | success | requests
+/**
+ * اندپوینت /landing/contact فقط { name, email, phone_number, message }
+ * می‌پذیرد و فیلدی برای نوع درخواست و تعداد دارایی ندارد؛ این دو مقدار
+ * به‌صورت متن ساخت‌یافته داخل message ارسال می‌شوند.
+ */
+function buildMessage({ requestType, assetCount, description }) {
+    const lines = [
+        `نوع درخواست: ${requestType}`,
+        `تعداد تقریبی دارایی: ${assetCount}`,
+    ]
+    if (description) lines.push('', `توضیحات: ${description}`)
+    return lines.join('\n')
+}
+
+function ContactPage() {
+    const user = useAuthStore((s) => s.user)
+    const status = useAuthStore((s) => s.status)
+
+    const [view, setView] = useState('form') // form | success
     const [loading, setLoading] = useState(false)
     const [alert, setAlert] = useState({ message: '', variant: 'error' })
 
+    // این اندپوینت برای مهمان هم باز است؛ فیلدها قابل ویرایش‌اند و
+    // فقط در صورت لاگین بودن، یک‌بار از پروفایل پیش‌پر می‌شوند.
+    const [contact, setContact] = useState({ name: '', email: '', phone: '' })
     const [requestType, setRequestType] = useState('')
     const [assetCount, setAssetCount] = useState('')
     const [description, setDescription] = useState('')
+    const [fieldErrors, setFieldErrors] = useState({})
 
-    const [requests, setRequests] = useState([])
-    const [requestsLoading, setRequestsLoading] = useState(false)
+    const clearAlert = () => setAlert({ message: '', variant: 'error' })
+    const showError = (message) => setAlert({ message, variant: 'error' })
+    const showNotice = (message) => setAlert({ message, variant: 'success' })
 
-    // نمایش پیام «وارد حساب شوید» برای مهمان‌ها
+    // پیش‌پر کردن از پروفایل — فقط وقتی کاربر لاگین باشد
     useEffect(() => {
-        if (status === 'guest') {
-            setAlert({
-                message: 'کاربر گرامی جهت ثبت درخواست وارد حساب کاربری خود شوید',
-                variant: 'error',
-            })
-        } else {
-            setAlert({ message: '', variant: 'error' })
-        }
-    }, [status])
+        if (status !== 'authenticated' || !user) return
+        const identifierOf = (t) =>
+            user?.identifiers?.find((i) => i.type === t)?.value ?? ''
+        setContact((prev) => ({
+            name: prev.name || getDisplayName(user),
+            email: prev.email || identifierOf('email'),
+            phone: prev.phone || identifierOf('phone_number'),
+        }))
+    }, [status, user])
 
-    // اطلاعات کاربر از حساب کاربری مپ می‌شود (فقط‌خواندنی)
-    const identifierOf = (type) => user?.identifiers?.find((i) => i.type === type)?.value ?? ''
-    const prefill = {
-        username: getDisplayName(user),
-        email: identifierOf('email'),
-        phone: identifierOf('phone_number'),
-        organization: '', // TODO: پس از افزودن فیلد سازمان به پروفایل بک‌اند تکمیل می‌شود
+    const setContactField = (name) => (e) => {
+        setContact((c) => ({ ...c, [name]: e.target.value }))
+        setFieldErrors((fe) => ({ ...fe, [name]: '' }))
     }
 
-    const canSubmit = isLoggedIn && requestType && assetCount && !loading
+    const validate = () => {
+        const errors = {}
+        if (!contact.name.trim()) errors.name = 'نام را وارد کنید'
+        if (!isValidEmail(contact.email)) errors.email = 'ایمیل معتبر وارد کنید'
+        if (!isValidPhone(contact.phone)) errors.phone = 'شماره تماس معتبر وارد کنید'
+        if (!requestType) errors.requestType = 'نوع درخواست را انتخاب کنید'
+        if (!assetCount) errors.assetCount = 'تعداد دارایی را انتخاب کنید'
+        setFieldErrors(errors)
+        return Object.keys(errors).length === 0
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!canSubmit) return
-        setAlert({ message: '', variant: 'error' })
+        clearAlert()
+        if (!validate()) return
+
         setLoading(true)
         try {
             await contactService.submitRequest({
-                request_type: requestType,
-                asset_count: assetCount,
-                description: description.trim(),
+                name: contact.name.trim(),
+                email: contact.email.trim(),
+                phone_number: contact.phone.trim(),
+                message: buildMessage({
+                    requestType,
+                    assetCount,
+                    description: description.trim(),
+                }),
             })
-            setAlert({ message: 'عملیات با موفقیت انجام شد', variant: 'success' })
+            showNotice('عملیات با موفقیت انجام شد')
             setView('success')
-        } catch {
-            setAlert({ message: 'خطا در بارگذاری، مجدداً تلاش کنید', variant: 'error' })
+        } catch (err) {
+            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+                showError(MSG.RATE_LIMIT)
+            } else {
+                showError(err?.message || MSG.GENERIC)
+            }
         } finally {
             setLoading(false)
-        }
-    }
-
-    const openRequests = async () => {
-        setView('requests')
-        setAlert({ message: '', variant: 'error' })
-        setRequestsLoading(true)
-        try {
-            const data = await contactService.getMyRequests()
-            setRequests(Array.isArray(data) ? data : [])
-        } catch {
-            setRequests([])
-            setAlert({ message: 'خطا در بارگذاری، مجدداً تلاش کنید', variant: 'error' })
-        } finally {
-            setRequestsLoading(false)
         }
     }
 
@@ -119,7 +140,8 @@ function ContactPage() {
         setRequestType('')
         setAssetCount('')
         setDescription('')
-        setAlert({ message: '', variant: 'error' })
+        setFieldErrors({})
+        clearAlert()
         setView('form')
     }
 
@@ -127,10 +149,7 @@ function ContactPage() {
         <div className={styles.page}>
             <Header />
 
-            <Alert
-                variant={alert.variant}
-                onClose={() => setAlert({ message: '', variant: 'error' })}
-            >
+            <Alert variant={alert.variant} onClose={clearAlert}>
                 {alert.message}
             </Alert>
 
@@ -155,23 +174,48 @@ function ContactPage() {
                             <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
                                 <div className={styles.grid}>
-                                    <Input label="نام کاربری" value={prefill.username} disabled />
-                                    <Input label="نام سازمان" value={prefill.organization} disabled />
-                                    <Input label="شماره تماس" value={prefill.phone} disabled />
-                                    <Input label="ایمیل" value={prefill.email} disabled />
-                                    <Select
-                                        label="نوع درخواست"
-                                        options={REQUEST_TYPES}
-                                        value={requestType}
-                                        onChange={setRequestType}
-                                        disabled={!isLoggedIn}
+                                    <Input
+                                        label="* نام و نام خانوادگی"
+                                        persian
+                                        value={contact.name}
+                                        onChange={setContactField('name')}
+                                        error={fieldErrors.name}
+                                        autoComplete="name"
+                                    />
+                                    <Input
+                                        label="* ایمیل"
+                                        type="email"
+                                        value={contact.email}
+                                        onChange={setContactField('email')}
+                                        error={fieldErrors.email}
+                                        autoComplete="email"
+                                    />
+                                    <Input
+                                        label="* شماره تماس"
+                                        type="tel"
+                                        inputMode="numeric"
+                                        value={contact.phone}
+                                        onChange={setContactField('phone')}
+                                        error={fieldErrors.phone}
+                                        autoComplete="tel"
                                     />
                                     <Select
-                                        label="تعداد تقریبی دارایی"
+                                        label="* نوع درخواست"
+                                        options={REQUEST_TYPES}
+                                        value={requestType}
+                                        onChange={(v) => {
+                                            setRequestType(v)
+                                            setFieldErrors((fe) => ({ ...fe, requestType: '' }))
+                                        }}
+                                    />
+                                    <Select
+                                        label="* تعداد تقریبی دارایی"
                                         options={ASSET_COUNTS}
                                         value={assetCount}
-                                        onChange={setAssetCount}
-                                        disabled={!isLoggedIn}
+                                        onChange={(v) => {
+                                            setAssetCount(v)
+                                            setFieldErrors((fe) => ({ ...fe, assetCount: '' }))
+                                        }}
                                     />
                                 </div>
 
@@ -180,22 +224,13 @@ function ContactPage() {
                                     placeholder="توضیحات"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    disabled={!isLoggedIn}
                                     rows={5}
                                 />
 
                                 <div className={styles.actions}>
-                                    <Button type="submit" loading={loading} disabled={!canSubmit}>
+                                    <Button type="submit" loading={loading}>
                                         ثبت درخواست
                                     </Button>
-                                    <button
-                                        type="button"
-                                        className={styles.secondaryBtn}
-                                        onClick={openRequests}
-                                        disabled={!isLoggedIn}
-                                    >
-                                        مشاهده درخواست های قبلی
-                                    </button>
                                 </div>
                             </form>
                         </>
@@ -211,46 +246,9 @@ function ContactPage() {
                                 به زودی کارشناسان ما به در خواست شما رسیدگی خواهند کرد و
                                 در صورت نیاز با شما در تماس خواهند بود
                             </p>
-                            <Button className={styles.successBtn} onClick={openRequests}>
-                                مشاهده در خواست ها
+                            <Button className={styles.successBtn} onClick={backToForm}>
+                                ثبت درخواست جدید
                             </Button>
-                        </div>
-                    )}
-
-                    {view === 'requests' && (
-                        <div className={styles.requestsBox}>
-                            <div className={styles.tableWrapper}>
-                                <table className={styles.table}>
-                                    <thead>
-                                    <tr>
-                                        <th>ردیف</th>
-                                        <th>تاریخ</th>
-                                        <th>نوع درخواست</th>
-                                        <th>وضعیت</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {requests.map((req, index) => (
-                                        <tr key={req.id ?? index}>
-                                            <td>{index + 1}</td>
-                                            <td>{req.date}</td>
-                                            <td>{req.request_type}</td>
-                                            <td>{req.status}</td>
-                                        </tr>
-                                    ))}
-                                    {!requestsLoading && requests.length === 0 && (
-                                        <tr>
-                                            <td colSpan={4} className={styles.emptyRow}>
-                                                درخواستی ثبت نشده است
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <button type="button" className={styles.secondaryBtn} onClick={backToForm}>
-                                فرم ثبت درخواست
-                            </button>
                         </div>
                     )}
 

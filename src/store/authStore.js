@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────
 // استور سراسری احراز هویت با Zustand.
 //
-// «وضعیت» (status) چهار حالت داره:
+// «وضعیت» (status) سه حالت داره:
 //   'checking'      → اول لود اپ؛ هنوز نمی‌دونیم کاربر لاگینه یا نه
 //   'authenticated' → کاربر لاگین است
 //   'guest'         → کاربر لاگین نیست
@@ -16,7 +16,14 @@
 import { create } from "zustand";
 import { authService } from "../services/authService";
 import { tokenManager } from "../services/tokenManager";
-export const useAuthStore = create((set, get) => ({
+import api, { broadcastLogout } from "../services/api";
+// جلوگیری از اجرای موازی initialize.
+// StrictMode در dev افکت‌ها را دوبار اجرا می‌کند؛ بدون این، دو درخواست
+// همزمان /auth/refresh می‌رود که اگر بک‌اند refresh token را rotate کند،
+// درخواست دوم نشست اول را باطل می‌کند و کاربر تصادفی خارج می‌شود.
+let initPromise = null;
+
+export const useAuthStore = create((set) => ({
     // ── State ──
     user: null,
     status: "checking",
@@ -33,16 +40,24 @@ export const useAuthStore = create((set, get) => ({
     // چون Access Token در حافظه‌ست و با رفرش صفحه پریده،
     // با کوکی HttpOnly یک توکن تازه می‌گیریم و کاربر رو لود می‌کنیم.
     async initialize() {
-        try {
-            const { access_token } = await authService.refresh();
-            tokenManager.set(access_token);
-            const user = await authService.getMe();
-            set({ user, status: "authenticated" });
-        } catch {
-            // کوکی نبود یا منقضی بود → کاربر مهمانه، اتفاق خاصی نیفتاده
-            tokenManager.clear();
-            set({ user: null, status: "guest" });
-        }
+        if (initPromise) return initPromise;
+
+        initPromise = (async () => {
+            try {
+                const { access_token } = await authService.refresh();
+                tokenManager.set(access_token);
+                const user = await authService.getMe();
+                set({ user, status: "authenticated" });
+            } catch {
+                // کوکی نبود یا منقضی بود → کاربر مهمانه، اتفاق خاصی نیفتاده
+                tokenManager.clear();
+                set({ user: null, status: "guest" });
+            }
+        })().finally(() => {
+            initPromise = null;
+        });
+
+        return initPromise;
     },
 
     async logout() {

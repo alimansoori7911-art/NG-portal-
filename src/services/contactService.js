@@ -3,19 +3,22 @@ import api from './api'
 const unwrap = (res) => res.data?.data
 
 /**
- * توجه: تنها اندپوینت موجود در OpenAPI فعلی POST /landing/contact است.
- * ساختار دقیق ورودی و اندپوینت لیست درخواست‌ها هنوز از بک‌اند تأیید نشده —
- * جزئیات در backend-notes-contact.txt آمده است.
+ * سرویس بخش عمومی سایت (landing).
+ * فقط دو اندپوینت در OpenAPI فعلی موجود است.
  */
 export const contactService = {
-    // ورودی: { request_type, asset_count, description }
-    // اطلاعات کاربر (نام، ایمیل، شماره) از توکن نشست سمت سرور خوانده می‌شود
-    submitRequest(payload) {
-        return api.post('/landing/contact', payload).then(unwrap)
+    // POST /landing/contact — طبق ContactRequestInput، هر چهار فیلد اجباری
+    submitRequest({ name, email, phone_number, message }) {
+        return api
+            .post('/landing/contact', { name, email, phone_number, message })
+            .then(unwrap)
     },
 
-    // خروجی مورد انتظار: [{ id, date, request_type, status }]
-    getMyRequests() {
-        return api.get('/landing/contact/requests').then(unwrap)
+    // POST /landing/subscribe — عضویت در خبرنامه
+    subscribe(email) {
+        return api.post('/landing/subscribe', { email }).then(unwrap)
     },
+
+    // TODO: اندپوینت لیست درخواست‌ها هنوز در بک‌اند وجود ندارد.
+    // getMyRequests() { ... }
 }

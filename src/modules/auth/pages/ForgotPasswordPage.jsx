@@ -7,11 +7,8 @@ import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService } from "../../../services/authService";
+import { OTP, HTTP, MSG } from "../../../constants/auth";
 import styles from "./ForgotPasswordPage.module.css";
-
-const OTP_LENGTH = 5;
-const RESEND_SECONDS = 120;
-const RESET_TTL_MS = 5 * 60 * 1000; // عمر reset_token در بک‌اند ۳۰۰ ثانیه است
 
 const isValidPhone = (v) => /^(\+98|0)?9\d{9}$/.test(v.trim());
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
@@ -30,6 +27,7 @@ export default function ForgotPasswordPage() {
     const [step, setStep] = useState(1); // 1: شناسه، 2: کد، 3: رمز جدید، 4: موفقیت
     const [loading, setLoading] = useState(false);
     const [apiError, setApiError] = useState("");
+    const [alertVariant, setAlertVariant] = useState("error");
 
     const [identifier, setIdentifier] = useState("");
     const [identifierError, setIdentifierError] = useState("");
@@ -37,7 +35,7 @@ export default function ForgotPasswordPage() {
     const [otp, setOtp] = useState("");
     const [otpError, setOtpError] = useState("");
     const [otpKey, setOtpKey] = useState(0);
-    const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+    const [secondsLeft, setSecondsLeft] = useState(OTP.COOLDOWN_SECONDS);
 
     const [reset, setReset] = useState({ token: null, issuedAt: 0 });
     const [password, setPassword] = useState("");
@@ -50,6 +48,16 @@ export default function ForgotPasswordPage() {
         return () => clearInterval(id);
     }, [step, secondsLeft]);
 
+    const showError = (message) => {
+        setAlertVariant("error");
+        setApiError(message);
+    };
+
+    const showNotice = (message) => {
+        setAlertVariant("success");
+        setApiError(message);
+    };
+
     const requestCode = async () => {
         const data = await authService.requestOtp({
             action: "reset_password",
@@ -59,6 +67,8 @@ export default function ForgotPasswordPage() {
     };
 
     // ── مرحله ۱: شناسه ──
+    // بک‌اند برای جلوگیری از افشای وجود کاربر، همیشه پاسخ موفق می‌دهد
+    // حتی اگر حسابی با این مشخصات وجود نداشته باشد.
     const handleSend = async (e) => {
         e.preventDefault();
         setApiError("");
@@ -70,15 +80,15 @@ export default function ForgotPasswordPage() {
         setLoading(true);
         try {
             await requestCode();
-            setSecondsLeft(RESEND_SECONDS);
+            setSecondsLeft(OTP.COOLDOWN_SECONDS);
             setStep(2);
         } catch (err) {
-            if (err.status === 404) {
-                setIdentifierError("حسابی با این مشخصات پیدا نشد");
-            } else if (err.status === 429) {
-                setApiError("تعداد درخواست‌ها بیش از حد مجاز است. کمی بعد دوباره امتحان کنید.");
+            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+                showError(MSG.RATE_LIMIT);
+            } else if (err.status === HTTP.SERVICE_UNAVAILABLE) {
+                showError(MSG.SMS_DOWN);
             } else {
-                setApiError(err.message);
+                showError(err.message || MSG.GENERIC);
             }
         } finally {
             setLoading(false);
@@ -93,11 +103,24 @@ export default function ForgotPasswordPage() {
         setLoading(true);
         try {
             await requestCode();
-            setSecondsLeft(RESEND_SECONDS);
+            setSecondsLeft(OTP.COOLDOWN_SECONDS);
         } catch (err) {
-            setApiError(err.message);
+            showError(err.message || MSG.GENERIC);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const backToOtp = async (message) => {
+        showNotice(message);
+        setOtpKey((k) => k + 1);
+        setOtp("");
+        setStep(2);
+        try {
+            await requestCode();
+            setSecondsLeft(OTP.COOLDOWN_SECONDS);
+        } catch {
+            setSecondsLeft(0);
         }
     };
 
@@ -108,18 +131,26 @@ export default function ForgotPasswordPage() {
         setOtpError("");
         setLoading(true);
         try {
-            const data = await authService.verifyOtp({
-                action: "reset_password",
+            const data = await authService.verifyResetOtp({
                 otp,
                 ...buildIdentifier(identifier),
             });
-            setReset({ token: data.reset_token, issuedAt: Date.now() });
+            // نام فیلد توکن هنوز قطعی نیست (reset_token یا claim_token)
+            setReset({
+                token: data?.reset_token ?? data?.claim_token ?? null,
+                issuedAt: Date.now(),
+            });
             setStep(3);
         } catch (err) {
-            if (err.status === 400 || err.status === 401) {
-                setOtpError("کد وارد شده صحیح نمی باشد");
+            if (err.status === HTTP.CONFLICT) {
+                backToOtp(MSG.OTP_EXPIRED);
+            } else if (
+                err.status === HTTP.BAD_REQUEST ||
+                err.status === HTTP.UNAUTHORIZED
+            ) {
+                setOtpError(MSG.OTP_WRONG);
             } else {
-                setApiError(err.message);
+                showError(err.message || MSG.GENERIC);
             }
         } finally {
             setLoading(false);
@@ -127,19 +158,6 @@ export default function ForgotPasswordPage() {
     };
 
     // ── مرحله ۳: رمز جدید ──
-    const backToOtp = async (message) => {
-        setApiError(message);
-        setOtpKey((k) => k + 1);
-        setOtp("");
-        setStep(2);
-        try {
-            await requestCode();
-            setSecondsLeft(RESEND_SECONDS);
-        } catch {
-            setSecondsLeft(0);
-        }
-    };
-
     const handleReset = async (e) => {
         e.preventDefault();
         setApiError("");
@@ -150,23 +168,27 @@ export default function ForgotPasswordPage() {
         setPasswordErrors(errors);
         if (Object.keys(errors).length > 0) return;
 
-        if (Date.now() - reset.issuedAt > RESET_TTL_MS) {
-            backToOtp("مهلت ۵ دقیقه‌ای تمام شد؛ کد جدید برایتان ارسال شد.");
+        if (Date.now() - reset.issuedAt > OTP.EXPIRY_MS) {
+            backToOtp(MSG.OTP_EXPIRED);
             return;
         }
 
         setLoading(true);
         try {
             await authService.resetPassword({
-                reset_token: reset.token,
+                token: reset.token,
                 new_password: password,
             });
             setStep(4);
         } catch (err) {
-            if (err.status === 401 || err.status === 403) {
-                backToOtp("مهلت تأیید تمام شد؛ کد جدید برایتان ارسال شد.");
+            if (
+                err.status === HTTP.UNAUTHORIZED ||
+                err.status === HTTP.FORBIDDEN ||
+                err.status === HTTP.CONFLICT
+            ) {
+                backToOtp(MSG.OTP_EXPIRED);
             } else {
-                setApiError(err.message);
+                showError(err.message || MSG.GENERIC);
             }
         } finally {
             setLoading(false);
@@ -175,7 +197,9 @@ export default function ForgotPasswordPage() {
 
     return (
         <>
-            <Alert onClose={() => setApiError("")}>{apiError}</Alert>
+            <Alert variant={alertVariant} onClose={() => setApiError("")}>
+                {apiError}
+            </Alert>
 
             {step === 1 && (
                 <CardLayout wide showLogo onBack={() => navigate("/login")}>
@@ -208,14 +232,14 @@ export default function ForgotPasswordPage() {
                     <form className={styles.form} onSubmit={handleVerify} noValidate>
                         <OtpInput
                             key={otpKey}
-                            length={OTP_LENGTH}
+                            length={OTP.LENGTH}
                             onChange={setOtp}
                             error={otpError}
                         />
                         <Button
                             type="submit"
                             loading={loading}
-                            disabled={otp.length !== OTP_LENGTH}
+                            disabled={otp.length !== OTP.LENGTH}
                         >
                             بعدی
                         </Button>

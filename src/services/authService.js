@@ -3,20 +3,42 @@ import api from "./api";
 const unwrap = (res) => res.data?.data;
 
 /**
- * تبدیل آرایه‌ی details بک‌اند به یک شیء { fieldName: message }
- * نمونه‌ی ورودی:
- *   [{ loc: "('phone_number',)", msg: "...", type: "..." }]
- * خروجی:
- *   { phone_number: "..." }
+ * تبدیل details خطای ۴۲۲ به شیء { fieldName: message }
+ *
+ * بک‌اند loc را به‌صورت رشته می‌فرستد ("('phone_number',)" یا
+ * "('body', 'email')") ولی حالت آرایه‌ای FastAPI (["body","email"]) هم
+ * پشتیبانی می‌شود. بخش‌های پوششی مثل body/query نادیده گرفته می‌شوند
+ * تا نام فیلد واقعی استخراج شود.
  */
-export function parseValidationErrors(details = []) {
+const WRAPPER_KEYS = ["body", "query", "path", "header", "cookie"];
+
+export function parseValidationErrors(details) {
     const errors = {};
-    details.forEach((d) => {
-        // loc به شکل "('field_name',)" یا "('body', 'field_name')" است
-        const match = d.loc?.match(/'([^']+)'\s*\)?\s*$/);
-        const field = match?.[1];
-        if (field) errors[field] = d.msg;
+    if (!details) return errors;
+
+    const list = Array.isArray(details) ? details : [details];
+
+    list.forEach((item) => {
+        if (!item) return;
+
+        const loc = item.loc ?? item.location ?? item.field;
+        let field = null;
+
+        if (Array.isArray(loc)) {
+            const parts = loc.filter((p) => typeof p === "string");
+            field = parts[parts.length - 1] ?? null;
+        } else if (typeof loc === "string") {
+            // تمام رشته‌های داخل کوتیشن را می‌گیرد و آخری را برمی‌دارد
+            const found = [...loc.matchAll(/'([^']+)'/g)].map((m) => m[1]);
+            field = found.length ? found[found.length - 1] : loc.trim() || null;
+        }
+
+        if (!field || WRAPPER_KEYS.includes(field)) return;
+
+        const message = item.msg ?? item.message ?? "";
+        if (message) errors[field] = message;
     });
+
     return errors;
 }
 
@@ -37,11 +59,9 @@ export const authService = {
         return api.post("/auth/refresh").then(unwrap);
     },
 
-    // claim_token در body ارسال می‌شود (نه هدر)
-    register(payload, claimToken) {
-        return api
-            .post("/auth/register", { ...payload, claim_token: claimToken })
-            .then(unwrap);
+    // claim_token فقط در جریان بازیابی رمز کاربرد دارد، نه ثبت‌نام
+    register(payload) {
+        return api.post("/auth/register", payload).then(unwrap);
     },
 
     requestOtp({ action, phone_number, email, username }) {
@@ -50,25 +70,54 @@ export const authService = {
             .then(unwrap);
     },
 
-    getOtpStatus(taskId) {
-        return api.get(`/auth/otp/status/${taskId}`).then(unwrap);
-    },
-
     verifyOtp({ action, otp, phone_number, email, username }) {
         return api
             .post("/auth/otp/verify", { action, otp, phone_number, email, username })
             .then(unwrap);
     },
 
-    changeCredentials({ email, password, username }) {
+    // اندپوینت اختصاصی بازیابی رمز — بک‌اند استفاده از این را توصیه کرده
+    verifyResetOtp({ otp, phone_number, email, username }) {
         return api
-            .post("/auth/password/change", { email, password, username })
+            .post("/auth/otp/reset-password/verify", {
+                action: "reset_password",
+                otp,
+                phone_number,
+                email,
+                username,
+            })
             .then(unwrap);
     },
 
-    resetPassword({ reset_token, new_password }) {
+    // POST /auth/contact/verify — تأیید هویت (کد ملی، نام، نام خانوادگی)
+    // نیازمند لاگین است. TODO: جایگاه دقیق آن در جریان ثبت‌نام هنوز تأیید نشده
+    verifyIdentity({ first_name, last_name, national_id, birth_date, company_id }) {
         return api
-            .post("/auth/password/reset", { reset_token, new_password })
+            .post("/auth/contact/verify", {
+                first_name,
+                last_name,
+                national_id,
+                birth_date,
+                company_id,
+            })
+            .then(unwrap);
+    },
+
+    // TODO: نام فیلد توکن هنوز قطعی نیست (reset_token یا claim_token)
+// بک‌اند claim_token را در بادی می‌خواهد (اسپک OpenAPI که reset_token
+    // نوشته قدیمی است). اگر ۴۲۲ گرفتی، فقط نام همین کلید را عوض کن.
+    resetPassword({ token, new_password }) {
+        return api
+            .post("/auth/password/reset", {
+                claim_token: token,
+                new_password,
+            })
+            .then(unwrap);
+    },
+
+    changeCredentials({ email, password, username }) {
+        return api
+            .post("/auth/password/change", { email, password, username })
             .then(unwrap);
     },
 

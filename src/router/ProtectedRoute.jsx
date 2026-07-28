@@ -1,5 +1,6 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import styles from "./ProtectedRoute.module.css";
 
 /**
  * استفاده در App.jsx:
@@ -7,18 +8,24 @@ import { useAuthStore } from "../store/authStore";
  *     <Route path="/dashboard" element={<Dashboard />} />
  *   </Route>
  *
- * موقع checking (لود اولیه): صفحه‌ی سفید نشان نمی‌دهد
- * موقع guest: ریدایرکت به /login با ذخیره‌ی مسیر فعلی
+ * موقع checking: اسپینر نمایش داده می‌شود (نه صفحه‌ی سفید)
+ * موقع guest: ریدایرکت به /login همراه با مسیر فعلی در state
  */
 export default function ProtectedRoute() {
     const status = useAuthStore((s) => s.status);
+    const location = useLocation();
 
     if (status === "checking") {
-        return null;
+        return (
+            <div className={styles.loader} role="status" aria-label="در حال بارگذاری">
+                <span className={styles.spinner} />
+            </div>
+        );
     }
 
     if (status === "guest") {
-        return <Navigate to="/login" replace />;
+        // مسیر فعلی ذخیره می‌شود تا پس از ورود، کاربر به همان‌جا برگردد
+        return <Navigate to="/login" replace state={{ from: location }} />;
     }
 
     return <Outlet />;
