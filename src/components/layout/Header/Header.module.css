@@ -1,31 +1,116 @@
+/* تمام اعداد از خروجی SVG فیگما (فریم ۱۴۴۰×۹۶) استخراج شده‌اند */
+
 .header {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 100;
-    padding: var(--spacing-md) var(--spacing-3xl);
+    height: 96px;
+    padding: 0 clamp(var(--spacing-md), 6.67vw, 96px);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: rgba(0, 8, 20, 0.7);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(71, 146, 255, 0.15);
+    gap: var(--spacing-md);
+    background: rgba(0, 8, 20, 0.8);
+    backdrop-filter: blur(13.25px);
+    border-bottom: 1px solid #262626;
 }
+
+/* ═══════════ میان‌برها (سمت راست) ═══════════ */
+
+.quickNav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.quickBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 67px;
+    height: 56px;
+    padding: 0;
+    border: none;
+    border-radius: 10px;
+    background: #0A1422;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.quickBtn:hover {
+    background: #142236;
+}
+
+.quickIcon {
+    stroke-width: 2.2;
+}
+
+.quickLabel {
+    font-size: 0.75rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ═══════════ منوی اصلی (وسط) ═══════════ */
+/* flex: 1 به‌همراه justify-center، لبه‌ی منو را دقیقاً روی ۴۷۱px (حالت
+   مهمان) و ۴۳۷px (حالت لاگین) قرار می‌دهد — همان مقادیر فایل فیگما. */
+
+.nav {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.navItemWrapper {
+    position: relative;
+}
+
+.navItem {
+    width: 114px;
+    height: 56px;
+    padding: 0 var(--spacing-sm);
+    border: none;
+    border-radius: 5px;
+    color: var(--color-white);
+    font-size: var(--font-size-md);
+    font-family: var(--font-family);
+    background: rgba(13, 23, 38, 0.8);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.navItem:hover {
+    background: rgba(23, 39, 63, 0.9);
+}
+
+/* ═══════════ سمت چپ ═══════════ */
 
 .right {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
 }
 
+/* حالت مهمان */
 .accountBtn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    width: 148px;
+    height: 56px;
+    padding: 0 var(--spacing-md);
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 5px;
     color: #001D47;
     font-size: var(--font-size-md);
     font-family: var(--font-family);
@@ -39,47 +124,44 @@
     background: #ADCFFF;
 }
 
-.nav {
+/* حالت لاگین — عرض ثابت؛ نام بلند با ... کوتاه می‌شود */
+.userBox {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 8px;
+    width: 156px;
+    height: 56px;
+    padding: 0 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    background: #060B13;
 }
 
-.navItemWrapper {
-    position: relative;
+.userMenuIcon {
+    color: #E0EDFF;
+    flex-shrink: 0;
 }
 
-.navItem {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border: none;
-    border-radius: var(--radius-md);
-    color: var(--color-white);
-    font-size: var(--font-size-md);
-    font-family: var(--font-family);
-    background: rgba(71, 146, 255, 0.12);
-    cursor: pointer;
-    transition: background var(--transition-fast);
+.userAvatar {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-full);
+    background: rgba(71, 146, 255, 0.22);
+    color: var(--color-primary-pale);
+    flex-shrink: 0;
 }
 
-.navItem:hover {
-    background: rgba(71, 146, 255, 0.15);
-}
-
-.homeBtn {
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    border-radius: var(--radius-md);
-    color: var(--color-white);
-    background: rgba(71, 146, 255, 0.12);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background var(--transition-fast);
-}
-
-.homeBtn:hover {
-    background: rgba(71, 146, 255, 0.15);
+.userName {
+    flex: 1;
+    min-width: 0;
+    color: #E0EDFF;
+    font-size: var(--font-size-sm);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .menuBtn {
@@ -102,10 +184,10 @@
 }
 
 /* ═══════════ دراپ‌داون دسکتاپ (مگامنو) ═══════════ */
-/* باکس بیرونی بلافاصله زیر دکمه شروع می‌شود (بدون فاصله)، تا هاور موقع
-   عبور ماوس از دکمه به سمت پنل قطع نشود. فاصله‌ی بصری با padding-top است.
-   inset-inline-start به‌جای left: در RTL خودکار به right تبدیل می‌شود، پس
-   پنلِ آیتم‌های سمت راست (مثل محصولات) از لبه‌ی صفحه بیرون نمی‌زند. */
+/* باکس بیرونی بلافاصله زیر دکمه شروع می‌شود تا هاور موقع عبور ماوس
+   قطع نشود؛ فاصله‌ی بصری با padding-top ساخته می‌شود.
+   inset-inline-start در RTL خودکار به right تبدیل می‌شود. */
+
 .dropdown {
     position: absolute;
     top: 100%;
@@ -124,10 +206,6 @@
     pointer-events: auto;
 }
 
-/*
-  پنل: بدون حاشیه/باکس‌بندی بین آیتم‌ها — فقط تایپوگرافی با فاصله‌ی زیاد،
-  دقیقاً مطابق طرح فیگما. دو ستون تقریباً هم‌عرض با gap بزرگ بینشان.
-*/
 .dropdownPanel {
     display: flex;
     width: 380px;
@@ -146,7 +224,6 @@
     transform: translateY(0);
 }
 
-/* ستون راست (آیتم برجسته) — هم‌تراز با بالای ستون چپ */
 .dropdownRight {
     flex: 1;
     display: flex;
@@ -154,7 +231,6 @@
     justify-content: flex-start;
 }
 
-/* ستون چپ — آیتم‌ها زیر هم با فاصله‌ی زیاد، بدون خط جداکننده */
 .dropdownLeft {
     flex: 1;
     display: flex;
@@ -162,7 +238,6 @@
     gap: var(--spacing-xl);
 }
 
-/* هر آیتم: بدون پس‌زمینه یا حاشیه‌ی ثابت — فقط هاور نشانگر تعاملی بودن است */
 .dropdownItem {
     display: flex;
     flex-direction: column;
@@ -211,7 +286,7 @@
     left: 0;
     right: 0;
     background: rgba(0, 8, 20, 0.95);
-    padding: var(--spacing-md) var(--spacing-3xl);
+    padding: var(--spacing-md) var(--spacing-xl);
     border-bottom: 1px solid rgba(71, 146, 255, 0.15);
     max-height: 80vh;
     overflow-y: auto;
@@ -269,7 +344,41 @@
     opacity: 1;
 }
 
+/* ═══════════ ریسپانسیو ═══════════ */
+
+@media (max-width: 1250px) {
+    .header {
+        padding: 0 var(--spacing-xl);
+    }
+
+    .nav {
+        gap: 10px;
+    }
+
+    .navItem {
+        width: 100px;
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 980px) {
+    .quickLabel {
+        display: none;
+    }
+
+    .quickBtn {
+        width: 48px;
+        height: 48px;
+    }
+}
+
 @media (max-width: 768px) {
+    .header {
+        height: 72px;
+        padding: 0 var(--spacing-md);
+        justify-content: space-between;
+    }
+
     .nav {
         display: none;
     }
@@ -278,7 +387,15 @@
         display: flex;
     }
 
-    .header {
-        padding: var(--spacing-md) var(--spacing-xl);
+    .userBox,
+    .accountBtn {
+        width: auto;
+        height: 44px;
+        padding: 0 var(--spacing-md);
+    }
+
+    .userName,
+    .userMenuIcon {
+        display: none;
     }
 }

@@ -1,0 +1,26 @@
+.loader {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+}
+
+.spinner {
+    width: 34px;
+    height: 34px;
+    border: 3px solid rgba(71, 146, 255, 0.25);
+    border-top-color: var(--color-primary-soft);
+    border-radius: var(--radius-full);
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        animation-duration: 2s;
+    }
+}

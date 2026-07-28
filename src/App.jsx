@@ -14,12 +14,12 @@ import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
 import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
 import TicketsPage from "./modules/helpdesk/pages/TicketsPage";
-
+import DevSidebarTest from "./DevSidebarTest"; // ⚠️ موقت — حذف شود
 function App() {
     const initialize = useAuthStore((s) => s.initialize);
 
     useEffect(() => {
-        initialize();
+      //  initialize();
     }, [initialize]);
 
     return (
@@ -45,6 +45,8 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                {/* ⚠️ موقت — حذف شود */}
+                <Route path="/dev-sidebar" element={<DevSidebarTest />} />
 
                 <Route element={<ProtectedRoute />}>
                     {/* مثال: <Route path="/dashboard" element={<Dashboard />} /> */}

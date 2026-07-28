@@ -16,7 +16,6 @@
 import { create } from "zustand";
 import { authService } from "../services/authService";
 import { tokenManager } from "../services/tokenManager";
-import api, { broadcastLogout } from "../services/api";
 // جلوگیری از اجرای موازی initialize.
 // StrictMode در dev افکت‌ها را دوبار اجرا می‌کند؛ بدون این، دو درخواست
 // همزمان /auth/refresh می‌رود که اگر بک‌اند refresh token را rotate کند،

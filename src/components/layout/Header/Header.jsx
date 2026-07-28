@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { Home, User } from 'lucide-react'
+import { Home, ShoppingCart, LayoutGrid, User, Menu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useAuthStore, getDisplayName } from '../../../store/authStore'
 import styles from './Header.module.css'
+
+/* دکمه‌های میان‌بر سمت راست — authOnly یعنی فقط برای کاربر لاگین‌شده */
+const QUICK_LINKS = [
+    { label: 'صفحه اصلی', icon: Home, path: '/' },
+    { label: 'خرید', icon: ShoppingCart, path: '/products/buy' },
+    { label: 'داشبورد', icon: LayoutGrid, path: '/dashboard', authOnly: true },
+]
 
 const NAV_ITEMS = [
     {
@@ -52,6 +60,10 @@ function Header() {
     const [openMobileDropdown, setOpenMobileDropdown] = useState(null)
     const navigate = useNavigate()
 
+    const user = useAuthStore((s) => s.user)
+    const status = useAuthStore((s) => s.status)
+    const isLoggedIn = status === 'authenticated'
+
     const goTo = (path) => {
         setMobileOpen(false)
         setOpenMobileDropdown(null)
@@ -62,15 +74,27 @@ function Header() {
         setOpenMobileDropdown(prev => (prev === label ? null : label))
     }
 
+    const quickLinks = QUICK_LINKS.filter(link => !link.authOnly || isLoggedIn)
+
     return (
         <header className={styles.header}>
 
-            {/* سمت چپ — منو + خانه */}
-            <nav className={styles.nav}>
-                <button className={styles.homeBtn} aria-label="خانه" onClick={() => goTo('/')}>
-                    <Home size={18} />
-                </button>
+            {/* سمت راست — میان‌برها */}
+            <div className={styles.quickNav}>
+                {quickLinks.map(({ label, icon: Icon, path }) => (
+                    <button
+                        key={path}
+                        className={styles.quickBtn}
+                        onClick={() => goTo(path)}
+                    >
+                        <Icon size={16} className={styles.quickIcon} />
+                        <span className={styles.quickLabel}>{label}</span>
+                    </button>
+                ))}
+            </div>
 
+            {/* وسط — منوی اصلی */}
+            <nav className={styles.nav}>
                 {NAV_ITEMS.map(item => (
                     <div key={item.path} className={styles.navItemWrapper}>
                         <button
@@ -115,12 +139,25 @@ function Header() {
                 ))}
             </nav>
 
-            {/* سمت راست — حساب کاربری + همبرگر موبایل */}
+            {/* سمت چپ — حساب کاربری + همبرگر موبایل */}
             <div className={styles.right}>
-                <button className={styles.accountBtn} onClick={() => navigate('/login')}>
-                    <User size={16} />
-                    <span>حساب کاربری</span>
-                </button>
+                {isLoggedIn ? (
+                    /* باکس کاربر — طبق فیگما فعلاً تعاملی نیست.
+                       در RTL اولین فرزند سمت راست می‌نشیند: همبرگر ← آواتار ← نام */
+                    <div className={styles.userBox}>
+                        <Menu size={16} className={styles.userMenuIcon} aria-hidden="true" />
+                        <span className={styles.userAvatar}>
+                            <User size={14} />
+                        </span>
+                        <span className={styles.userName}>{getDisplayName(user)}</span>
+                    </div>
+                ) : (
+                    <button className={styles.accountBtn} onClick={() => navigate('/login')}>
+                        <User size={16} />
+                        <span>حساب کاربری</span>
+                    </button>
+                )}
+
                 <button
                     className={styles.menuBtn}
                     onClick={() => setMobileOpen(prev => !prev)}
