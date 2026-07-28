@@ -1,0 +1,175 @@
+/* تمام اعداد از مختصات SVG فیگما استخراج شده‌اند */
+
+.wrapper {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 1022px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* کارت: x 47→1069، y 63→881 → ۱۰۲۲×۸۱۸
+   ارتفاع سیال است: تا سقف ۸۱۸ رشد می‌کند و در ویوپورت کوتاه‌تر جمع می‌شود،
+   تا صفحه‌بندی همیشه دیده شود و کل صفحه اسکرول نخورد. */
+.card {
+    flex: 1 1 auto;
+    min-height: 240px;
+    max-height: 818px;
+    width: 100%;
+    border: 2px solid #0D1726;
+    border-radius: 31px;
+    overflow: hidden;
+    background: transparent;
+}
+
+
+
+.scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 4px;
+}
+
+.scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* ═══════════ هدر ═══════════ */
+/* y 63→161 → ارتفاع ۹۸ */
+
+.headRow {
+    height: 98px;
+}
+
+.headCell {
+    height: 98px;
+    padding: 0 8px;
+    background: #0D1726;
+    color: var(--color-primary-ghost);
+    font-size: 24px;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* ═══════════ ردیف‌ها ═══════════ */
+/* ارتفاع ۸۰، جداکننده ۲px در y=240، 320، 400 */
+
+.row {
+    height: 80px;
+}
+
+.cell {
+    height: 80px;
+    padding: 0 8px;
+    border-bottom: 2px solid #0D1726;
+    color: var(--color-primary-ghost);
+    font-size: 18px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cellText {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* ═══════════ صفحه‌بندی ═══════════ */
+/* rect x=71.5 y=895.5 w=25 h=25 rx=5.5، gap ۷
+   کارت در y=881 تمام می‌شود → ۱۴px فاصله
+   x=71.5 و لبه‌ی چپ کارت x=47 → ۲۴px تورفتگی
+   ترتیب اعداد در فیگما LTR است (۱ سمت چپ) */
+
+.pagination {
+    flex-shrink: 0;
+    display: flex;
+    direction: ltr;
+    gap: 7px;
+    margin-top: 14px;
+    padding-left: 24px;
+}
+
+.pageBtn {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid #192D4C;
+    border-radius: 5.5px;
+    background: transparent;
+    color: var(--color-link);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.pageBtn:hover {
+    border-color: var(--color-action);
+}
+
+.pageBtnActive {
+    background: #132239;
+    border-color: #4073BF;
+    color: var(--color-primary-ghost);
+}
+
+/* ═══════════ ریسپانسیو ═══════════ */
+
+@media (max-width: 1023px) {
+    .wrapper {
+        flex: 0 0 auto;
+    }
+
+    .card {
+        max-height: none;
+        min-height: 420px;
+    }
+
+    .table {
+        min-width: 640px;
+    }
+
+    .headRow,
+    .headCell {
+        height: 72px;
+    }
+
+    .headCell {
+        font-size: var(--font-size-lg);
+    }
+
+    .row,
+    .cell {
+        height: 64px;
+    }
+
+    .cell {
+        font-size: var(--font-size-md);
+    }
+
+    .pagination {
+        padding-left: 4px;
+    }
+}

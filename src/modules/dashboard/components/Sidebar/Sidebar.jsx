@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Circle, House, LogOut, ShoppingCart, User } from 'lucide-react'
 import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
 import { useAuthStore, getDisplayName } from '../../../../store/authStore'
@@ -7,15 +7,17 @@ import styles from './Sidebar.module.css'
 
 /**
  * سایدبار مشترک داشبورد.
- * items: [{ id, label }] — هر داشبورد آرایه‌ی خودش را می‌دهد.
- * TODO: با مشخص شدن مسیرها، به‌جای activeId از NavLink استفاده می‌شود.
+ * items: [{ id, label, path }] — هر داشبورد آرایه‌ی خودش را می‌دهد.
+ * وضعیت فعال از روی URL خوانده می‌شود (NavLink) نه state داخلی،
+ * تا رفرش صفحه و دکمه‌ی back مرورگر درست کار کنند.
+ *
+ * open / onClose فقط زیر ۱۰۲۴px کاربرد دارند (حالت کشویی).
  */
-export default function Sidebar({ items = [], defaultActive }) {
+export default function Sidebar({ items = [], open = false, onClose }) {
     const navigate = useNavigate()
     const user = useAuthStore((s) => s.user)
     const logout = useAuthStore((s) => s.logout)
 
-    const [activeId, setActiveId] = useState(defaultActive ?? items[0]?.id)
     const [logoutOpen, setLogoutOpen] = useState(false)
     const [loggingOut, setLoggingOut] = useState(false)
 
@@ -30,9 +32,21 @@ export default function Sidebar({ items = [], defaultActive }) {
         }
     }
 
+    const go = (path) => {
+        onClose?.()
+        navigate(path)
+    }
+
     return (
         <>
-            <aside className={styles.sidebar}>
+            {/* پس‌زمینه‌ی تیره — فقط در حالت کشویی */}
+            <div
+                className={`${styles.backdrop} ${open ? styles.backdropOpen : ''}`}
+                onClick={onClose}
+                aria-hidden="true"
+            />
+
+            <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ''}`}>
 
                 {/* ── کارت پروفایل ── */}
                 <div className={styles.profile}>
@@ -46,17 +60,18 @@ export default function Sidebar({ items = [], defaultActive }) {
 
                 {/* ── منوی اصلی ── */}
                 <nav className={styles.menu}>
-                    {items.map(({ id, label }) => (
-                        <button
+                    {items.map(({ id, label, path }) => (
+                        <NavLink
                             key={id}
-                            type="button"
-                            className={`${styles.item} ${activeId === id ? styles.itemActive : ''}`}
-                            onClick={() => setActiveId(id)}
-                            aria-current={activeId === id ? 'page' : undefined}
+                            to={path}
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                                `${styles.item} ${isActive ? styles.itemActive : ''}`
+                            }
                         >
                             <Circle size={16} strokeWidth={1.5} className={styles.itemIcon} />
                             <span className={styles.itemLabel}>{label}</span>
-                        </button>
+                        </NavLink>
                     ))}
                 </nav>
 
@@ -65,7 +80,7 @@ export default function Sidebar({ items = [], defaultActive }) {
                     <button
                         type="button"
                         className={styles.actionBtn}
-                        onClick={() => navigate('/products/buy')}
+                        onClick={() => go('/products/buy')}
                     >
                         <ShoppingCart size={24} className={styles.actionIcon} />
                         <span className={styles.actionLabel}>خرید</span>
@@ -83,7 +98,7 @@ export default function Sidebar({ items = [], defaultActive }) {
                     <button
                         type="button"
                         className={styles.actionBtn}
-                        onClick={() => navigate('/')}
+                        onClick={() => go('/')}
                     >
                         <House size={24} className={styles.actionIcon} />
                         <span className={styles.actionLabel}>صفحه اصلی</span>

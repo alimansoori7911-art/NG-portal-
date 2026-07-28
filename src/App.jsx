@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import ProtectedRoute from "./router/ProtectedRoute";
 import HomePage from "./modules/home/pages/HomePage";
@@ -13,15 +13,28 @@ import ProductsPage from "./modules/products/pages/ProductsPage";
 import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
 import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
-import TicketsPage from "./modules/helpdesk/pages/TicketsPage";
-import DevSidebarTest from "./DevSidebarTest"; // ⚠️ موقت — حذف شود
+import HelpdeskTicketsPage from "./modules/helpdesk/pages/TicketsPage";
+
+/* داشبورد */
+import DashboardLayout from "./modules/dashboard/components/DashboardLayout/DashboardLayout";
+import ServicesPage from "./modules/dashboard/organization/pages/ServicesPage";
+import DashboardTicketsPage from "./modules/dashboard/organization/pages/TicketsPage";
+
 function App() {
     const initialize = useAuthStore((s) => s.initialize);
 
     useEffect(() => {
-      //  initialize();
-    }, [initialize]);
+        // initialize();
 
+        // ⚠️ موقت — تا اتصال به بک‌اند. بعداً حذف و initialize() فعال شود.
+        useAuthStore.setState({
+            status: 'authenticated',
+            user: {
+                roles: ['org_admin'],
+                identifiers: [{ type: 'username', value: 'سینا بی مثل' }],
+            },
+        });
+    }, [initialize]);
     return (
         <BrowserRouter>
             <Routes>
@@ -37,7 +50,8 @@ function App() {
                 {/* تیکتینگ Help Desk */}
                 <Route path="/helpdesk" element={<HelpdeskPage />} />
                 <Route path="/helpdesk/new" element={<NewTicketPage />} />
-                <Route path="/helpdesk/tickets" element={<TicketsPage />} />
+                <Route path="/helpdesk/tickets" element={<HelpdeskTicketsPage />} />
+
                 {/* Placeholder — بعداً با فیگمای مخصوص خودشان کامل می‌شوند */}
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
@@ -45,11 +59,16 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                {/* ⚠️ موقت — حذف شود */}
-                <Route path="/dev-sidebar" element={<DevSidebarTest />} />
 
+                {/* ═══ داشبورد ═══ */}
                 <Route element={<ProtectedRoute />}>
-                    {/* مثال: <Route path="/dashboard" element={<Dashboard />} /> */}
+                    <Route path="/dashboard" element={<DashboardLayout />}>
+                        <Route index element={<Navigate to="services" replace />} />
+                        <Route path="services" element={<ServicesPage />} />
+                        <Route path="tickets" element={<DashboardTicketsPage />} />
+                        {/* TODO: support / notifications / billing / logs / sessions
+                            هنوز فیگما و اندپوینت ندارند — فعلاً روت ندارند */}
+                    </Route>
                 </Route>
 
             </Routes>

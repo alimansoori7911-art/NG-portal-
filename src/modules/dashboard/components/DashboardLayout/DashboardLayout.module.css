@@ -1,0 +1,84 @@
+/* حاشیه‌ها از SVG: بالا/پایین/راست ۱۱، چپ ۴۷، فاصله‌ی ستون‌ها ۴۶ */
+
+.shell {
+    display: flex;
+    gap: 46px;
+    width: 100%;
+    max-width: 1440px;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 auto;
+    padding: 11px 11px 11px 47px;
+    background: var(--color-bg-darkest);
+    overflow: hidden;
+}
+
+.main {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* کارت در SVG از y=63 شروع می‌شود و بالای shell در y=11 است */
+    padding-top: 52px;
+    overflow: hidden;
+}
+
+/* دکمه‌ی همبرگر — فقط زیر ۱۰۲۴ */
+.menuToggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #0D1726;
+    color: var(--color-primary-pale);
+    cursor: pointer;
+    flex-shrink: 0;
+    align-self: flex-start;
+    transition: background var(--transition-fast);
+}
+
+.menuToggle:hover {
+    background: #132239;
+}
+
+/* ═══════════ ریسپانسیو ═══════════ */
+
+/* ویوپورت کوتاه — فاصله‌ی بالای کارت کم می‌شود تا جا برای ردیف‌ها بماند */
+@media (max-height: 800px) {
+    .main {
+        padding-top: 24px;
+    }
+}
+
+/* ۱۰۲۴ تا ۱۴۴۰ — سایدبار ثابت، ستون محتوا سیال */
+@media (max-width: 1439px) {
+    .shell {
+        padding-left: 24px;
+        gap: 24px;
+    }
+}
+
+/* زیر ۱۰۲۴ — سایدبار کشویی می‌شود و از جریان خارج است */
+@media (max-width: 1023px) {
+    .shell {
+        gap: 0;
+        padding: 11px 16px;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main {
+        padding-top: 16px;
+        overflow: visible;
+    }
+
+    .menuToggle {
+        display: inline-flex;
+    }
+}
