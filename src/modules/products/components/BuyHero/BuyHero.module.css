@@ -1,0 +1,169 @@
+/* تمام اعداد ضرب‌در --u هستند؛ --u در ProductsBuyPage تعریف شده
+   و معادل «۱ پیکسل در فریم فیگمای ۱۴۴۰×۱۰۲۴» است. */
+
+.hero {
+    /* rect x=259 y=209 w=946 h=473 rx=20 */
+    position: relative;
+    width: calc(var(--u) * 946);
+    height: calc(var(--u) * 473);
+    flex-shrink: 0;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* عنوان از y=311 شروع می‌شود، کارت از y=209 → ۱۰۲ واحد */
+    padding: calc(var(--u) * 102) calc(var(--u) * 40) 0;
+
+    border-radius: calc(var(--u) * 20);
+    background: linear-gradient(
+            to top,
+            rgba(71, 146, 255, 0.05) 0%,
+            rgba(0, 8, 20, 0.12) 100%
+    );
+
+    /* بالا بدون حاشیه، پایین حاشیه‌ی تقریباً مات */
+    border-top: none;
+    border-bottom: 1px solid rgba(71, 146, 255, 0.75);
+}
+
+/* ─── حاشیه‌های کناری متحرک ─── */
+/* دو لایه‌ی روی هم، هرکدام یک ضلع، با نیم‌سیکل اختلاف:
+   وقتی راست پیداست چپ نیست و برعکس. */
+
+.hero::before,
+.hero::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: calc(var(--u) * 20);
+    pointer-events: none;
+    animation: sideBorder 5s ease-in-out infinite;
+}
+
+.hero::before {
+    border-right: 2px solid #4792FF;
+}
+
+.hero::after {
+    border-left: 2px solid #4792FF;
+    animation-delay: -2.5s;
+}
+
+@keyframes sideBorder {
+    0%   { opacity: 1; }
+    35%  { opacity: 1; }
+    50%  { opacity: 0; }
+    85%  { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero::before,
+    .hero::after {
+        animation: none;
+        opacity: 0.6;
+    }
+}
+
+/* ─── عنوان ─── */
+/* y 311→382، عرض ۷۹۷ → font-size حدود ۶۴ */
+
+.title {
+    margin: 0;
+    font-size: calc(var(--u) * 64);
+    font-weight: 700;
+    line-height: 1.1;
+    text-align: center;
+
+    background: linear-gradient(
+            90deg,
+            #1474FF 0%,
+            #7AB0FF 51.92%,
+            #1474FF 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+/* ─── زیرعنوان ─── */
+/* عنوان تا y=382، زیرعنوان از y=411 → ۲۹ واحد
+   عرض خط اول در SVG ۷۶۳ → سقف ۸۰۰ تا شکست خط مثل فیگما بیفتد */
+
+.subtitle {
+    margin: calc(var(--u) * 29) 0 0;
+    max-width: calc(var(--u) * 800);
+
+    font-size: calc(var(--u) * 24);
+    line-height: 1.6;
+    text-align: center;
+    color: var(--color-primary-ghost);
+}
+
+/* ─── دکمه‌ها ─── */
+/* زیرعنوان تا y=475، دکمه‌ها از y=530 → ۵۵ واحد
+   ارتفاع ۵۶، radius 6، فاصله ۲۴، عرض ۳۶۹ */
+
+.actions {
+    margin-top: calc(var(--u) * 55);
+    display: flex;
+    gap: calc(var(--u) * 24);
+    justify-content: center;
+}
+
+.actionBtn {
+    width: calc(var(--u) * 369);
+    height: calc(var(--u) * 56);
+    padding: 0;
+
+    border: none;
+    border-radius: calc(var(--u) * 6);
+    background: rgba(224, 237, 255, 0.2);
+
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: calc(var(--u) * 20);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.actionBtn:hover {
+    background: rgba(224, 237, 255, 0.3);
+}
+
+/* ─── موبایل ─── */
+
+@media (max-width: 768px) {
+    .hero {
+        width: 100%;
+        height: auto;
+        padding: 48px 24px;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+
+    .subtitle {
+        font-size: var(--font-size-md);
+        max-width: 100%;
+        margin-top: 20px;
+    }
+
+    .actions {
+        margin-top: 32px;
+        width: 100%;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .actionBtn {
+        width: 100%;
+        height: 52px;
+        font-size: var(--font-size-md);
+    }
+}

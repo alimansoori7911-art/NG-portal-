@@ -1,19 +1,99 @@
+/* ─────────────────────────────────────────────────────────────
+   واحد مقیاس: --u معادل «۱ پیکسل در فریم فیگما» است.
+
+   فریم فیگما ۱۴۴۰×۱۰۲۴ با هدر ۹۶ → ارتفاع مفید ۹۲۸.
+   کوچک‌ترین نسبت بین عرض و ارتفاع انتخاب می‌شود تا محتوا
+   هیچ‌وقت از صفحه بیرون نزند. سقف ۱px تا روی مانیتور بزرگ
+   بی‌رویه بزرگ نشود.
+
+   نتیجه: تمام اعداد فیگما را در --u ضرب می‌کنیم و نسبت‌ها
+   در هر ویوپورتی دقیقاً حفظ می‌شود.
+   ───────────────────────────────────────────────────────────── */
+
 .page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--color-bg-darkest);
+    --u: min(
+            calc(100vw / 1440),
+            calc((100vh - 96px) / 928),
+            1px
+    );
+
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--color-bg-darkest);
+    isolation: isolate;
 }
+
+/* ─── درخشش پس‌زمینه ─── */
+/* شکل درخشش در SVG: y 122→862 (ارتفاع ۷۴۰)، عرض تمام فریم
+   گرادیان شعاعی: مرکز (720, 196) → ۱۰٪ از بالای شکل
+   شعاع ۱۸۶۷×۷۹۳ → ۱۳۰٪ عرض و ۱۰۷٪ ارتفاع شکل */
+
+.glow {
+    position: absolute;
+    top: 11.9vh;
+    left: 0;
+    right: 0;
+    height: 72.3vh;
+    z-index: -2;
+    pointer-events: none;
+
+    background: radial-gradient(
+            ellipse 130% 107% at 50% 10%,
+            transparent 37.4%,
+            #1474FF 69.3%,
+            #ADCFFF 100%
+    );
+    filter: blur(60px);
+}
+
+/* محو شدن نور در پایین صفحه — مطابق تیرگی انتهای فیگما */
+.page::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 22vh;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(
+            to top,
+            var(--color-bg-darkest) 0%,
+            rgba(0, 8, 20, 0.8) 50%,
+            transparent 100%
+    );
+}
+
+/* ─── محتوا ─── */
+/* کارت در SVG از y=209 شروع می‌شود، هدر ۹۶ → ۱۱۳ واحد فاصله */
 
 .main {
-    flex: 1;
+    height: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    padding-top: 90px;
+    align-items: flex-start;
+    padding-top: calc(96px + var(--u) * 113);
+    box-sizing: border-box;
 }
 
-.placeholder {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: var(--font-size-xl);
+/* ─── موبایل ─── */
+/* زیر ۷۶۸ مقیاس معنا ندارد؛ چیدمان عمودی و اسکرول‌پذیر می‌شود */
+
+@media (max-width: 768px) {
+    .page {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main {
+        padding: 128px 16px 48px;
+    }
+
+    .glow {
+        top: 15vh;
+        height: 55vh;
+    }
 }

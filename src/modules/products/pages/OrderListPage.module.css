@@ -1,0 +1,99 @@
+/* ─────────────────────────────────────────────────────────────
+   واحد مقیاس --u معادل «۱ پیکسل در فریم فیگمای ۱۴۴۰×۱۰۲۴».
+   فریم با هدر ۹۶ → ارتفاع مفید ۹۲۸.
+   ───────────────────────────────────────────────────────────── */
+
+.page {
+    --u: min(
+            calc(100vw / 1440),
+            calc((100vh - 96px) / 928),
+            1px
+    );
+
+    position: relative;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--color-bg-darkest);
+}
+
+.main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* کارت در SVG از y=167 شروع می‌شود، هدر ۹۶ → ۷۱ واحد */
+    padding-top: calc(96px + var(--u) * 71);
+    box-sizing: border-box;
+}
+
+/* ─── ناحیه‌ی جدول ─── */
+/* کارت x=95 y=167 w=1250 h=650 — حاشیه‌ی چپ و راست متقارن ۹۵ */
+
+.tableArea {
+    width: calc(var(--u) * 1250);
+    height: calc(var(--u) * 650);
+    flex-shrink: 0;
+    display: flex;
+}
+
+/* بازنویسی متغیرهای DataTable با مقیاس این صفحه */
+.tableArea > * {
+    max-width: none;
+}
+
+/* ─── دکمه‌ی بازگشت ─── */
+/* x=508 y=856 w=424 h=48 rx=10 fill #4073BF
+   کارت تا y=817 → ۳۹ واحد فاصله */
+
+.backBtn {
+    margin-top: calc(var(--u) * 39);
+    width: calc(var(--u) * 424);
+    height: calc(var(--u) * 48);
+    padding: 0;
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: calc(var(--u) * 10);
+    background: #4073BF;
+
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: calc(var(--u) * 20);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.backBtn:hover {
+    background: #4F86D9;
+}
+
+/* ─── موبایل ─── */
+
+@media (max-width: 1023px) {
+    .page {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main {
+        padding: 128px 16px 48px;
+    }
+
+    .tableArea {
+        width: 100%;
+        height: auto;
+    }
+
+    .backBtn {
+        margin-top: 24px;
+        width: 100%;
+        max-width: 424px;
+        height: 48px;
+        font-size: var(--font-size-md);
+        border-radius: 10px;
+    }
+}

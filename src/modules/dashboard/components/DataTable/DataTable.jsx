@@ -1,17 +1,22 @@
 import styles from './DataTable.module.css'
 
 /**
- * کارت جدول داشبورد — دقیقاً مطابق SVG فیگما.
+ * کارت جدول — مطابق SVG فیگما.
  *
- * columns: [{ key, label, width }]  ترتیب از راست به چپ، width بر حسب درصد
+ * columns: [{ key, label, width, ltr }]  ترتیب از راست به چپ
  * rows:    آرایه‌ای از آبجکت‌ها که کلیدهایشان با column.key یکی است
  * page / pageCount / onPageChange: صفحه‌بندی
  *
- * اعداد استخراج‌شده از SVG (فریم ۱۴۴۰×۱۰۲۴):
- *   کارت  x 47→1069، y 63→881  →  ۱۰۲۲×۸۱۸، radius 31، border 2px #0D1726
- *   هدر   y 63→161  →  ارتفاع ۹۸، fill #0D1726
- *   ردیف  ۸۰px، جداکننده 2px #0D1726
- *   صفحه‌بندی  ۲۵×۲۵، radius 5.5، gap 7، ۱۴px زیر کارت، ۲۴px از لبه‌ی چپ
+ * پراپ‌های اختیاری برای صفحاتی که اعداد فیگمایشان فرق دارد.
+ * مقادیر پیش‌فرض همان داشبورد است، پس صفحات موجود تغییری نمی‌کنند.
+ *   align            'center' | 'right'  — چیدمان متن سلول‌ها
+ *   headerHeight     ارتفاع ردیف هدر (px)
+ *   paginationIndent تورفتگی صفحه‌بندی از لبه‌ی چپ کارت (px)
+ *
+ * اعداد داشبورد (فریم ۱۴۴۰×۱۰۲۴):
+ *   کارت  ۱۰۲۲×۸۱۸، radius 31، border 2px #0D1726
+ *   هدر   ۹۸ | ردیف ۸۰ | جداکننده 2px #0D1726
+ *   صفحه‌بندی  ۲۵×۲۵، radius 5.5، gap 7، ۱۴px زیر کارت
  */
 export default function DataTable({
                                       columns = [],
@@ -19,12 +24,21 @@ export default function DataTable({
                                       page = 1,
                                       pageCount = 1,
                                       onPageChange,
+                                      align = 'center',
+                                      headerHeight,
+                                      paginationIndent,
                                   }) {
+    const cssVars = {}
+    if (headerHeight != null) cssVars['--header-height'] = `${headerHeight}px`
+    if (paginationIndent != null) cssVars['--pagination-indent'] = `${paginationIndent}px`
+
+    const alignClass = align === 'right' ? styles.alignRight : ''
+
     return (
-        <div className={styles.wrapper}>
+        <div className={styles.wrapper} style={cssVars}>
             <div className={styles.card}>
                 <div className={styles.scroll}>
-                    <table className={styles.table}>
+                    <table className={`${styles.table} ${alignClass}`}>
                         <colgroup>
                             {columns.map((col) => (
                                 <col key={col.key} style={{ width: col.width }} />

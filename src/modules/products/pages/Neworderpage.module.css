@@ -1,0 +1,84 @@
+/* اعداد خام فیگما (فریم ۱۴۴۰×۱۰۲۴). مقیاس‌دهی با FitScreen انجام می‌شود. */
+
+/* ─── دکمه‌ی بالا سمت راست ─── */
+/* y=217.5، نوار مراحل تا ۱۹۴ → ۲۳.۵ فاصله | حاشیه‌ی راست ۹۵.۵ */
+
+.topActionRow {
+    display: flex;
+    justify-content: flex-start;
+    padding: 23.5px 95.5px 0;
+    flex: 0 0 auto;
+}
+
+.topAction {
+    width: 114px;
+    height: 41px;
+    padding: 0;
+    flex-shrink: 0;
+
+    border: 1px solid #4073BF;
+    border-radius: 10.5px;
+    background: #132239;
+
+    color: #7AB0FF;
+    font-family: var(--font-family);
+    font-size: 16px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+/* «برگشت» در مرحله‌ی اول باریک‌تر است */
+.topActionNarrow {
+    width: 80px;
+}
+
+.topAction:hover {
+    background: #1B3054;
+}
+
+/* ─── ناحیه‌ی محتوا ─── */
+
+.main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+}
+
+/* موقت — تا افزوده شدن کامپوننت مراحل بعدی */
+.placeholder {
+    align-self: center;
+    color: var(--color-primary-ghost);
+    font-size: 24px;
+}
+
+/* ─── موبایل ─── */
+/* زیر ۱۰۲۴ مقیاس‌دهی کنار می‌رود و چیدمان عادی برقرار می‌شود */
+
+@media (max-width: 1023px) {
+    .topActionRow {
+        padding: 16px;
+    }
+
+    .topAction,
+    .topActionNarrow {
+        width: auto;
+        min-width: 114px;
+        height: 41px;
+        padding: 0 16px;
+        font-size: var(--font-size-sm);
+        border-radius: 10px;
+    }
+
+    .main {
+        display: block;
+    }
+
+    .placeholder {
+        display: block;
+        padding: 48px 16px;
+        text-align: center;
+        font-size: var(--font-size-lg);
+    }
+}

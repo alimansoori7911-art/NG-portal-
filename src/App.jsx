@@ -14,7 +14,8 @@ import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
 import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
 import HelpdeskTicketsPage from "./modules/helpdesk/pages/TicketsPage";
-
+import OrderListPage from "./modules/products/pages/OrderListPage";
+import NewOrderPage from "./modules/products/pages/NewOrderPage";
 /* داشبورد */
 import DashboardLayout from "./modules/dashboard/components/DashboardLayout/DashboardLayout";
 import ServicesPage from "./modules/dashboard/organization/pages/ServicesPage";
@@ -38,6 +39,8 @@ function App() {
                 {/* محصولات */}
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/products/buy" element={<ProductsBuyPage />} />
+                <Route path="/products/buy/orders" element={<OrderListPage />} />
+                <Route path="/products/buy/new" element={<NewOrderPage />} />
 
                 {/* تیکتینگ Help Desk */}
                 <Route path="/helpdesk" element={<HelpdeskPage />} />

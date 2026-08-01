@@ -1,6 +1,9 @@
 /* تمام اعداد از مختصات SVG فیگما استخراج شده‌اند */
 
 .wrapper {
+    --header-height: 98px;
+    --pagination-indent: 24px;
+
     flex: 1;
     min-height: 0;
     width: 100%;
@@ -49,11 +52,11 @@
 /* y 63→161 → ارتفاع ۹۸ */
 
 .headRow {
-    height: 98px;
+    height: var(--header-height);
 }
 
 .headCell {
-    height: 98px;
+    height: var(--header-height);
     padding: 0 8px;
     background: #0D1726;
     color: var(--color-primary-ghost);
@@ -105,7 +108,7 @@
     direction: ltr;
     gap: 7px;
     margin-top: 14px;
-    padding-left: 24px;
+    padding-left: var(--pagination-indent);
 }
 
 .pageBtn {
@@ -171,5 +174,35 @@
 
     .pagination {
         padding-left: 4px;
+    }
+}
+/* ─── چیدمان راست‌چین ─── */
+/* در صفحه‌ی لیست سفارش‌ها متن ستون‌ها راست‌چین است با padding-right ۹۷.
+   ستون آخر (چپ‌ترین) padding-right کمتری می‌گیرد تا متن‌های بلندتر
+   وضعیت جا شوند — در فیگما هم متن به سمت چپ آزاد است. */
+
+.alignRight .headCell,
+.alignRight .cell {
+    text-align: right;
+    padding-right: 97px;
+    padding-left: 8px;
+}
+
+.alignRight .headCell:last-child,
+.alignRight .cell:last-child {
+    padding-right: 24px;
+}
+
+/* متن ستون آخر می‌تواند کامل نمایش داده شود */
+.alignRight .cell:last-child .cellText {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+@media (max-width: 1023px) {
+    .alignRight .headCell,
+    .alignRight .cell {
+        padding-right: 24px;
     }
 }
