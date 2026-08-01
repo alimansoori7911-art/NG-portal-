@@ -59,11 +59,13 @@ export const authService = {
         return api.post("/auth/refresh").then(unwrap);
     },
 
-    // claim_token فقط در جریان بازیابی رمز کاربرد دارد، نه ثبت‌نام
+    /* RegisterInput هر چهار فیلد را اجباری می‌داند:
+       username، email، password، phone_number */
     register(payload) {
         return api.post("/auth/register", payload).then(unwrap);
     },
 
+    // action یکی از: login | verify_contact | reset_password | register
     requestOtp({ action, phone_number, email, username }) {
         return api
             .post("/auth/otp/request", { action, phone_number, email, username })
@@ -89,8 +91,9 @@ export const authService = {
             .then(unwrap);
     },
 
-    // POST /auth/contact/verify — تأیید هویت (کد ملی، نام، نام خانوادگی)
-    // نیازمند لاگین است. TODO: جایگاه دقیق آن در جریان ثبت‌نام هنوز تأیید نشده
+    /* POST /auth/contact/verify — تأیید هویت (کد ملی، نام، نام خانوادگی).
+       نیازمند لاگین است (اسپک بلوک security ندارد ولی بک‌اند تأیید کرده).
+       TODO: نوع company_id مشخص نیست — فعلاً فقط اگر مقدار داشت فرستاده می‌شود. */
     verifyIdentity({ first_name, last_name, national_id, birth_date, company_id }) {
         return api
             .post("/auth/contact/verify", {
@@ -103,13 +106,11 @@ export const authService = {
             .then(unwrap);
     },
 
-    // TODO: نام فیلد توکن هنوز قطعی نیست (reset_token یا claim_token)
-// بک‌اند claim_token را در بادی می‌خواهد (اسپک OpenAPI که reset_token
-    // نوشته قدیمی است). اگر ۴۲۲ گرفتی، فقط نام همین کلید را عوض کن.
+    /* ResetPasswordInput: { reset_token, new_password } — هر دو اجباری */
     resetPassword({ token, new_password }) {
         return api
             .post("/auth/password/reset", {
-                claim_token: token,
+                reset_token: token,
                 new_password,
             })
             .then(unwrap);

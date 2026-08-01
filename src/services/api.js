@@ -14,6 +14,28 @@ import { tokenManager } from "./tokenManager.js";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+/*
+  اندپوینت‌های عمومی auth (طبق OpenAPI بلوک security ندارند).
+  ۴۰۱ این‌ها یعنی «رمز یا کد اشتباه»، نه «توکن منقضی» — پس نباید
+  رفرش و تکرار خودکار انجام شود.
+
+  ⚠️ /auth/contact/verify عمداً در این لیست نیست: نیاز به لاگین دارد،
+  پس ۴۰۱ آن واقعاً یعنی توکن منقضی شده و رفرش درست است.
+  (اسپک برایش security ننوشته، ولی بک‌اند تأیید کرده که لازم است.)
+*/
+const PUBLIC_AUTH_ROUTES = [
+    "/auth/login",
+    "/auth/refresh",
+    "/auth/register",
+    "/auth/otp/request",
+    "/auth/otp/verify",
+    "/auth/otp/reset-password/verify",
+    "/auth/password/reset",
+];
+
+const isPublicAuthRoute = (url = "") =>
+    PUBLIC_AUTH_ROUTES.some((route) => url.includes(route));
+
 const api = axios.create({
     baseURL,
     withCredentials: true, // 👈 حیاتی: بدون این، کوکی HttpOnly ارسال نمیشه
@@ -84,16 +106,16 @@ async function refreshAccessToken() {
 
 // ── ۱) Request Interceptor ──────────────────────────────────
 api.interceptors.request.use(async (config) => {
-    const isAuthEndpoint =
-        config.url?.includes("/auth/refresh") ||
-        config.url?.includes("/auth/login");
-
     /*
       توکن دسترسی عمر کوتاهی دارد (۷ دقیقه). اگر منقضی شده باشد،
       به‌جای فرستادن درخواستِ محکوم‌به‌۴۰۱، همین‌جا پیش‌دستانه رفرش
       می‌کنیم. این یک رفت‌وبرگشت اضافه را حذف می‌کند.
     */
-    if (!isAuthEndpoint && tokenManager.get() && tokenManager.isExpired()) {
+    if (
+        !isPublicAuthRoute(config.url) &&
+        tokenManager.get() &&
+        tokenManager.isExpired()
+    ) {
         try {
             await refreshAccessToken();
         } catch {
@@ -119,12 +141,10 @@ api.interceptors.response.use(
         // شرایط تلاش برای رفرش:
         //  - خطا ۴۰۱ باشد
         //  - قبلاً برای همین درخواست رفرش نکرده باشیم (جلوگیری از حلقه)
-        //  - خودِ درخواست، login یا refresh نباشد (آن‌ها ۴۰۱ واقعی دارند)
-        const isAuthRoute =
-            originalRequest?.url?.includes("/auth/login") ||
-            originalRequest?.url?.includes("/auth/refresh");
+        //  - اندپوینت عمومی نباشد (۴۰۱ آن‌ها واقعی است، نه انقضای توکن)
+        const skipRefresh = isPublicAuthRoute(originalRequest?.url);
 
-        if (status === 401 && originalRequest && !originalRequest._retry && !isAuthRoute) {
+        if (status === 401 && originalRequest && !originalRequest._retry && !skipRefresh) {
             originalRequest._retry = true;
             try {
                 await refreshAccessToken();

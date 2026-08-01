@@ -24,17 +24,9 @@ function App() {
     const initialize = useAuthStore((s) => s.initialize);
 
     useEffect(() => {
-        // initialize();
-
-        // ⚠️ موقت — تا اتصال به بک‌اند. بعداً حذف و initialize() فعال شود.
-        useAuthStore.setState({
-            status: 'authenticated',
-            user: {
-                roles: ['org_admin'],
-                identifiers: [{ type: 'username', value: 'سینا بی مثل' }],
-            },
-        });
+        initialize();
     }, [initialize]);
+
     return (
         <BrowserRouter>
             <Routes>
