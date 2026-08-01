@@ -1,20 +1,23 @@
+import { usePlans } from '../../../products/hooks/usePlans'
 import styles from './Plans.module.css'
 
-const PILOT_PLAN = {
-    id: 'pilot',
-    title: 'pilot',
-    subtitle: 'تست و ارزیابی',
-    licenseCode: 'NGC-LIC-BASE-1Y',
-    hoverColor: 'var(--color-primary-light)',
-    hoverWidth: '1px',
+/* زیرعنوان کوتاه مخصوص صفحه‌ی اصلی.
+   عمداً از description بک‌اند استفاده نمی‌شود: آنجا متن فروش بلند است
+   («مناسب برای سازمان های بزرگ و مراکز داده») ولی اینجا برچسب دسته‌بندی
+   کوتاه می‌خواهیم. بک‌اند فقط یک فیلد description دارد و نمی‌تواند هر دو
+   را بدهد.
+
+   ⚠️ کلید = PlanOutput.code. اگر بک‌اند کد پلنی را عوض کند، آن کارت
+   بی‌سروصدا به متن بلند بک‌اند برمی‌گردد (fallback). */
+const SHORT_SUBTITLES = {
+    pilot: 'تست و ارزیابی',
+    base: 'سازمان‌های کوچک',
+    pro: 'سازمان‌های متوسط',
+    plus: 'سازمان‌های بزرگ',
+    unlimited: 'Enterprise',
 }
 
-const PLANS = [
-    { id: 'unlimited', title: 'unlimited', subtitle: 'Enterprise', licenseCode: 'NGC-LIC-ULT-1Y', hoverColor: 'var(--color-primary-ghost)', hoverWidth: '2px' },
-    { id: 'plus', title: 'Plus', subtitle: 'سازمان‌های بزرگ', licenseCode: 'NGC-LIC-PROP-1Y', hoverColor: 'var(--color-primary-pale)', hoverWidth: '1.5px' },
-    { id: 'pro', title: 'Pro', subtitle: 'سازمان‌های متوسط', licenseCode: 'NGC-LIC-PRO-1Y', hoverColor: 'var(--color-primary-lighter)', hoverWidth: '1.25px' },
-    { id: 'base', title: 'Base', subtitle: 'سازمان‌های کوچک', licenseCode: 'NGC-LIC-BASE-1Y', hoverColor: 'var(--color-primary-soft)', hoverWidth: '1px' },
-]
+const subtitleFor = (plan) => SHORT_SUBTITLES[plan.code] ?? plan.subtitle
 
 function PlanCard({ plan, large }) {
     return (
@@ -23,8 +26,8 @@ function PlanCard({ plan, large }) {
             style={{ '--hover-color': plan.hoverColor, '--hover-width': plan.hoverWidth }}
         >
             <div className={styles.cardTop}>
-                <h3 className={styles.cardTitle}>{plan.title}</h3>
-                <p className={styles.cardSubtitle}>{plan.subtitle}</p>
+                <h3 className={styles.cardTitle}>{plan.name}</h3>
+                <p className={styles.cardSubtitle}>{subtitleFor(plan)}</p>
             </div>
 
             <div className={styles.divider} />
@@ -43,18 +46,33 @@ function PlanCard({ plan, large }) {
 }
 
 function Plans() {
+    const { plans, loading, error } = usePlans()
+
+    // موقع لود یا خطا، بخش پلن‌ها در صفحه‌ی اصلی رندر نمی‌شود
+    // تا پرش چیدمانی ایجاد نکند. خطا فقط در کنسول لاگ می‌شود.
+    if (loading || error || !plans.length) {
+        if (error && import.meta.env.DEV) {
+            console.warn('[Plans] دریافت پلن‌ها ناموفق بود:', error)
+        }
+        return null
+    }
+
+    /* چیدمان فیگما: پلن pilot بزرگ در ردیف اول، بقیه در ردیف دوم */
+    const pilot = plans.find((p) => p.isPilot) ?? plans[0]
+    const rest = plans.filter((p) => p.id !== pilot.id)
+
     return (
         <section className={styles.section}>
             <h2 className={styles.mainTitle}>پلن های فروش</h2>
 
             {/* ردیف اول — pilot */}
             <div className={styles.pilotRow}>
-                <PlanCard plan={PILOT_PLAN} large />
+                <PlanCard plan={pilot} large />
             </div>
 
-            {/* ردیف دوم — ۴ پلن */}
+            {/* ردیف دوم — بقیه‌ی پلن‌ها */}
             <div className={styles.plansRow}>
-                {PLANS.map(plan => (
+                {rest.map((plan) => (
                     <PlanCard key={plan.id} plan={plan} />
                 ))}
             </div>

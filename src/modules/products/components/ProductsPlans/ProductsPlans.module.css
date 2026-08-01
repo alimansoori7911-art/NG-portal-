@@ -178,3 +178,77 @@
         max-width: 340px;
     }
 }
+/* ─── حالت‌های لود و خطا ─── */
+
+.stateBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    text-align: center;
+}
+
+.stateText {
+    font-size: var(--font-size-md);
+    color: var(--color-white);
+    opacity: 0.75;
+    margin: 0;
+}
+
+.skeleton {
+    pointer-events: none;
+}
+
+.skeleton:hover {
+    background: rgba(0, 8, 20, 0.8);
+    border-color: rgba(71, 146, 255, 0.4);
+    box-shadow: none;
+}
+
+.shimmer {
+    display: block;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(
+            90deg,
+            rgba(71, 146, 255, 0.08) 25%,
+            rgba(71, 146, 255, 0.18) 50%,
+            rgba(71, 146, 255, 0.08) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmerMove 1.4s ease-in-out infinite;
+}
+
+.shimmerTitle {
+    width: 45%;
+    height: 26px;
+}
+
+.shimmerLine {
+    width: 80%;
+    height: 14px;
+}
+
+.shimmerShort {
+    width: 50%;
+    height: 14px;
+}
+
+.shimmerBtn {
+    width: 65%;
+    height: 38px;
+    margin-top: auto;
+    align-self: center;
+    border-radius: var(--radius-full);
+}
+
+@keyframes shimmerMove {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shimmer {
+        animation: none;
+    }
+}
