@@ -7,17 +7,22 @@ import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService } from "../../../services/authService";
-import { OTP, HTTP, MSG } from "../../../constants/auth";
+import { OTP, HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
+
 import styles from "./ForgotPasswordPage.module.css";
 
 const isValidPhone = (v) => /^(\+98|0)?9\d{9}$/.test(v.trim());
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
-/* تشخیص ایمیل یا شماره برای ارسال فیلد درست به بک‌اند */
+/* تشخیص ایمیل یا شماره برای ارسال فیلد درست به بک‌اند.
+   ارقام فارسی/عربی به لاتین تبدیل می‌شوند. */
 function buildIdentifier(value) {
     const v = value.trim();
     if (isValidEmail(v)) return { email: v };
-    if (isValidPhone(v)) return { phone_number: v };
+
+    const normalized = toEnglishDigits(v);
+    if (isValidPhone(normalized)) return { phone_number: normalized };
+
     return null;
 }
 

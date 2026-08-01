@@ -5,7 +5,7 @@ import styles from "./ProtectedRoute.module.css";
 /**
  * استفاده در App.jsx:
  *   <Route element={<ProtectedRoute />}>
- *     <Route path="/dashboard" element={<Dashboard />} />
+ *     <Route path="/dashboard" element={<DashboardLayout />} />
  *   </Route>
  *
  * موقع checking: اسپینر نمایش داده می‌شود (نه صفحه‌ی سفید)

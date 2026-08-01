@@ -1,24 +1,37 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout/AuthLayout";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
-import { authService } from "../../../services/authService";
+import { authService, parseValidationErrors } from "../../../services/authService";
 import { useAuthStore } from "../../../store/authStore";
+import { HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
 import styles from "./LoginPage.module.css";
 
-/* تشخیص نوع شناسه برای ارسال فیلد درست به بک‌اند */
+/* تشخیص نوع شناسه برای ارسال فیلد درست به بک‌اند.
+   LoginInput فقط password را اجباری می‌داند و یکی از
+   email / phone_number / username را می‌پذیرد. */
 function buildCredentials(identifier, password) {
     const value = identifier.trim();
     if (value.includes("@")) return { email: value, password };
-    if (/^(\+98|0)?9\d{9}$/.test(value)) return { phone_number: value, password };
+
+    // ارقام فارسی/عربی به لاتین تبدیل می‌شوند تا رجکس شماره درست کار کند
+    const normalized = toEnglishDigits(value);
+    if (/^(\+98|0)?9\d{9}$/.test(normalized)) {
+        return { phone_number: normalized, password };
+    }
+
     return { username: value, password };
 }
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const location = useLocation();
     const setAuth = useAuthStore((s) => s.setAuth);
+
+    // مسیری که کاربر قبل از ریدایرکت به /login قصد رفتن به آن را داشت
+    const from = location.state?.from?.pathname ?? "/";
 
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
@@ -43,14 +56,23 @@ export default function LoginPage() {
         try {
             const data = await authService.login(buildCredentials(identifier, password));
             setAuth(data);
-            navigate("/", { replace: true });
+            navigate(from, { replace: true });
         } catch (err) {
-            if (err.status === 401) {
-                setApiError("خطا در ورود به حساب کاربری، نام کاربری و رمز عبور خود را بررسی کنید");
-            } else if (err.status === 429) {
-                setApiError("تعداد تلاش‌های شما بیش از حد مجاز است. کمی بعد دوباره امتحان کنید");
+            if (err.status === HTTP.UNAUTHORIZED) {
+                setApiError(
+                    "خطا در ورود به حساب کاربری، نام کاربری و رمز عبور خود را بررسی کنید"
+                );
+            } else if (err.status === HTTP.TOO_MANY_REQUESTS) {
+                setApiError(MSG.RATE_LIMIT);
+            } else if (err.status === HTTP.VALIDATION_ERROR) {
+                // بک‌اند نام فیلد را برمی‌گرداند (email / phone_number / username)
+                const raw = parseValidationErrors(err.details);
+                const firstMessage = Object.values(raw)[0];
+                if (raw.password) setFieldErrors({ password: raw.password });
+                else if (firstMessage) setFieldErrors({ identifier: firstMessage });
+                setApiError(firstMessage || MSG.GENERIC);
             } else {
-                setApiError(err.message);
+                setApiError(err.message || MSG.GENERIC);
             }
         } finally {
             setLoading(false);
