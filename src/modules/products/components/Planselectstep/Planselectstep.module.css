@@ -1,14 +1,18 @@
-/* اعداد خام فیگما (فریم ۱۴۴۰×۱۰۲۴). مقیاس‌دهی با FitScreen انجام می‌شود. */
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴)
+   کارت x=135.5 y=380.5 w=361 h=458 rx=20.5 stroke #0047AD
+   نوار مراحل تا y=194 و فریم تا ۱۰۲۴ → کارت‌ها عمودی وسط‌چین‌اند
+   (فاصله‌ی بالا ۱۸۶.۵ و پایین ۱۸۵.۵) */
 
 .stage {
     position: relative;
     width: 100%;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    /* کارت‌ها در y=380.5؛ ناحیه‌ی محتوا از y=258.5 شروع می‌شود → ۱۲۲ */
-    padding-top: 122px;
+    /* وسط‌چین عمودی، مطابق فیگما */
+    align-items: center;
+    padding: 16px 24px;
     box-sizing: border-box;
 }
 
@@ -19,8 +23,7 @@
 .glow {
     position: absolute;
     left: 50%;
-    /* مرکز دایره در y=-255 و ناحیه‌ی محتوا از y=258.5 → -513.5 - 797 */
-    top: -1310px;
+    top: -1504px;
     width: 1594px;
     height: 1594px;
     transform: translateX(-50%);
@@ -43,20 +46,23 @@
     z-index: 1;
     direction: ltr;
     display: grid;
-    grid-template-columns: repeat(3, 361px);
+    grid-template-columns: repeat(3, minmax(0, 361px));
     gap: 43px;
     justify-content: center;
+    width: 100%;
+    max-width: 1169px;
 }
 
 /* ─── کارت پلن ─── */
+/* ارتفاع فیگما ۴۵۸ است؛ در پنجره‌های کوتاه‌تر جمع می‌شود
+   تا بدون اسکرول جا شود */
 
 .card {
     direction: rtl;
     display: flex;
     flex-direction: column;
-    width: 361px;
-    height: 458px;
-    flex-shrink: 0;
+    width: 100%;
+    height: clamp(340px, 55vh, 458px);
     box-sizing: border-box;
 
     border: 1px solid #0047AD;
@@ -66,27 +72,27 @@
 }
 
 /* ─── سربرگ: نام و توضیح ─── */
-/* کارت از y=380.5، جداکننده‌ی اول در y=525 → ارتفاع ۱۴۴.۵ */
+/* کارت از y=380.5 و جداکننده‌ی اول در y=525 → ارتفاع ۱۴۴.۵ */
 
 .head {
-    padding: 30px 24px 26px;
+    flex-shrink: 0;
+    padding: clamp(16px, 3vh, 30px) 24px clamp(14px, 2.6vh, 26px);
     border-bottom: 1px solid #264573;
     text-align: center;
 }
 
 .name {
     margin: 0;
-    font-size: 32px;
+    font-size: clamp(24px, 3.2vh, 32px);
     font-weight: 700;
     line-height: 1.2;
     color: #0047AD;
-    text-transform: capitalize;
 }
 
 .subtitle {
-    /* عنوان تا y=453، توضیح از y=482 */
-    margin: 22px 0 0;
-    font-size: 18px;
+    /* عنوان تا y=453 و توضیح از y=482 */
+    margin: clamp(10px, 2.2vh, 22px) 0 0;
+    font-size: clamp(14px, 1.8vh, 18px);
     line-height: 1.45;
     color: #ADCFFF;
 }
@@ -95,30 +101,32 @@
 /* بین دو جداکننده: y 525→589 یعنی ارتفاع ۶۴ */
 
 .license {
-    height: 64px;
+    height: clamp(46px, 6.3vh, 64px);
     flex-shrink: 0;
     display: grid;
     place-items: center;
     border-bottom: 1px solid #264573;
 
-    font-size: 18px;
+    direction: ltr;
+    font-size: clamp(14px, 1.8vh, 18px);
     color: #1474FF;
     white-space: nowrap;
 }
 
 /* ─── مدت اعتبار و قابلیت‌ها ─── */
-/* جداکننده‌ی دوم y=589، مدت اعتبار y=616
+/* جداکننده‌ی دوم y=589 و مدت اعتبار y=616
    مدت اعتبار راست‌چین با ۲۵ فاصله | قابلیت‌ها چپ‌چین با ۲۴ */
 
 .body {
     flex: 1;
     min-height: 0;
-    padding: 24px 25px 0 24px;
+    padding: clamp(14px, 2.4vh, 24px) 25px 0 24px;
+    overflow: hidden;
 }
 
 .duration {
     margin: 0;
-    font-size: 18px;
+    font-size: clamp(14px, 1.8vh, 18px);
     line-height: 1.3;
     text-align: right;
     color: #ADCFFF;
@@ -126,8 +134,8 @@
 }
 
 .featureList {
-    /* مدت اعتبار تا y=633، اولین قابلیت از y=646 */
-    margin: 11px 0 0;
+    /* مدت اعتبار تا y=633 و اولین قابلیت از y=646 */
+    margin: clamp(6px, 1.1vh, 11px) 0 0;
     padding: 0;
     list-style: none;
     direction: ltr;
@@ -136,8 +144,8 @@
 
 .featureItem {
     /* فاصله‌ی خطوط در فیگما ۲۹.۳ */
-    font-size: 18px;
-    line-height: 29.3px;
+    font-size: clamp(14px, 1.8vh, 18px);
+    line-height: clamp(22px, 2.9vh, 29.3px);
     color: #ADCFFF;
     white-space: nowrap;
 }
@@ -149,9 +157,9 @@
 .selectBtn {
     align-self: center;
     margin-top: auto;
-    margin-bottom: 33px;
+    margin-bottom: clamp(18px, 3.3vh, 33px);
     width: 211px;
-    height: 49px;
+    height: clamp(40px, 4.8vh, 49px);
     padding: 0;
     flex-shrink: 0;
 
@@ -161,24 +169,25 @@
 
     color: #ADCFFF;
     font-family: var(--font-family);
-    font-size: 20px;
+    font-size: clamp(15px, 2vh, 20px);
     white-space: nowrap;
     cursor: pointer;
-    transition: background var(--transition-fast), border-color var(--transition-fast);
+    transition: background 150ms ease, border-color 150ms ease;
 }
 
 .selectBtn:hover {
     background: rgba(71, 146, 255, 0.12);
-    border-color: var(--color-primary-pale);
+    border-color: #ADCFFF;
 }
 
 /* ─── دکمه‌های جابه‌جایی ─── */
 /* دایره‌ی ۴۰px، مرکز (1356, 609) → ۶۴ از لبه‌ی راست فریم
-   نسبت به ناحیه‌ی محتوا (که از y=258.5 شروع می‌شود): 609-258.5-20 = 330.5 */
+   مرکز کارت‌ها هم y=609.5 است، پس با آن‌ها هم‌تراز می‌ماند */
 
 .navBtn {
     position: absolute;
-    top: 330.5px;
+    top: 50%;
+    transform: translateY(-50%);
     z-index: 2;
 
     width: 40px;
@@ -190,9 +199,9 @@
     border: none;
     border-radius: 50%;
     background: #0D1726;
-    color: var(--color-white);
+    color: #FFFFFF;
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: background 150ms ease;
 }
 
 .navBtn:hover {
@@ -212,81 +221,29 @@
     height: 24px;
 }
 
-/* ─── حالت‌های لود و خطا ─── */
+/* ─── صفحه‌های باریک ─── */
 
-.skeleton {
-    border-color: rgba(0, 71, 173, 0.4);
-    background: linear-gradient(
-            90deg,
-            rgba(71, 146, 255, 0.05) 25%,
-            rgba(71, 146, 255, 0.12) 50%,
-            rgba(71, 146, 255, 0.05) 75%
-    );
-    background-size: 200% 100%;
-    animation: shimmerMove 1.4s ease-in-out infinite;
-}
-
-@keyframes shimmerMove {
-    from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .skeleton {
-        animation: none;
-    }
-}
-
-.stateBox {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    padding: 60px 24px;
-    text-align: center;
-}
-
-.stateText {
-    margin: 0;
-    font-size: 18px;
-    color: #ADCFFF;
-}
-
-/* ─── موبایل ─── */
-
-@media (max-width: 1023px) {
+@media (max-width: 1100px) {
     .stage {
-        height: auto;
-        padding: 24px 16px 48px;
-        display: block;
+        padding: 16px;
     }
 
     .grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        width: 100%;
-        max-width: 361px;
-        margin: 0 auto;
-    }
-
-    .card {
-        width: 100%;
-        height: auto;
-        border-radius: 20px;
-    }
-
-    .featureItem {
-        line-height: 2;
-    }
-
-    .selectBtn {
-        margin: 24px auto;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
     }
 
     .navBtn {
-        position: static;
-        display: inline-grid;
-        margin: 16px 8px 0;
+        width: 32px;
+        height: 32px;
+    }
+
+    .navNext {
+        right: 8px;
+    }
+
+    .navPrev {
+        left: 8px;
     }
 
     .glow {

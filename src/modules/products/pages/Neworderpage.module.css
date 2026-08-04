@@ -1,20 +1,46 @@
-/* اعداد خام فیگما (فریم ۱۴۴۰×۱۰۲۴). مقیاس‌دهی با FitScreen انجام می‌شود. */
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴).
+   هدر position: fixed است و فضا اشغال نمی‌کند، پس padding-top لازم است. */
+
+.page {
+    box-sizing: border-box;
+    height: 100vh;
+    height: 100dvh;
+    padding-top: 96px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-darkest);
+}
+
+/* ─── ناحیه‌ی محتوا ─── */
+/* از y=194 تا ۱۰۲۴ در فریم = ۸۳۰ واحد. کارت‌ها در همین ناحیه
+   عمودی وسط‌چین می‌شوند (فاصله‌ی بالا ۱۸۶.۵ و پایین ۱۸۵.۵). */
+
+.main {
+    position: relative;
+    flex: 1 1 auto;
+    /* بدون این، آیتم فلکس کوچک‌تر از محتوایش نمی‌شود و نوار را له می‌کند */
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
 /* ─── دکمه‌ی بالا سمت راست ─── */
-/* y=217.5، نوار مراحل تا ۱۹۴ → ۲۳.۵ فاصله | حاشیه‌ی راست ۹۵.۵ */
+/* y=217.5 و نوار مراحل تا ۱۹۴ → ۲۳ فاصله | حاشیه‌ی راست ۹۵
+   شناور است تا فضای عمودی کارت‌ها را نگیرد */
 
 .topActionRow {
-    display: flex;
-    justify-content: flex-start;
-    padding: 23.5px 95.5px 0;
-    flex: 0 0 auto;
+    position: absolute;
+    top: 23px;
+    right: 95px;
+    z-index: 3;
 }
 
 .topAction {
     width: 114px;
     height: 41px;
     padding: 0;
-    flex-shrink: 0;
 
     border: 1px solid #4073BF;
     border-radius: 10.5px;
@@ -25,7 +51,7 @@
     font-size: 16px;
     white-space: nowrap;
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: background 150ms ease;
 }
 
 /* «برگشت» در مرحله‌ی اول باریک‌تر است */
@@ -37,48 +63,20 @@
     background: #1B3054;
 }
 
-/* ─── ناحیه‌ی محتوا ─── */
-
-.main {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    justify-content: center;
-}
-
 /* موقت — تا افزوده شدن کامپوننت مراحل بعدی */
 .placeholder {
-    align-self: center;
-    color: var(--color-primary-ghost);
+    margin: auto;
+    padding: 48px 24px;
+    color: #E0EDFF;
     font-size: 24px;
+    text-align: center;
 }
 
-/* ─── موبایل ─── */
-/* زیر ۱۰۲۴ مقیاس‌دهی کنار می‌رود و چیدمان عادی برقرار می‌شود */
+/* ─── صفحه‌های باریک ─── */
 
-@media (max-width: 1023px) {
+@media (max-width: 900px) {
     .topActionRow {
-        padding: 16px;
-    }
-
-    .topAction,
-    .topActionNarrow {
-        width: auto;
-        min-width: 114px;
-        height: 41px;
-        padding: 0 16px;
-        font-size: var(--font-size-sm);
-        border-radius: 10px;
-    }
-
-    .main {
-        display: block;
-    }
-
-    .placeholder {
-        display: block;
-        padding: 48px 16px;
-        text-align: center;
-        font-size: var(--font-size-lg);
+        top: 16px;
+        right: 16px;
     }
 }

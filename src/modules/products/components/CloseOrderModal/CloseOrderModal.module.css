@@ -1,0 +1,122 @@
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴)
+   کارت x=399 y=211 w=642 h=602 rx=11 */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+/* پس‌زمینه‌ی پشت مودال تار می‌شود، مطابق فیگما */
+.backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 8, 20, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.card {
+    position: relative;
+    box-sizing: border-box;
+    width: 642px;
+    max-width: 100%;
+    min-height: clamp(440px, 78vh, 602px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(24px, 4vh, 37px) clamp(20px, 3vw, 40px);
+
+    border: 2px solid #132239;
+    border-radius: 11px;
+    background: #000814;
+}
+
+/* ─── ضربدر ─── */
+/* مرکز (1004, 248) نسبت به کارت (399, 211) → ۵۹۳ از چپ، ۲۵ از بالا */
+
+.closeBtn {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #7AB0FF;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.closeBtn svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+/* ─── عنوان ─── */
+/* y 312→347 → ۳۵px | کارت از y=211 → ۱۰۱ فاصله از بالا */
+
+.title {
+    margin: clamp(40px, 8vh, 66px) 0 0;
+    font-size: clamp(24px, 3.6vh, 35px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #4792FF;
+    text-align: center;
+}
+
+/* ─── متن ─── */
+/* عنوان تا y=347 و متن از y=377.6 → ۳۰.۶
+   عرض در فیگما ۴۴۳ */
+
+.message {
+    margin: clamp(16px, 3vh, 30px) 0 0;
+    max-width: 460px;
+    font-size: clamp(16px, 2.2vh, 22px);
+    line-height: 1.8;
+    color: #ADCFFF;
+    text-align: center;
+}
+
+/* ─── دکمه‌ها ─── */
+/* متن تا y=458.8 و اولین دکمه از y=508 → ۴۹.۲
+   سه دکمه ۴۲۶×۵۰ با گام ۸۰ → فاصله‌ی ۳۰ */
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(16px, 3vh, 30px);
+    margin-top: clamp(24px, 4.8vh, 49px);
+    width: 100%;
+}
+
+.actionBtn {
+    width: 426px;
+    max-width: 100%;
+    height: clamp(44px, 4.9vh, 50px);
+    padding: 0;
+
+    border: 2px solid #4073BF;
+    border-radius: 11px;
+    background: transparent;
+
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 2vh, 20px);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 150ms ease;
+}
+
+.actionBtn:hover {
+    background: rgba(64, 115, 191, 0.15);
+}

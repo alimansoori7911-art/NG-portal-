@@ -1,19 +1,23 @@
-/* اعداد خام فیگما (فریم ۱۴۴۰×۱۰۲۴). مقیاس‌دهی با FitScreen انجام می‌شود. */
-
-/* نوار مراحل: y 96→194 (ارتفاع ۹۸)، خط زیرین ۲px #132239 */
+/* نوار مراحل — ارتفاع قفل‌شده تا در هیچ چیدمانی له نشود.
+   اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴): نوار y 96→194 */
 
 .stepper {
     position: relative;
-    width: 100%;
-    height: 98px;
-    flex: 0 0 98px;
     box-sizing: border-box;
+    width: 100%;
+
+    /* هر سه با هم: تا حتی اگر والد فلکس یا گرید بود، جمع نشود */
+    height: 98px;
+    min-height: 98px;
+    flex: 0 0 98px;
+
     border-bottom: 2px solid #132239;
+    background: var(--color-bg-darkest);
 }
 
 /* ─── ردیف قدم‌ها ─── */
-/* چیدمان LTR: «انتخاب پلن» چپ، «تحویل محصول» راست — دقیقاً مثل فیگما.
-   space-between با padding افقی ۸۵؛ با این عدد فاصله‌ی تمام آیتم‌ها
+/* چیدمان LTR: «انتخاب پلن» چپ، «تحویل محصول» راست.
+   space-between با padding افقی ۸۵ — با این عدد فاصله‌ی تمام آیتم‌ها
    ۱۶۲.۱ می‌شود که با مختصات فیگما دقیقاً می‌خواند. */
 
 .list {
@@ -21,31 +25,38 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 100%;
-    margin: 0;
+
+    box-sizing: border-box;
+    width: 100%;
+    height: 98px;
     padding: 0 85px;
-    list-style: none;
+
+    overflow: hidden;
 }
+
+/* ─── یک قدم ─── */
+/* font-size روی خود عنصر لازم است، وگرنه مرورگر روی <button>
+   فونت پیش‌فرض خودش را می‌گذارد (۱۳.۳px) */
 
 .item {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
-}
-
-.itemInner {
-    display: flex;
-    align-items: center;
     gap: 9px;
+    flex-shrink: 0;
+
+    margin: 0;
     padding: 0;
     border: none;
     background: none;
+
     color: inherit;
     font-family: var(--font-family);
+    font-size: 20px;
+    line-height: 1.15;
     text-align: center;
 }
 
-button.itemInner {
+button.item {
     cursor: pointer;
 }
 
@@ -67,6 +78,7 @@ button.itemInner {
 }
 
 .planName {
+    direction: ltr;
     font-size: 20px;
     line-height: 1.15;
     white-space: nowrap;
@@ -86,7 +98,7 @@ button.itemInner {
 }
 
 .active {
-    color: var(--color-primary-ghost);
+    color: #E0EDFF;
 }
 
 .done {
@@ -94,14 +106,17 @@ button.itemInner {
 }
 
 /* ─── خط پیشرفت ─── */
-/* y=190 در فریم، نوار از y=96 → ۹۴ از بالای نوار. ارتفاع ۴، radius 2 */
+/* در SVG: rect y=190 بدون x، یعنی از x=0 (سمت چپ) شروع می‌شود.
+   direction: ltr لازم است چون صفحه RTL است و بدون آن به راست می‌چسبد. */
 
 .track {
     position: absolute;
     left: 0;
     right: 0;
-    top: 94px;
+    bottom: -2px;
     height: 4px;
+    direction: ltr;
+    pointer-events: none;
 }
 
 .progress {
@@ -112,36 +127,17 @@ button.itemInner {
     transition: width 400ms ease-out;
 }
 
-/* ─── موبایل ─── */
+/* ─── صفحه‌های باریک ─── */
 
-@media (max-width: 1023px) {
-    .stepper {
-        height: auto;
-        flex: 0 0 auto;
-        padding-bottom: 12px;
-    }
-
+@media (max-width: 1200px) {
     .list {
-        height: auto;
-        gap: 16px;
-        padding: 16px;
-        overflow-x: auto;
-        justify-content: flex-start;
+        justify-content: space-between;
+        padding: 0 24px;
     }
 
+    .item,
     .label,
     .planName {
-        font-size: var(--font-size-sm);
-    }
-
-    .check {
-        width: 14px;
-        height: 14px;
-    }
-
-    .track {
-        top: auto;
-        bottom: 0;
-        height: 3px;
+        font-size: 15px;
     }
 }

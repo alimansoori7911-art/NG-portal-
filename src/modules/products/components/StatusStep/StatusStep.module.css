@@ -1,0 +1,141 @@
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴)
+   کارت x=167 y=237 w=1024 h=744 — همان کارت مرحله‌ی فرم */
+
+.stage {
+    position: relative;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    box-sizing: border-box;
+}
+
+.card {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1024px;
+    height: clamp(520px, 96%, 744px);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+
+    border-radius: 20px;
+    /* #0D1726 با ۳۰٪ شفافیت */
+    background: rgba(13, 23, 38, 0.3);
+}
+
+/* بلوک محتوا عمودی وسط‌چین است — در فیگما فاصله‌ی بالا و پایین
+   در هر سه صفحه دقیقاً برابر است (۹۳ / ۱۱۲ / ۱۷۴) */
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 620px;
+    width: 100%;
+}
+
+/* ─── آیکون ─── */
+/* ارتفاع ۶۴ در هر سه صفحه */
+
+.icon {
+    display: block;
+    line-height: 0;
+}
+
+.icon svg {
+    display: block;
+    height: clamp(44px, 6.4vh, 64px);
+    width: auto;
+}
+
+/* ─── عنوان ─── */
+/* آیکون تا y=394.4 و عنوان از y=438.6 → ۴۴.۲ */
+
+.title {
+    margin: clamp(20px, 4.4vh, 44px) 0 0;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* ─── متن توضیح ─── */
+/* عنوان تا y=492.8 و متن از y=532 → ۳۹.۲
+   عرض متن در فیگما ۵۸۹ */
+
+.description {
+    margin: clamp(18px, 3.9vh, 39px) 0 0;
+    max-width: 600px;
+    font-size: clamp(17px, 2.4vh, 24px);
+    line-height: 1.75;
+    color: #B2C6E5;
+}
+
+/* ─── متن راهنما ─── */
+/* متن سفید تا y=638.4 و آبی از y=666.1 → ۲۷.۷
+   عرض در فیگما ۵۲۵ */
+
+.hint {
+    margin: clamp(14px, 2.8vh, 28px) 0 0;
+    max-width: 540px;
+    font-size: clamp(17px, 2.4vh, 24px);
+    line-height: 1.75;
+    color: #4792FF;
+}
+
+/* ─── دکمه‌ها ─── */
+/* آخرین متن تا y=731.5 و دکمه از y=766 → ۳۴.۵
+   دو دکمه ۴۲۶×۵۰ با فاصله‌ی ۲۲ */
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    margin-top: clamp(20px, 3.5vh, 35px);
+    width: 100%;
+}
+
+.actionBtn {
+    width: 426px;
+    max-width: 100%;
+    height: clamp(44px, 4.9vh, 50px);
+    padding: 0;
+
+    border: 2px solid #4073BF;
+    border-radius: 11px;
+    background: transparent;
+
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 2vh, 20px);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 150ms ease;
+}
+
+.actionBtn:hover {
+    background: rgba(64, 115, 191, 0.15);
+}
+
+/* ─── صفحه‌های باریک ─── */
+
+@media (max-width: 900px) {
+    .stage {
+        padding: 16px;
+    }
+
+    .card {
+        height: auto;
+        padding: 40px 16px;
+    }
+
+    .title {
+        font-size: 28px !important;
+    }
+}

@@ -1,17 +1,16 @@
-import { Check } from 'lucide-react'
 import styles from './OrderStepper.module.css'
 
 /**
- * نوار مراحل خرید — مطابق SVG فیگما.
+ * نوار مراحل خرید.
  *
- * جهت چیدمان LTR است: «انتخاب پلن» سمت چپ، «تحویل محصول» سمت راست،
- * و خط پیشرفت از چپ پر می‌شود. (در فیگما هم دقیقاً همین است.)
+ * ارتفاع ثابت ۹۸px و در هر اندازه‌ی صفحه‌ای زیر هدر دیده می‌شود.
+ * جهت چیدمان LTR است: «انتخاب پلن» چپ، «تحویل محصول» راست، و خط
+ * پیشرفت از چپ پر می‌شود — دقیقاً مطابق فیگما.
  *
  * اعداد از SVG (فریم ۱۴۴۰×۱۰۲۴):
- *   نوار      y 96→194 (ارتفاع ۹۸)
- *   خط زیرین  y=190، ارتفاع ۴، radius 2، #1474FF
- *   چیدمان    space-between با padding افقی ۸۵ — با این عدد، فاصله‌ی
- *             تمام آیتم‌ها دقیقاً ۱۶۲.۱ درمی‌آید که با فیگما یکی است.
+ *   نوار      y 96→194 (ارتفاع ۹۸)، خط زیرین ۲px #132239
+ *   پیشرفت    ارتفاع ۴، radius 2، #1474FF
+ *             عرض به ترتیب: 173 / 449 / 813 / 1118 / 1440
  *   برچسب     ۲۰px | تیک ۱۶×۱۶ با فاصله‌ی ۹ از متن
  *   رنگ‌ها     آینده #668FCC | فعال #E0EDFF | تمام‌شده #1474FF
  */
@@ -24,68 +23,85 @@ export const ORDER_STEPS = [
     { id: 'delivery', label: 'تحویل محصول' },
 ]
 
-/* عرض خط پیشرفت در هر مرحله — از SVG:
-   173 / 449 / 813 / 1118 / 1440 از ۱۴۴۰ */
+/* عرض خط پیشرفت در هر مرحله، به درصد از ۱۴۴۰ */
 const PROGRESS = ['12.01%', '31.18%', '56.46%', '77.64%', '100%']
 
-export default function OrderStepper({ currentStep = 0, selectedPlan, onStepClick }) {
+/* تیک ساده — بدون وابستگی به کتابخانه‌ی آیکون */
+function CheckMark() {
     return (
-        <nav className={styles.stepper} aria-label="مراحل خرید">
-            <ol className={styles.list}>
-                {ORDER_STEPS.map((step, i) => {
-                    const done = i < currentStep
-                    const active = i === currentStep
+        <svg
+            className={styles.check}
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+        >
+            <circle cx="8" cy="8" r="8" fill="currentColor" />
+            <path
+                d="M4.5 8.2L6.9 10.6L11.5 6"
+                stroke="#0D1726"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    )
+}
 
-                    const stateClass = done
+export default function OrderStepper({ currentStep = 0, selectedPlan, onStepClick }) {
+    const safeStep = Math.min(Math.max(currentStep, 0), ORDER_STEPS.length - 1)
+    const clickable = typeof onStepClick === 'function'
+
+    return (
+        <div className={styles.stepper}>
+            <div className={styles.list}>
+                {ORDER_STEPS.map((step, i) => {
+                    const done = i < safeStep
+                    const active = i === safeStep
+
+                    const state = done
                         ? styles.done
                         : active
                             ? styles.active
                             : styles.upcoming
 
-                    const clickable = typeof onStepClick === 'function'
-
-                    return (
-                        <li key={step.id} className={`${styles.item} ${stateClass}`}>
-                            {clickable ? (
-                                <button
-                                    type="button"
-                                    className={styles.itemInner}
-                                    onClick={() => onStepClick(i)}
-                                    aria-current={active ? 'step' : undefined}
-                                >
-                                    <StepLabel step={step} index={i} selectedPlan={selectedPlan} />
-                                    {done && <Check size={16} className={styles.check} strokeWidth={3} />}
-                                </button>
-                            ) : (
-                                <span className={styles.itemInner} aria-current={active ? 'step' : undefined}>
-                                    <StepLabel step={step} index={i} selectedPlan={selectedPlan} />
-                                    {done && <Check size={16} className={styles.check} strokeWidth={3} />}
+                    const content = (
+                        <>
+                            {i === 0 && selectedPlan ? (
+                                <span className={styles.labelStack}>
+                                    <span className={styles.label}>{step.label}</span>
+                                    <span className={styles.planName}>({selectedPlan})</span>
                                 </span>
+                            ) : (
+                                <span className={styles.label}>{step.label}</span>
                             )}
-                        </li>
+                            {done && <CheckMark />}
+                        </>
+                    )
+
+                    return clickable ? (
+                        <button
+                            key={step.id}
+                            type="button"
+                            className={`${styles.item} ${state}`}
+                            onClick={() => onStepClick(i)}
+                        >
+                            {content}
+                        </button>
+                    ) : (
+                        <span key={step.id} className={`${styles.item} ${state}`}>
+                            {content}
+                        </span>
                     )
                 })}
-            </ol>
+            </div>
 
             <div className={styles.track}>
                 <span
                     className={styles.progress}
-                    style={{ width: PROGRESS[currentStep] ?? PROGRESS[0] }}
+                    style={{ width: PROGRESS[safeStep] }}
                 />
             </div>
-        </nav>
+        </div>
     )
-}
-
-/* قدم اول پس از انتخاب پلن، نام پلن را در خط دوم نشان می‌دهد */
-function StepLabel({ step, index, selectedPlan }) {
-    if (index === 0 && selectedPlan) {
-        return (
-            <span className={styles.labelStack}>
-                <span className={styles.label}>{step.label}</span>
-                <span className={styles.planName} dir="ltr">({selectedPlan})</span>
-            </span>
-        )
-    }
-    return <span className={styles.label}>{step.label}</span>
 }

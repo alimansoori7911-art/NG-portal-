@@ -1,0 +1,237 @@
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴)
+   کارت x=167 y=237 w=1024 h=744 — نوار مراحل تا ۱۹۴ و فریم تا ۱۰۲۴
+   → فاصله‌ی بالا ۴۳ و پایین ۴۳، یعنی عمودی وسط‌چین */
+
+.stage {
+    position: relative;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    box-sizing: border-box;
+}
+
+/* ─── کارت ─── */
+
+.card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1024px;
+    height: clamp(520px, 96%, 744px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: clamp(16px, 3.4vh, 34px) clamp(24px, 4.6vw, 70px);
+
+    border-radius: 20px;
+    /* #0D1726 با ۳۰٪ شفافیت */
+    background: rgba(13, 23, 38, 0.3);
+}
+
+/* ─── بج پلن ─── */
+/* x=191.5 y=261.5 نسبت به کارت (167, 237) → ۲۴.۵ و ۲۴.۵ */
+
+.planBadge {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 32px;
+    padding: 0 14px;
+
+    border: 1px solid #668FCC;
+    border-radius: 16px;
+    background: #132239;
+
+    color: #ADCFFF;
+    font-size: 14px;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ─── ضربدر ─── */
+/* مرکز (1155, 273) نسبت به کارت → ۹۸۸ از چپ، ۲۴ از بالا */
+
+.closeBtn {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #7AB0FF;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.closeBtn svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+/* ─── عنوان ─── */
+/* y 290→330 → ۴۰px */
+
+.title {
+    margin: 0 0 clamp(20px, 4.2vh, 42px);
+    font-size: clamp(26px, 4vh, 40px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #7AB0FF;
+    text-align: center;
+}
+
+/* ─── شبکه‌ی اینپوت‌ها ─── */
+/* دو ستون ۴۲۵ با فاصله‌ی ۳۱ | سه ردیف با گام ۹۶ (اینپوت ۶۵ + فاصله ۳۱) */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 425px));
+    gap: clamp(14px, 3.1vh, 31px);
+    justify-content: center;
+    width: 100%;
+}
+
+.input,
+.textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 18px;
+
+    border: 1px solid #203A60;
+    border-radius: 6.5px;
+    background: transparent;
+
+    color: #E0EDFF;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 1.8vh, 18px);
+    text-align: right;
+    outline: none;
+    transition: border-color 150ms ease;
+}
+
+.input {
+    height: clamp(48px, 6.4vh, 65px);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+    color: #335C99;
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: #4073BF;
+}
+
+/* ─── آدرس ─── */
+/* x=237.5 y=660.5 w=883 h=193 — عرضش از شبکه بیشتر است
+   (۸۸۳ در برابر ۴۲۵×۲+۳۱=۸۸۱) پس عملاً هم‌عرض شبکه است */
+
+.textarea {
+    margin-top: clamp(14px, 3.1vh, 31px);
+    max-width: 881px;
+    height: clamp(110px, 19vh, 193px);
+    padding: 16px 18px;
+    line-height: 1.7;
+    resize: none;
+}
+
+/* ─── دکمه‌ها ─── */
+/* y≈884 و کارت تا y=981 → حدود ۴۷ از پایین
+   جهت RTL: «ثبت سفارش» راست، «انتخاب مجدد پلن» چپ */
+
+.actions {
+    display: flex;
+    gap: clamp(14px, 3.1vh, 33px);
+    justify-content: center;
+    width: 100%;
+    margin-top: auto;
+    padding-top: clamp(16px, 3vh, 30px);
+}
+
+.submitBtn,
+.backBtn {
+    padding: 0;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 2vh, 20px);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 150ms ease, opacity 150ms ease;
+}
+
+/* «ثبت سفارش» — پرشده */
+.submitBtn {
+    width: 424px;
+    max-width: 50%;
+    height: clamp(42px, 4.7vh, 48px);
+    border: none;
+    border-radius: 10px;
+    background: #4073BF;
+    color: #FFFFFF;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #4F86D9;
+}
+
+/* فیگما حالت غیرفعال ندارد؛ با شفافیت نمایش داده می‌شود */
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* «انتخاب مجدد پلن» — خالی با حاشیه‌ی ۲px */
+.backBtn {
+    width: 426px;
+    max-width: 50%;
+    height: clamp(44px, 4.9vh, 50px);
+    border: 2px solid #4073BF;
+    border-radius: 11px;
+    background: transparent;
+    color: #ADCFFF;
+}
+
+.backBtn:hover {
+    background: rgba(64, 115, 191, 0.15);
+}
+
+/* ─── صفحه‌های باریک ─── */
+
+@media (max-width: 900px) {
+    .stage {
+        padding: 16px;
+    }
+
+    .card {
+        height: auto;
+        padding: 56px 16px 24px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .submitBtn,
+    .backBtn {
+        width: 100%;
+        max-width: 426px;
+    }
+}
