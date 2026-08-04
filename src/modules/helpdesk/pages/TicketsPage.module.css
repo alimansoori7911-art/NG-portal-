@@ -1,114 +1,147 @@
+/* اعداد خام از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴).
+   هدر position: fixed است و فضا اشغال نمی‌کند، پس padding-top لازم است. */
+
 .page {
-    height: 100vh;
-    height: 100dvh;
+    position: relative;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: 96px;
+    background: var(--color-bg-darkest);
+}
+
+/* ─── نشانگر خرید زیر هدر ─── */
+/* x=1230 y=120، ۱۱۴×۵۶، radius 5، #0F2C57
+   فاصله از راست: 1440 - 1230 - 114 = ۹۶ */
+
+.buyBadge {
+    position: absolute;
+    top: 120px;
+    right: 96px;
+    z-index: 5;
+
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    padding: clamp(82px, 10vh, 110px) var(--spacing-xl) clamp(12px, 2vh, 28px);
-    overflow: hidden;
+    justify-content: center;
+    gap: 4px;
+
+    width: 114px;
+    height: 56px;
+    border-radius: 5px;
+    background: #0F2C57;
+
+    color: #FFFFFF;
+    font-size: 12px;
+    pointer-events: none;
+    user-select: none;
 }
 
-/* ═══════════ نوار راهنما ═══════════ */
+/* ─── ناحیه‌ی محتوا ─── */
+
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 24px 47px;
+}
+
+/* ─── نوار راهنما ─── */
+/* x=239.5 y=122.5، ۹۶۱×۷۳ — هدر تا ۹۶ → ۲۶.۵ فاصله */
 
 .hint {
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    width: min(100%, 752px);
-    padding: clamp(9px, 1.4vh, 14px) var(--spacing-lg);
-    margin-bottom: clamp(12px, 2.2vh, 28px);
-    border: 1px solid var(--color-primary-soft);
-    border-radius: var(--radius-md);
-    background: #050D1A;
+    gap: 16px;
+    width: 100%;
+    max-width: 961px;
+    height: 73px;
+    margin-top: 26.5px;
+    padding: 0 16px;
+
+    border: 1px solid #7AB0FF;
+    border-radius: 5.5px;
+    background: #000814;
     flex-shrink: 0;
+}
+
+/* در RTL اولین فرزند سمت راست می‌نشیند — مطابق فیگما */
+.hintClose {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #1474FF;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: background 150ms ease;
+}
+
+.hintClose:hover {
+    background: #4792FF;
 }
 
 .hintText {
     flex: 1;
     text-align: center;
-    font-size: clamp(0.9375rem, 0.5vw + 0.8rem, 1.0625rem);
-    color: var(--color-white);
+    font-size: 20px;
+    color: #ADCFFF;
 }
 
-/* order: -1 در RTL دکمه را به لبه‌ی راست می‌برد، مطابق فیگما */
-.hintClose {
-    order: -1;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-full);
-    background: var(--color-primary-light);
-    color: var(--color-white);
-    cursor: pointer;
-    transition: background var(--transition-fast);
-}
+/* ─── کارت جدول ─── */
+/* هدر جدول از y=239 و کارت تا y=901 → ارتفاع ۶۶۲
+   نوار راهنما تا y=195.5 → ۴۳.۵ فاصله */
 
-.hintClose:hover {
-    background: var(--color-primary-soft);
-}
-
-/* ═══════════ کارت جدول ═══════════ */
-/* رنگ‌ها به‌صورت solid تعریف شده‌اند (نه rgba روی مشکی) تا ته‌رنگ سرمه‌ای
-   فیگما دقیق دربیاید؛ حالت شفاف باعث می‌شد جدول زیادی مشکی دیده شود. */
-
-/* کارت به اندازه‌ی محتوا جمع می‌شود (کش نمی‌آید) و اگر ردیف‌ها از فضای
-   موجود بیشتر شدند، فقط بدنه‌ی جدول اسکرول می‌خورد. */
 .card {
-    width: min(100%, 976px);
-    min-height: 0;
-    flex: 0 1 auto;
-    background: transparent;
-    border: 1px solid rgba(71, 146, 255, 0.16);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1250px;
+    height: 662px;
+    margin-top: 43.5px;
 
-.tableScroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    border: 2px solid #132239;
+    border-radius: 31px;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* ─── هدر جدول ─── */
+/* y 239→313 یعنی ارتفاع ۷۴ */
+
+.headRow {
+    height: 74px;
+}
+
+.headCell {
+    height: 74px;
+    padding: 0 8px;
+    background: #0D1726;
+    color: #E0EDFF;
+    font-size: 24px;
+    font-weight: 400;
     text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
-/* تنها بخش دارای پس‌زمینه — بدنه‌ی جدول شفاف است و رنگ صفحه از آن رد می‌شود */
-.table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    padding: clamp(11px, 1.9vh, 19px) var(--spacing-md);
-    background: #101E33;
-    color: var(--color-white);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    border-bottom: 1px solid rgba(122, 176, 255, 0.16);
-}
-
-.table tbody td {
-    padding: clamp(9px, 1.7vh, 17px) var(--spacing-md);
-    font-size: var(--font-size-sm);
-    color: var(--color-white);
-    border-bottom: 1px solid rgba(122, 176, 255, 0.10);
-}
-
-.table tbody tr:last-child td {
-    border-bottom: none;
-}
+/* ─── ردیف‌ها ─── */
+/* ۶۴px، جداکننده 2px #0D1726 در y = 376، 440، 504، … */
 
 .row {
+    height: 64px;
     cursor: pointer;
-    transition: background var(--transition-fast);
+    transition: background 150ms ease;
 }
 
 .row:hover,
@@ -117,132 +150,139 @@
     outline: none;
 }
 
-.row:focus-visible {
-    box-shadow: inset 0 0 0 1px var(--color-primary-soft);
+.cell {
+    height: 64px;
+    padding: 0 8px;
+    border-bottom: 2px solid #0D1726;
+    color: #E0EDFF;
+    font-size: 18px;
+    text-align: center;
+    vertical-align: middle;
 }
 
-/* ═══════════ صفحه‌بندی و دکمه ═══════════ */
-/* صفحه‌بندی چسبیده به لبه‌ی راست کارت و نزدیک به آن؛ دکمه مستقل و وسط‌چین */
+/* ─── پاورقی ─── */
+/* صفحه‌بندی x=95.5 y=911.5 (چسبیده به لبه‌ی چپ کارت)
+   دکمه x=507 y=927 وسط‌چین — هر دو روی یک نوار */
 
 .footer {
     position: relative;
-    width: min(100%, 976px);
+    width: 100%;
+    max-width: 1250px;
+    margin-top: 10.5px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    margin-top: clamp(6px, 1vh, 12px);
+    align-items: flex-start;
     flex-shrink: 0;
 }
 
 .pagination {
     position: absolute;
+    left: 0;
     top: 0;
-    right: 4px;
     display: flex;
-    gap: 4px;
+    direction: ltr;
+    gap: 7px;
 }
 
 .pageBtn {
-    width: 19px;
-    height: 19px;
+    width: 25px;
+    height: 25px;
+    padding: 0;
     display: grid;
     place-items: center;
-    padding: 0;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
+
+    border: 1px solid #192D4C;
+    border-radius: 5.5px;
     background: transparent;
-    color: var(--color-white);
+
+    color: var(--color-link);
     font-family: var(--font-family);
     font-size: var(--font-size-xs);
     line-height: 1;
     cursor: pointer;
-    transition: border-color var(--transition-fast), background var(--transition-fast);
+    transition: background 150ms ease, border-color 150ms ease;
 }
 
 .pageBtn:hover {
-    background: rgba(71, 146, 255, 0.12);
+    border-color: #4073BF;
 }
 
 .pageActive {
-    border-color: var(--color-primary-soft);
-    color: var(--color-primary-soft);
+    background: #132239;
+    border-color: #4073BF;
+    color: #E0EDFF;
 }
 
-.backWrapper {
-    width: min(100%, 332px);
+/* دکمه ۱۵.۵ پایین‌تر از صفحه‌بندی شروع می‌شود (927 در برابر 911.5) */
+.backBtn {
+    width: 426px;
+    max-width: 100%;
+    height: 50px;
+    margin-top: 15.5px;
+    padding: 0;
+
+    border: 2px solid #4073BF;
+    border-radius: 11px;
+    background: transparent;
+
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: 20px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 150ms ease;
 }
 
-/* ═══════════ موبایل — هر ردیف یک کارت ═══════════ */
+.backBtn:hover {
+    background: rgba(64, 115, 191, 0.15);
+}
 
-@media (max-width: 768px) {
-    .page {
-        height: auto;
-        min-height: 100dvh;
-        padding: 90px var(--spacing-md) var(--spacing-2xl);
-        overflow: visible;
-    }
+/* ─── صفحه‌های باریک ─── */
 
-    .card {
-        flex: none;
-        background: none;
-        border: none;
-        border-radius: 0;
-        overflow: visible;
-    }
-
-    .tableScroll {
-        overflow: visible;
-    }
-
-    .table thead {
+@media (max-width: 1100px) {
+    .buyBadge {
         display: none;
     }
 
-    .table,
-    .table tbody,
-    .table tr,
-    .table td {
-        display: block;
+    .hint {
+        height: auto;
+        min-height: 60px;
+        padding: 12px 16px;
     }
 
-    .row {
-        margin-bottom: var(--spacing-md);
-        padding: var(--spacing-xs) var(--spacing-md);
-        background: transparent;
-        border: 1px solid rgba(71, 146, 255, 0.16);
-        border-radius: var(--radius-lg);
+    .hintText {
+        font-size: var(--font-size-md);
     }
 
-    .table tbody td {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--spacing-md);
-        padding: var(--spacing-sm) 0;
-        text-align: right;
-        border-bottom: 1px solid rgba(122, 176, 255, 0.10);
+    .card {
+        height: auto;
     }
 
-    .table tbody tr td:last-child {
-        border-bottom: none;
+    .headCell {
+        height: 60px;
+        font-size: var(--font-size-lg);
     }
 
-    .table tbody td::before {
-        content: attr(data-label);
-        color: var(--color-text-muted);
-        font-size: var(--font-size-xs);
+    .row,
+    .cell {
+        height: 56px;
+    }
+
+    .cell {
+        font-size: var(--font-size-md);
     }
 
     .footer {
-        flex-direction: column-reverse;
-        gap: var(--spacing-lg);
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
     }
 
     .pagination {
         position: static;
     }
 
-    .backWrapper {
-        width: 100%;
+    .backBtn {
+        margin-top: 0;
     }
 }

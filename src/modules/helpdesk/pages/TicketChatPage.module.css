@@ -1,0 +1,252 @@
+/* اعداد خام از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴).
+   هدر position: fixed است و فضا اشغال نمی‌کند. */
+
+.page {
+    box-sizing: border-box;
+    height: 100vh;
+    height: 100dvh;
+    padding-top: 96px;
+    overflow: hidden;
+    background: var(--color-bg-darkest);
+}
+
+.main {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 0 80px 96px;
+    box-sizing: border-box;
+}
+
+/* ─── کارت چت ─── */
+/* x=80 y=96، ۱۲۸۰×۸۳۲، radius 32 */
+
+.card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1280px;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+
+    border-radius: 32px;
+    background: #000814;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* ─── درخشش پس‌زمینه ─── */
+/* دایره‌ی دورتر: cx=842 cy=707 r=140 رنگ #7AB0FF با blur 150
+   نسبت به کارت (80, 96) → مرکز (762, 611) */
+
+.glowFar {
+    position: absolute;
+    left: 762px;
+    top: 611px;
+    width: 280px;
+    height: 280px;
+    margin: -140px 0 0 -140px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 50%;
+    background: #7AB0FF;
+    filter: blur(150px);
+}
+
+/* دایره‌ی نزدیک‌تر: cx=645 cy=824 r=207 رنگ #005CE0 با blur 250
+   نسبت به کارت → مرکز (565, 728) */
+
+.glowNear {
+    position: absolute;
+    left: 565px;
+    top: 728px;
+    width: 414px;
+    height: 414px;
+    margin: -207px 0 0 -207px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 50%;
+    background: #005CE0;
+    filter: blur(250px);
+}
+
+/* ─── ضربدر ─── */
+/* x=1312 y=120 نسبت به کارت (80, 96) → ۱۲۳۲ از چپ، ۲۴ از بالا
+   یعنی ۲۴ از لبه‌ی راست کارت */
+
+.closeBtn {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 2;
+
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #7AB0FF;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.closeBtn svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+
+/* ─── فهرست پیام‌ها ─── */
+/* پیام‌ها از پایین چیده می‌شوند: در فیگما فضای بالای کارت خالی است */
+
+.messages {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 24px;
+    padding: 40px 0 24px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #192D4C transparent;
+}
+
+.messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 3px;
+}
+
+/* ─── حباب پیام ─── */
+
+.bubble {
+    box-sizing: border-box;
+    padding: 14px 18px;
+    font-size: 15px;
+    line-height: 1.85;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* پیام کارشناس — سمت راست
+   x=586.5 y=601.5، ۵۹۰×۹۳، radius 7.5 */
+.agent {
+    align-self: flex-start;
+    width: 590px;
+    max-width: 100%;
+    border: 1px solid #7AB0FF;
+    border-radius: 7.5px;
+    /* #192D4C با ۵۰٪ شفافیت */
+    background: rgba(25, 45, 76, 0.5);
+    color: #ADCFFF;
+}
+
+/* پیام کاربر — سمت چپ
+   x=310 y=719، ۵۷۶×۹۲، radius 8، با سایه‌ی محو */
+.user {
+    align-self: flex-end;
+    width: 576px;
+    max-width: 100%;
+    border: 1px solid #1474FF;
+    border-radius: 8px;
+    /* #000814 با ۹۰٪ شفافیت */
+    background: rgba(0, 8, 20, 0.9);
+    color: #1474FF;
+    box-shadow: 0 0 8.6px rgba(20, 116, 255, 0.35);
+}
+
+/* ─── نوار ورودی ─── */
+/* x=301.5 y=834.5، ۸۸۴×۵۷، radius 8.5 */
+
+.composer {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    align-self: center;
+    width: 884px;
+    max-width: 100%;
+    height: 57px;
+    padding: 0 12px;
+    flex-shrink: 0;
+
+    border: 1px solid #7AB0FF;
+    border-radius: 8.5px;
+    background: #000814;
+}
+
+/* در RTL اولین فرزند سمت راست می‌نشیند؛ دکمه‌ی ارسال باید چپ باشد */
+.sendBtn {
+    order: 1;
+    flex-shrink: 0;
+    width: 23px;
+    height: 23px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #7AB0FF;
+    cursor: pointer;
+    line-height: 0;
+    transition: opacity 150ms ease;
+}
+
+.sendBtn:hover {
+    opacity: 0.75;
+}
+
+.sendBtn svg {
+    width: 23px;
+    height: 23px;
+    display: block;
+}
+
+.input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+
+    color: #E0EDFF;
+    font-family: var(--font-family);
+    font-size: 16px;
+    text-align: right;
+    outline: none;
+}
+
+.input::placeholder {
+    color: #7AB0FF;
+}
+
+/* ─── صفحه‌های باریک ─── */
+
+@media (max-width: 1100px) {
+    .main {
+        padding: 0 16px 24px;
+    }
+
+    .card {
+        border-radius: 20px;
+        padding: 16px;
+    }
+
+    .agent,
+    .user {
+        width: auto;
+        max-width: 85%;
+    }
+
+    .glowFar,
+    .glowNear {
+        left: 50%;
+        top: 70%;
+    }
+}

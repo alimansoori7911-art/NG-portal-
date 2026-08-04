@@ -16,6 +16,7 @@ import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
 import HelpdeskTicketsPage from "./modules/helpdesk/pages/TicketsPage";
 import OrderListPage from "./modules/products/pages/OrderListPage";
 import NewOrderPage from "./modules/products/pages/NewOrderPage";
+import TicketChatPage from "./modules/helpdesk/pages/TicketChatPage";
 /* داشبورد */
 import DashboardLayout from "./modules/dashboard/components/DashboardLayout/DashboardLayout";
 import ServicesPage from "./modules/dashboard/organization/pages/ServicesPage";
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/helpdesk" element={<HelpdeskPage />} />
                 <Route path="/helpdesk/new" element={<NewTicketPage />} />
                 <Route path="/helpdesk/tickets" element={<HelpdeskTicketsPage />} />
+                <Route path="/helpdesk/tickets/:id/chat" element={<TicketChatPage />} />
 
                 {/* Placeholder — بعداً با فیگمای مخصوص خودشان کامل می‌شوند */}
                 <Route path="/contact" element={<ContactPage />} />

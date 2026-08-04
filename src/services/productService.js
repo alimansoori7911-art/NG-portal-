@@ -1,6 +1,10 @@
 import api from "./api";
 import { mockProductApi } from "./productService.mock";
 
+
+/* TODO: صفحه‌بندی — بک‌اند از ?page=1 استفاده می‌کند و limit ثابت است.
+   فعلاً یک محصول داریم و لازم نیست. اگر لیست بلندی اضافه شد،
+   باید محل pagination در پاسخ (داخل data یا meta) مشخص شود. */
 const unwrap = (res) => res.data?.data;
 
 /* سوییچ داده‌ی نمونه.
