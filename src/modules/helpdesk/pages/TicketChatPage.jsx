@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import Header from '../../../components/layout/Header/Header'
-import { MOCK_MESSAGES } from '../data/mockMessages'
+import { useTicketChat } from '../hooks/useTicketChat'
 import styles from './TicketChatPage.module.css'
 
 /**
@@ -21,28 +21,39 @@ import styles from './TicketChatPage.module.css'
  */
 export default function TicketChatPage() {
     const navigate = useNavigate()
+    const { id: ticketId } = useParams()
 
-    // TODO: پیام‌ها از بک‌اند بیایند و ارسال واقعی انجام شود
-    const [messages, setMessages] = useState(MOCK_MESSAGES)
+    const { messages, loading, error, sending, sendError, send, canReply } =
+        useTicketChat(ticketId)
+
     const [draft, setDraft] = useState('')
+    const listRef = useRef(null)
 
-    const send = () => {
-        const text = draft.trim()
-        if (!text) return
+    /* با هر پیام تازه، انتهای گفتگو دیده شود */
+    useEffect(() => {
+        if (listRef.current) {
+            listRef.current.scrollTop = listRef.current.scrollHeight
+        }
+    }, [messages.length])
 
-        setMessages((prev) => [
-            ...prev,
-            { id: Date.now(), author: 'user', text },
-        ])
-        setDraft('')
+    const submit = async () => {
+        if (sending) return
+        /* پیش‌نویس فقط وقتی پاک می‌شود که ارسال موفق بوده باشد،
+           تا در صورت خطا متن کاربر از دست نرود. */
+        const ok = await send(draft)
+        if (ok) setDraft('')
     }
 
     const onKeyDown = (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault()
-            send()
+            submit()
         }
     }
+
+    const placeholder = canReply
+        ? 'متن خود را اینجا تایپ کنید'
+        : 'این تیکت بسته شده است'
 
     return (
         <div className={styles.page}>
@@ -63,7 +74,25 @@ export default function TicketChatPage() {
                         <CloseIcon />
                     </button>
 
-                    <div className={styles.messages}>
+                    <div className={styles.messages} ref={listRef}>
+                        {loading && (
+                            <div className={`${styles.bubble} ${styles.agent}`}>
+                                در حال دریافت گفتگو…
+                            </div>
+                        )}
+
+                        {!loading && error && (
+                            <div className={`${styles.bubble} ${styles.agent}`} role="alert">
+                                {error}
+                            </div>
+                        )}
+
+                        {!loading && !error && messages.length === 0 && (
+                            <div className={`${styles.bubble} ${styles.agent}`}>
+                                هنوز پیامی در این تیکت ثبت نشده است
+                            </div>
+                        )}
+
                         {messages.map((msg) => (
                             <div
                                 key={msg.id}
@@ -74,13 +103,20 @@ export default function TicketChatPage() {
                                 {msg.text}
                             </div>
                         ))}
+
+                        {sendError && (
+                            <div className={`${styles.bubble} ${styles.user}`} role="alert">
+                                {sendError}
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.composer}>
                         <button
                             type="button"
                             className={styles.sendBtn}
-                            onClick={send}
+                            onClick={submit}
+                            disabled={sending || !canReply || !draft.trim()}
                             aria-label="ارسال پیام"
                         >
                             <SendIcon />
@@ -88,10 +124,11 @@ export default function TicketChatPage() {
 
                         <input
                             className={styles.input}
-                            placeholder="متن خود را اینجا تایپ کنید"
+                            placeholder={placeholder}
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
                             onKeyDown={onKeyDown}
+                            disabled={!canReply || loading}
                         />
                     </div>
                 </div>

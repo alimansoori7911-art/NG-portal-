@@ -3,7 +3,9 @@ import styles from './DataTable.module.css'
 /**
  * کارت جدول — مطابق SVG فیگما.
  *
- * columns: [{ key, label, width, ltr }]  ترتیب از راست به چپ
+ * columns: [{ key, label, width, ltr, render }]  ترتیب از راست به چپ
+ *   render(row) اختیاری است؛ برای سلول‌هایی که به‌جای متن، محتوای دلخواه
+ *   دارند (مثل دکمه‌ی حذف). اگر نبود، row[key] نمایش داده می‌شود.
  * rows:    آرایه‌ای از آبجکت‌ها که کلیدهایشان با column.key یکی است
  * page / pageCount / onPageChange: صفحه‌بندی
  *
@@ -27,6 +29,7 @@ export default function DataTable({
                                       align = 'center',
                                       headerHeight,
                                       paginationIndent,
+                                      emptyMessage,
                                   }) {
     const cssVars = {}
     if (headerHeight != null) cssVars['--header-height'] = `${headerHeight}px`
@@ -56,17 +59,28 @@ export default function DataTable({
                         </thead>
 
                         <tbody>
+                        {rows.length === 0 && emptyMessage ? (
+                            <tr>
+                                <td className={styles.empty} colSpan={columns.length}>
+                                    {emptyMessage}
+                                </td>
+                            </tr>
+                        ) : null}
                         {rows.map((row, i) => (
                             // TODO: کلیک روی ردیف پس از مشخص شدن صفحه‌ی جزئیات فعال شود
                             <tr key={row.id ?? i} className={styles.row}>
                                 {columns.map((col) => (
                                     <td key={col.key} className={styles.cell}>
+                                        {col.render ? (
+                                            col.render(row)
+                                        ) : (
                                             <span
                                                 className={styles.cellText}
                                                 dir={col.ltr ? 'ltr' : undefined}
                                             >
                                                 {row[col.key]}
                                             </span>
+                                        )}
                                     </td>
                                 ))}
                             </tr>

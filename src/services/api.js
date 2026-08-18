@@ -11,6 +11,7 @@
 
 import axios from "axios";
 import { tokenManager } from "./tokenManager.js";
+import { localizeError } from "../constants/auth.js";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -159,15 +160,22 @@ api.interceptors.response.use(
 
         // ── نرمالایز کردن خطا ──
         // بک‌اند خطاها را در قالب { data: { error: {...} }, meta } می‌فرستد.
+        // بعضی پاسخ‌ها error را یک لایه بالاتر می‌گذارند، پس هر دو چک می‌شود.
         const body = error.response?.data;
-        const apiError = body?.data?.error;
+        const apiError = body?.data?.error ?? body?.error;
+        const code = apiError?.code ?? "UNKNOWN";
 
         return Promise.reject({
             status: status ?? 0,
-            code: apiError?.code ?? "UNKNOWN",
-            message:
-                apiError?.message ??
-                (status ? "خطایی رخ داد. لطفاً دوباره تلاش کنید." : "ارتباط با سرور برقرار نشد."),
+            code,
+            /*
+              پیام بک‌اند انگلیسی است؛ اگر برای کد، ترجمه‌ی فارسی داشته باشیم
+              همان نمایش داده می‌شود. صفحه‌ها می‌توانند با خواندن code پیام
+              دقیق‌تر خودشان را بگذارند.
+            */
+            message: status
+                ? localizeError(code, apiError?.message)
+                : "ارتباط با سرور برقرار نشد.",
             details: apiError?.details ?? null,
             // meta برای سیگنال‌هایی مثل redirect_to لازم است
             meta: body?.meta ?? null,

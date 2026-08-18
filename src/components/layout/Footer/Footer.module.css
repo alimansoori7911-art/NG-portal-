@@ -168,8 +168,41 @@
     transition: color var(--transition-fast);
 }
 
-.inputBtn:hover {
+.inputBtn:hover:not(:disabled) {
     color: var(--color-white);
+}
+
+.inputBtn:disabled,
+.input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* اسپینر حالت ارسال */
+.spinner {
+    animation: footerSpin 0.9s linear infinite;
+}
+
+@keyframes footerSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* پیام نتیجه — زیر خود فیلد، چون فوتر ته صفحه است */
+.feedback {
+    margin: var(--spacing-sm) 0 0;
+    font-size: var(--font-size-xs);
+    line-height: 1.6;
+    text-align: right;
+}
+
+.feedbackSuccess {
+    color: #6BCB77;
+}
+
+.feedbackError {
+    color: #FF6369;
 }
 
 /* شبکه‌های اجتماعی */

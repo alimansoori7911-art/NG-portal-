@@ -206,3 +206,10 @@
         padding-right: 24px;
     }
 }
+/* حالت خالی — وقتی داده‌ای نیست یا در حال بارگذاری است */
+.empty {
+    height: 160px;
+    color: var(--color-primary-soft);
+    font-size: var(--font-size-md);
+    text-align: center;
+}

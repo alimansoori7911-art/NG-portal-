@@ -1,0 +1,183 @@
+/* اعداد از SVG (فریم ۱۴۴۰×۴۳۱۶، اسکرول‌شونده):
+   فیلدها ۴۲۳×۶۳ radius 5.5 — پرشده stroke #8CABD9، خالی #203A60
+   دو ستون: x=620.5 (راست) و x=124.5 (چپ) → فاصله‌ی افقی ~۷۲
+   ردیف‌های فیلد در y=394، 490، 586، 682 → گام ۹۶ (۶۳ ارتفاع + ۳۳ فاصله)
+   دکمه‌ها y=314، ارتفاع ۴۰: ویرایش x=414 w=164، احراز x=602 w=152
+   عنوان بخش‌ها: کادر #0D1726 با خط افقی #192D4C از x=96.5 تا x=1092.5
+   جدول‌ها ۱۱۰۹×۵۱۲ radius 20 */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #000000;
+}
+
+.dialog {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.close {
+    position: absolute;
+    top: 24px;
+    left: 40px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 80px 40px 60px;
+}
+
+.scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 4px;
+}
+
+/* ── عنوان بخش ── */
+/* برچسب وسط، با خط افقی که از دو طرف امتداد می‌یابد */
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 56px 0 32px;
+    position: relative;
+}
+
+.sectionTitle::before {
+    content: '';
+    position: absolute;
+    right: 24px;
+    left: 24px;
+    top: 50%;
+    height: 1px;
+    background: #192D4C;
+}
+
+.sectionTitle:first-child {
+    margin-top: 0;
+}
+
+.sectionLabel {
+    position: relative;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+}
+
+/* ── دکمه‌های بخش اطلاعات ── */
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.actionBtn {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.actionBtn:hover {
+    color: var(--color-white);
+    background: #16243B;
+}
+
+/* ── فیلدهای اطلاعات ── */
+/* دو ستونه؛ در RTL ستون اول سمت راست می‌نشیند — همان ترتیب فیگما */
+.fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 423px));
+    justify-content: center;
+    gap: 33px 72px;
+    margin-bottom: 24px;
+}
+
+.field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 63px;
+    padding: 0 18px;
+    border: 1px solid #203A60;
+    border-radius: 5.5px;
+}
+
+/* فیلد پرشده در فیگما حاشیه‌ی روشن‌تری دارد */
+.fieldFilled {
+    border-color: #8CABD9;
+}
+
+/* برچسب روی لبه‌ی بالای کادر می‌نشیند */
+.fieldLabel {
+    position: absolute;
+    top: -9px;
+    right: 14px;
+    padding: 0 6px;
+    background: #000000;
+    color: #668FCC;
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.fieldValue {
+    color: #E0EDFF;
+    font-size: var(--font-size-sm);
+}
+
+@media (max-width: 1023px) {
+    .scroll {
+        padding: 72px 16px 40px;
+    }
+
+    .close {
+        left: 16px;
+    }
+
+    .fields {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+    }
+
+    .actions {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}

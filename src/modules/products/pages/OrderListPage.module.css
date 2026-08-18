@@ -97,3 +97,10 @@
         border-radius: 10px;
     }
 }
+/* پیام خطای دریافت سفارش‌ها */
+.message {
+    margin: 0 0 12px;
+    color: #FF6369;
+    font-size: var(--font-size-sm);
+    text-align: right;
+}

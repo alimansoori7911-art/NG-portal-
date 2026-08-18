@@ -1,0 +1,136 @@
+/* اعداد از SVGهای بخش مالی:
+   تب فعال در y=140 (تراکنش‌ها | مدیریت و صدور فاکتور ۱۹۲×۴۰)
+   دکمه «صدور فاکتور» ۱۲۶×۴۰ در y=188 سمت راست
+   نوار عملیات y=379 ارتفاع ۳۴ — یک دکمه ۱۸۱×۳۴ radius 10.5 */
+
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tabs {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    height: 40px;
+    margin: 40px 0 24px;
+}
+
+.tab {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: #668FCC;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tab:hover:not(.tabActive) {
+    color: #8CABD9;
+}
+
+.tab.tabActive {
+    background: #1474FF;
+    color: var(--color-white);
+}
+
+/* ── نوار صدور فاکتور ── */
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.createBtn {
+    height: 40px;
+    min-width: 126px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.createBtn:hover {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+/* ── نوار عملیات ردیف ── */
+.rowActions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.rowActionBtn {
+    height: 34px;
+    min-width: 181px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 10.5px;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.rowActionBtn:hover {
+    background: var(--color-white);
+    color: #1474FF;
+}
+
+.rowActionsClose {
+    position: absolute;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    color: #1474FF;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.rowActionsClose:hover {
+    background: var(--color-white);
+}
+
+@media (max-width: 1023px) {
+    .tabs {
+        gap: var(--spacing-sm);
+        margin: 20px 0 16px;
+        overflow-x: auto;
+    }
+
+    .tab {
+        padding: 0 14px;
+        font-size: var(--font-size-xs);
+    }
+
+    .rowActionBtn {
+        min-width: 0;
+        padding: 0 10px;
+    }
+}

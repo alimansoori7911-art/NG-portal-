@@ -1,0 +1,167 @@
+/* اعداد از product2.svg:
+   فیلد ۴۲۳×۶۳، radius 5.5، border 1px #8CABD9
+   ستون‌ها x=134.5 و x=630.5 → فاصله‌ی افقی ۷۳ (630.5-557.5)
+   گام عمودی ۱۲۸ → gap 65 بین ردیف‌ها
+   خط جداکننده‌ی بالای فرم در y≈270 از x=96 تا x=1092
+   عنوان در y=292 و دکمه‌ی ذخیره در y=922 */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 22px;
+    background: #192D4C;
+}
+
+/* عنوان مثل یک بج وسط‌چین است، نه تیتر معمولی */
+.title {
+    height: 38px;
+    margin: 0 0 40px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+}
+
+.grid {
+    width: 100%;
+    max-width: 919px;
+    display: grid;
+    grid-template-columns: repeat(2, 423px);
+    justify-content: center;
+    column-gap: 73px;
+    row-gap: 65px;
+}
+
+/* ── فیلد ── */
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    height: 63px;
+    padding: 0 16px;
+    border: 1px solid #8CABD9;
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.field:focus-within {
+    border-color: #1474FF;
+}
+
+.fieldLabel {
+    color: #8CABD9;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fieldInput,
+.fieldSelect {
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    width: 100%;
+}
+
+/* select بومی مرورگر روی پس‌زمینه‌ی تیره خوانا نیست، پس فلش پیش‌فرض
+   حذف و یک فلش سفارشی سمت چپ (انتهای RTL) گذاشته می‌شود. */
+.fieldSelect {
+    appearance: none;
+    padding-left: 20px;
+    background-image: linear-gradient(45deg, transparent 50%, #8CABD9 50%),
+        linear-gradient(135deg, #8CABD9 50%, transparent 50%);
+    background-position: 6px 8px, 11px 8px;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+/* گزینه‌ها در لیست بازشده — مرورگر رنگ خودش را می‌گذارد اگر ست نشود */
+.fieldSelect option {
+    background: #0D1726;
+    color: var(--color-white);
+}
+
+/* ── ذخیره ── */
+.submit {
+    height: 40px;
+    min-width: 113px;
+    margin-top: 60px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.submit:hover:not(:disabled) {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+.submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.error {
+    margin: 20px 0 0;
+    color: #FF6369;
+    font-size: var(--font-size-sm);
+}
+
+@media (max-width: 1023px) {
+    .grid {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        row-gap: 20px;
+        max-width: 480px;
+    }
+
+    .submit {
+        margin-top: 32px;
+    }
+}

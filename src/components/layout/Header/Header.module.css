@@ -124,17 +124,26 @@
     background: #ADCFFF;
 }
 
-/* حالت لاگین — عرض ثابت؛ نام بلند با ... کوتاه می‌شود */
+/* حالت لاگین — عرض ثابت؛ نام بلند با ... کوتاه می‌شود.
+   اندازه‌ها از فیگما: 157×57، شعاع 5.5، حاشیه #203A60 */
 .userBox {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 156px;
-    height: 56px;
+    width: 157px;
+    height: 57px;
     padding: 0 16px;
-    border: 1px solid var(--color-border);
-    border-radius: 5px;
+    border: 1px solid #203A60;
+    border-radius: 5.5px;
     background: #060B13;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.userBox:hover {
+    background: #0D1726;
+    border-color: var(--color-primary-soft);
 }
 
 .userMenuIcon {

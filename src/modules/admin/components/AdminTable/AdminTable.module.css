@@ -1,0 +1,181 @@
+/* اعداد از SVG فیگما:
+   کارت x=40 y=244، ۱۱۰۹×۷۰۴، radius 20، fill #060B13
+   جدول از x=72.5 تا x=1116.5 → ۳۲px حاشیه‌ی داخلی هر طرف
+   خط زیر هدر y=307.5 رنگ #1474FF
+   جداکننده‌ی ردیف‌ها هر ۶۴px رنگ #192D4C
+   صفحه‌بندی x=44 y=962، ۲۴×۲۴، radius 5، گام ۳۲ → gap 8 */
+
+.wrapper {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ارتفاع کارت با تعداد ردیف‌ها تعیین می‌شود، نه ثابت:
+   هدر ۶۴ + حداکثر ۱۰ ردیف ۶۴ = ۷۰۴ (همان عدد فیگما).
+   چون هر صفحه ۱۰ ردیف بیشتر ندارد، اسکرول عمودی لازم نیست. */
+.card {
+    flex: 0 0 auto;
+    border-radius: 20px;
+    background: #060B13;
+    overflow: hidden;
+}
+
+/* فقط افقی — برای نمایشگرهای باریک */
+.scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 32px;
+}
+
+.scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 4px;
+}
+
+.scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+/* ── هدر ── */
+/* بدون پس‌زمینه؛ فقط خط آبی زیرش. ارتفاع ۶۴ (y 244→307.5 منهای padding) */
+.headCell {
+    height: 64px;
+    padding: 0 8px;
+    border-bottom: 1px solid #1474FF;
+    background: #060B13;
+    color: #668FCC;
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* ── ردیف‌ها ── */
+.row {
+    height: 64px;
+}
+
+.rowClickable {
+    cursor: pointer;
+}
+
+.rowClickable:hover:not(.rowSelected) .cell {
+    background: #0D1726;
+}
+
+/* ردیف انتخاب‌شده — کل ردیف آبی پر می‌شود (از SVG: #1474FF) */
+.rowSelected .cell {
+    background: #1474FF;
+    color: var(--color-white);
+    border-bottom-color: #1474FF;
+}
+
+/* نوار عملیات زیر ردیف انتخاب‌شده — ارتفاع ۴۹ از SVG */
+.actionsRow {
+    height: 49px;
+}
+
+.actionsCell {
+    height: 49px;
+    padding: 0 24px;
+    background: #1474FF;
+    border-bottom: 1px solid #1474FF;
+    vertical-align: middle;
+}
+
+.cell {
+    height: 64px;
+    padding: 0 8px;
+    border-bottom: 1px solid #192D4C;
+    color: #8CABD9;
+    font-size: var(--font-size-sm);
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cellText {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.empty {
+    height: 160px;
+    color: #47597A;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+/* ── صفحه‌بندی ── */
+.pagination {
+    flex-shrink: 0;
+    display: flex;
+    direction: ltr;
+    gap: 8px;
+    margin-top: 14px;
+    padding-left: 4px;
+}
+
+.pageBtn {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 5px;
+    background: #0D1726;
+    color: #668FCC;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.pageBtn:hover {
+    color: var(--color-white);
+}
+
+.pageBtnActive {
+    background: #1474FF;
+    color: var(--color-white);
+}
+
+@media (max-width: 1023px) {
+    .scroll {
+        padding: 0 16px;
+    }
+
+    .table {
+        min-width: 820px;
+    }
+
+    .headCell,
+    .row,
+    .cell {
+        height: 56px;
+    }
+
+    .headCell,
+    .cell {
+        font-size: var(--font-size-xs);
+    }
+}

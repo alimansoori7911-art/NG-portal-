@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, X } from 'lucide-react'
 
 import Header from '../../../components/layout/Header/Header'
 import TicketDetailModal from '../components/TicketDetailModal/TicketDetailModal'
-import { MOCK_TICKETS } from '../data/mockTickets'
+import { useDepartments } from '../hooks/useDepartments'
+import { useTickets, TICKETS_PER_PAGE } from '../hooks/useTickets'
 import styles from './TicketsPage.module.css'
 
 /**
@@ -22,8 +23,6 @@ import styles from './TicketsPage.module.css'
  *   دکمه‌ی خرید   x=1230 y=120، ۱۱۴×۵۶، radius 5، #0F2C57
  */
 
-const PAGE_SIZE = 9
-
 const COLUMNS = [
     { key: 'index', label: 'ردیف' },
     { key: 'date', label: 'تاریخ' },
@@ -34,17 +33,13 @@ const COLUMNS = [
 function TicketsPage() {
     const navigate = useNavigate()
     const [showHint, setShowHint] = useState(true)
-    const [page, setPage] = useState(1)
     const [activeTicket, setActiveTicket] = useState(null)
 
-    // TODO: با اتصال بک‌اند، صفحه‌بندی به سمت سرور منتقل می‌شود (?page=1)
-    const tickets = MOCK_TICKETS
-    const pageCount = Math.max(1, Math.ceil(tickets.length / PAGE_SIZE))
-
-    const rows = useMemo(
-        () => tickets.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-        [tickets, page]
-    )
+    /* نام دپارتمان از این هوک می‌آید چون خروجی تیکت فقط
+       department_id دارد. */
+    const { nameOf } = useDepartments()
+    const { rows, page, pageCount, loading, error, setPage, reload } =
+        useTickets(nameOf)
 
     const openTicket = (ticket) => setActiveTicket(ticket)
 
@@ -87,7 +82,31 @@ function TicketsPage() {
                         </tr>
                         </thead>
                         <tbody>
-                        {rows.map((ticket, index) => (
+                        {loading && (
+                            <tr className={styles.row}>
+                                <td className={styles.cell} colSpan={COLUMNS.length}>
+                                    در حال دریافت تیکت‌ها…
+                                </td>
+                            </tr>
+                        )}
+
+                        {!loading && error && (
+                            <tr className={styles.row}>
+                                <td className={styles.cell} colSpan={COLUMNS.length}>
+                                    {error}
+                                </td>
+                            </tr>
+                        )}
+
+                        {!loading && !error && rows.length === 0 && (
+                            <tr className={styles.row}>
+                                <td className={styles.cell} colSpan={COLUMNS.length}>
+                                    هنوز تیکتی ثبت نکرده‌اید
+                                </td>
+                            </tr>
+                        )}
+
+                        {!loading && !error && rows.map((ticket) => (
                             <tr
                                 key={ticket.id}
                                 className={styles.row}
@@ -101,9 +120,7 @@ function TicketsPage() {
                                     }
                                 }}
                             >
-                                <td className={styles.cell}>
-                                    {(page - 1) * PAGE_SIZE + index + 1}
-                                </td>
+                                <td className={styles.cell}>{ticket.index}</td>
                                 <td className={styles.cell}>{ticket.date}</td>
                                 <td className={styles.cell}>{ticket.department}</td>
                                 <td className={styles.cell}>{ticket.status}</td>
@@ -141,9 +158,11 @@ function TicketsPage() {
             </main>
 
             <TicketDetailModal
-                ticket={activeTicket}
+                ticketId={activeTicket?.id}
+                summary={activeTicket}
                 open={Boolean(activeTicket)}
                 onClose={() => setActiveTicket(null)}
+                onClosed={reload}
                 onOpenChat={() =>
                     navigate(`/helpdesk/tickets/${activeTicket.id}/chat`)
                 }

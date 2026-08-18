@@ -3,6 +3,21 @@ import { productService } from '../../../services/productService'
 import { mapPlans } from '../utils/planMapper'
 
 /**
+ * تخت‌کردن پاسخ /products/{slug}/plans
+ *
+ * بک‌اند تأیید کرده که این اندپوینت «آرایه‌ای از آرایه‌های PlanOutput»
+ * برمی‌گرداند (اسپک: ApiResponse[list[PlansOutput]] و خودِ PlansOutput
+ * یک آرایه است). بقیه‌ی اندپوینت‌ها مثل /products/plans تخت هستند.
+ *
+ * هر دو حالت پشتیبانی می‌شود تا اگر بعداً ساختار تخت شد، اینجا نشکند.
+ * تشخیص با Array.isArray روی خود آیتم است، نه با حدس زدن از روی فیلدها.
+ */
+function flattenPlans(raw) {
+    if (!Array.isArray(raw)) return []
+    return raw.flatMap((item) => (Array.isArray(item) ? item : [item]))
+}
+
+/**
  * گرفتن پلن‌های محصول اصلی.
  *
  * چون فعلاً یک محصول داریم، اولین محصول فعالِ لیست انتخاب می‌شود.
@@ -32,7 +47,7 @@ export function usePlans(slug = null) {
                 }
 
                 const raw = await productService.getProductPlans(target)
-                if (!cancelled) setPlans(mapPlans(raw ?? []))
+                if (!cancelled) setPlans(mapPlans(flattenPlans(raw)))
             } catch (err) {
                 if (!cancelled) setError(err?.message || 'دریافت اطلاعات پلن‌ها ناموفق بود')
             } finally {

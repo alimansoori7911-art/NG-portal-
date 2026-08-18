@@ -1,0 +1,32 @@
+/* فریم ۱۴۴۰×۱۰۲۴ — پس‌زمینه‌ی کل صفحه مشکی خالص (از SVG) */
+
+.shell {
+    display: flex;
+    height: 100dvh;
+    background: #000000;
+    overflow: hidden;
+}
+
+.content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* کارت محتوا در SVG از x=40 تا x=1149 است (۱۱۰۹ عرض) و
+   سایدبار از x=1189 شروع می‌شود → ۴۰px فاصله از هر دو طرف */
+.main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 40px 40px;
+    overflow-y: auto;
+}
+
+@media (max-width: 1023px) {
+    .main {
+        padding: 0 16px 24px;
+    }
+}

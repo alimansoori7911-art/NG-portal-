@@ -1,0 +1,289 @@
+/* چیدمان و اعداد از tab11.svg، هم‌راستا با ContentForm:
+   عنوان ۳۸px | فیلدهای ۴۲۳×۶۳ در دو ستون با فاصله‌ی ۲۵
+   دکمه‌ها ارتفاع ۴۰، radius 10
+
+   تفاوت با ContentForm: به‌جای ناحیه‌ی متن آزاد، انتخاب قالب و
+   مقداردهی متغیرهای آن را دارد چون بک‌اند متن را از قالب می‌سازد. */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 22px;
+    background: #192D4C;
+}
+
+.title {
+    height: 38px;
+    margin: 0 0 40px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+}
+
+/* ردیف بالا — دو فیلد ۴۲۳px با فاصله‌ی ۲۵ (608.5 - 158.5 - 425) */
+.topRow {
+    width: 100%;
+    max-width: 883px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+/* حالت ریلیز نوت — فقط یک فیلد، سمت راست */
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    height: 63px;
+    padding: 0 16px;
+    border: 1px solid #8CABD9;
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.field:focus-within {
+    border-color: #1474FF;
+}
+
+.fieldError {
+    border-color: #660000;
+}
+
+.fieldError .fieldLabel,
+.fieldError .fieldInput {
+    color: #FF6369;
+}
+
+.fieldLabel {
+    color: #8CABD9;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fieldInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+/* ── select کانال ── */
+/* فلش پیش‌فرض مرورگر حذف و آیکون سفارشی سمت چپ گذاشته می‌شود */
+.selectRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select {
+    flex: 1;
+    appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+}
+
+.select option {
+    background: #0D1726;
+    color: var(--color-white);
+}
+
+.selectIcon {
+    flex-shrink: 0;
+    color: #8CABD9;
+    pointer-events: none;
+}
+
+/* ── ناحیه‌ی متن پیام ── */
+.errorText {
+    width: 100%;
+    max-width: 883px;
+    margin: 8px 0 0;
+    color: #FF6369;
+    font-size: var(--font-size-xs);
+    text-align: right;
+}
+
+/* ── دکمه‌ها ── */
+.actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 48px;
+}
+
+.actionBtn {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.actionBtn:hover:not(:disabled) {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+.actionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1023px) {
+    .topRow {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-width: 480px;
+    }
+
+
+    .actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 28px;
+    }
+
+    .actionBtn {
+        padding: 0 14px;
+        font-size: var(--font-size-xs);
+    }
+}
+
+/* ═══ متغیرهای قالب ═══ */
+/* هر قالب می‌تواند چند جای‌گذار داشته باشد؛ در شبکه‌ی دوستونه
+   می‌آیند تا فرم بلند نشود. */
+.variables {
+    width: 100%;
+    max-width: 883px;
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.variableGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* ═══ پیش‌نمایش قالب ═══ */
+.preview {
+    width: 100%;
+    max-width: 883px;
+    margin-top: 24px;
+    padding: 14px 16px;
+    border: 1px solid #203A60;
+    border-radius: 6.5px;
+}
+
+.previewText {
+    margin: 6px 0 0;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.previewChannel {
+    margin: 4px 0 0;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+/* ═══ تیک‌ها ═══ */
+.checkRow {
+    width: 100%;
+    max-width: 883px;
+    margin-top: 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.checkRow input {
+    margin-top: 2px;
+    width: 16px;
+    height: 16px;
+    accent-color: #1474FF;
+    cursor: pointer;
+}
+
+/* تأیید ارسال همگانی — هشدار، پس قرمز کم‌رنگ */
+.confirmRow {
+    padding: 12px 14px;
+    border: 1px solid #660000;
+    border-radius: 8px;
+    color: #FFB3B6;
+}
+
+.confirmRow strong {
+    color: #FF6369;
+}
+
+@media (max-width: 1023px) {
+    .variables,
+    .preview,
+    .checkRow {
+        max-width: 480px;
+    }
+
+    .variableGrid {
+        grid-template-columns: 1fr;
+    }
+}

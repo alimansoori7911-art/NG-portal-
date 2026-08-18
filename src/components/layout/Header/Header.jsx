@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Home, ShoppingCart, LayoutGrid, User, Menu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore, getDisplayName } from '../../../store/authStore'
+import { useAuthStore, getDisplayName, hasRole } from '../../../store/authStore'
 import styles from './Header.module.css'
 
 /* دکمه‌های میان‌بر سمت راست — authOnly یعنی فقط برای کاربر لاگین‌شده */
@@ -74,7 +74,13 @@ function Header() {
         setOpenMobileDropdown(prev => (prev === label ? null : label))
     }
 
-    const quickLinks = QUICK_LINKS.filter(link => !link.authOnly || isLoggedIn)
+    /* ادمین با همان حساب وارد می‌شود ولی داشبوردش پنل مدیریت است.
+       بقیه‌ی سایت برایش باز می‌ماند؛ فقط مقصد این دکمه فرق می‌کند. */
+    const dashboardPath = hasRole(user, 'admin') ? '/admin' : '/dashboard'
+
+    const quickLinks = QUICK_LINKS
+        .filter(link => !link.authOnly || isLoggedIn)
+        .map(link => (link.path === '/dashboard' ? { ...link, path: dashboardPath } : link))
 
     return (
         <header className={styles.header}>
@@ -142,15 +148,20 @@ function Header() {
             {/* سمت چپ — حساب کاربری + همبرگر موبایل */}
             <div className={styles.right}>
                 {isLoggedIn ? (
-                    /* باکس کاربر — طبق فیگما فعلاً تعاملی نیست.
+                    /* باکس کاربر — مثل دکمه‌ی داشبورد به داشبورد شخصی می‌رود.
                        در RTL اولین فرزند سمت راست می‌نشیند: همبرگر ← آواتار ← نام */
-                    <div className={styles.userBox}>
+                    <button
+                        type="button"
+                        className={styles.userBox}
+                        onClick={() => goTo(dashboardPath)}
+                        title="داشبورد"
+                    >
                         <Menu size={16} className={styles.userMenuIcon} aria-hidden="true" />
                         <span className={styles.userAvatar}>
                             <User size={14} />
                         </span>
                         <span className={styles.userName}>{getDisplayName(user)}</span>
-                    </div>
+                    </button>
                 ) : (
                     <button className={styles.accountBtn} onClick={() => navigate('/login')}>
                         <User size={16} />

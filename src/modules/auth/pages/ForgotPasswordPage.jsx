@@ -140,9 +140,12 @@ export default function ForgotPasswordPage() {
                 otp,
                 ...buildIdentifier(identifier),
             });
-            // نام فیلد توکن هنوز قطعی نیست (reset_token یا claim_token)
+            /* بک‌اند تأیید کرده که توکن با نام claim_token برمی‌گردد
+               (فقط در جریان reset_password). reset_token به‌عنوان
+               پشتیبان نگه داشته شده چون ResetPasswordInput فیلد ورودی‌اش
+               همین نام را دارد و ممکن است روزی خروجی هم هم‌نام شود. */
             setReset({
-                token: data?.reset_token ?? data?.claim_token ?? null,
+                token: data?.claim_token ?? data?.reset_token ?? null,
                 issuedAt: Date.now(),
             });
             setStep(3);
@@ -174,6 +177,13 @@ export default function ForgotPasswordPage() {
         if (Object.keys(errors).length > 0) return;
 
         if (Date.now() - reset.issuedAt > OTP.EXPIRY_MS) {
+            backToOtp(MSG.OTP_EXPIRED);
+            return;
+        }
+
+        /* بدون توکن، درخواست حتماً رد می‌شود؛ به‌جای خطای مبهم بک‌اند
+           کاربر را به مرحله‌ی کد برمی‌گردانیم. */
+        if (!reset.token) {
             backToOtp(MSG.OTP_EXPIRED);
             return;
         }

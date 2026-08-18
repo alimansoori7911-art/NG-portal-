@@ -1,0 +1,88 @@
+/* صفحه باید همان ارتفاع ستون محتوا را پر کند تا جدول جا شود */
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* نوار بالای جدول — در فیگما نیست؛ برای عملیات «خروج از همه» اضافه شده.
+   ۱۴px فاصله تا کارت، قرینه‌ی فاصله‌ی صفحه‌بندی زیر کارت. */
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 14px;
+}
+
+/* رنگ‌ها از پالت خود فیگما: پس‌زمینه‌ی کارت‌های سایدبار #132239
+   و حاشیه‌ی آیتم فعال #4073BF */
+.logoutAllBtn {
+    height: 40px;
+    padding: 0 18px;
+    border: 1px solid #192D4C;
+    border-radius: 8px;
+    background: #132239;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.logoutAllBtn:hover:not(:disabled) {
+    border-color: #E5484D;
+    color: #FF6369;
+}
+
+.logoutAllBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* تاریخ و ساعت زیر هم — مطابق فیگما (1404/4/21 روی 4:21:07) */
+.dateTime {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    line-height: 1.35;
+}
+
+/* دکمه‌ی حذف داخل ردیف — خنثی می‌ماند و فقط روی hover قرمز می‌شود
+   تا جدول شلوغ و هشدارآمیز به نظر نرسد. */
+.deleteBtn {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-primary-ghost);
+    cursor: pointer;
+    opacity: 0.65;
+    transition: background var(--transition-fast), color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.deleteBtn:hover {
+    background: rgba(229, 72, 77, 0.12);
+    color: #FF6369;
+    opacity: 1;
+}
+
+.deleteBtn:focus-visible {
+    outline: 2px solid #4073BF;
+    outline-offset: 2px;
+    opacity: 1;
+}
+
+@media (max-width: 1023px) {
+    .logoutAllBtn {
+        height: 36px;
+        padding: 0 14px;
+        font-size: var(--font-size-xs);
+    }
+}

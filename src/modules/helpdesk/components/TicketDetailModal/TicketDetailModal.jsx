@@ -1,4 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { useTicketChat } from '../../hooks/useTicketChat'
+import { ticketService, isTicketOpen } from '../../../../services/ticketService'
 import styles from './TicketDetailModal.module.css'
 
 /**
@@ -16,8 +18,48 @@ import styles from './TicketDetailModal.module.css'
  *   بج وضعیت  x=272.5 y=609.5، ۸۵×۳۲، radius 16، #132239 + border #668FCC
  *   دکمه‌ها    y≈847 — چت ۴۲۴×۴۸ پرشده #4073BF
  *                     بستن ۴۲۶×۵۰ با border 2px #4073BF
+ *
+ * بک‌اند فیلد جدایی برای «توضیحات» و «نتیجه» ندارد؛ محتوای تیکت
+ * همان پیام‌هاست. پس توضیحات = اولین پیام کاربر و نتیجه = آخرین
+ * پاسخ کارشناس.
  */
-export default function TicketDetailModal({ ticket, open, onClose, onOpenChat }) {
+export default function TicketDetailModal({
+    ticketId,
+    summary,
+    open,
+    onClose,
+    onOpenChat,
+    onClosed,
+}) {
+    /* وقتی مودال بسته است ticketId تهی می‌شود و هوک درخواستی نمی‌زند */
+    const { messages, loading, error } = useTicketChat(open ? ticketId : null)
+
+    const [closing, setClosing] = useState(false)
+    const [closeError, setCloseError] = useState(null)
+
+    /* هر بار که مودال برای تیکت تازه‌ای باز می‌شود خطای قبلی پاک شود */
+    useEffect(() => {
+        setCloseError(null)
+    }, [ticketId])
+
+    /* بستن تیکت یعنی تغییر وضعیت به closed در بک‌اند — نه فقط
+       بستن پنجره. تیکتی که از قبل بسته/لغو شده دوباره بسته نمی‌شود. */
+    const closeTicket = async () => {
+        if (!isTicketOpen(summary?.rawStatus)) return
+
+        setClosing(true)
+        setCloseError(null)
+        try {
+            await ticketService.updateTicket(ticketId, { status: 'closed' })
+            onClosed?.()
+            onClose?.()
+        } catch (err) {
+            setCloseError(err?.message || 'بستن تیکت ناموفق بود')
+        } finally {
+            setClosing(false)
+        }
+    }
+
     /* بستن با کلید Escape */
     useEffect(() => {
         if (!open) return
@@ -29,7 +71,13 @@ export default function TicketDetailModal({ ticket, open, onClose, onOpenChat })
         return () => document.removeEventListener('keydown', onKeyDown)
     }, [open, onClose])
 
-    if (!open || !ticket) return null
+    if (!open || !summary) return null
+
+    const description = messages.find((m) => m.author === 'user')?.text
+    const result = [...messages].reverse().find((m) => m.author === 'agent')?.text
+
+    const placeholder = loading ? 'در حال دریافت…' : error || '—'
+    const closable = isTicketOpen(summary.rawStatus)
 
     return (
         <div className={styles.overlay} role="dialog" aria-modal="true">
@@ -40,22 +88,22 @@ export default function TicketDetailModal({ ticket, open, onClose, onOpenChat })
                 <div className={styles.summary}>
                     <div className={styles.summaryItem}>
                         <span className={styles.summaryLabel}>تاریخ</span>
-                        <span className={styles.summaryValue}>{ticket.date}</span>
+                        <span className={styles.summaryValue}>{summary.date}</span>
                     </div>
                     <div className={styles.summaryItem}>
                         <span className={styles.summaryLabel}>دپارتمان</span>
-                        <span className={styles.summaryValue}>{ticket.department}</span>
+                        <span className={styles.summaryValue}>{summary.department}</span>
                     </div>
                     <div className={styles.summaryItem}>
                         <span className={styles.summaryLabel}>وضعیت</span>
-                        <span className={styles.summaryValue}>{ticket.status}</span>
+                        <span className={styles.summaryValue}>{summary.status}</span>
                     </div>
                 </div>
 
                 {/* ─── توضیحات ثبت‌شده ─── */}
                 <div className={styles.descBox}>
                     <span className={styles.descLabel}>توضیحات</span>
-                    <p className={styles.descText}>{ticket.description}</p>
+                    <p className={styles.descText}>{description || placeholder}</p>
                 </div>
 
                 <div className={styles.divider} />
@@ -63,20 +111,33 @@ export default function TicketDetailModal({ ticket, open, onClose, onOpenChat })
                 {/* ─── نتیجه ─── */}
                 <div className={styles.resultHead}>
                     <h2 className={styles.resultTitle}>نتیجه تیکت!</h2>
-                    <span className={styles.statusBadge}>{ticket.status}</span>
+                    <span className={styles.statusBadge}>{summary.status}</span>
                 </div>
 
-                <p className={styles.resultText}>{ticket.result}</p>
+                <p className={styles.resultText}>
+                    {result || (loading ? placeholder : 'هنوز پاسخی ثبت نشده است')}
+                </p>
 
                 {/* ─── دکمه‌ها ─── */}
                 <div className={styles.actions}>
                     <button type="button" className={styles.chatBtn} onClick={onOpenChat}>
                         رفتن به صفحه چت
                     </button>
-                    <button type="button" className={styles.closeTicketBtn} onClick={onClose}>
-                        بستن تیکت
+                    <button
+                        type="button"
+                        className={styles.closeTicketBtn}
+                        onClick={closeTicket}
+                        disabled={closing || !closable}
+                    >
+                        {closing ? 'در حال بستن…' : closable ? 'بستن تیکت' : 'تیکت بسته است'}
                     </button>
                 </div>
+
+                {closeError && (
+                    <p className={styles.resultText} role="alert">
+                        {closeError}
+                    </p>
+                )}
             </div>
         </div>
     )

@@ -45,6 +45,8 @@ export default function OrderFormStep({
                                           onBack,
                                           onClose,
                                           onSubmit,
+                                          submitting = false,
+                                          error = '',
                                       }) {
     /* TODO: بعضی فیلدها باید از حساب کاربری پیش‌پر شوند.
              تا مشخص شدن اسپک /auth/me، همه خالی می‌مانند. */
@@ -143,13 +145,19 @@ export default function OrderFormStep({
                     onChange={change('address')}
                 />
 
+                {error && (
+                    <p className={styles.error} role="alert">
+                        {error}
+                    </p>
+                )}
+
                 <div className={styles.actions}>
                     <button
                         type="submit"
                         className={styles.submitBtn}
-                        disabled={!isValid}
+                        disabled={!isValid || submitting}
                     >
-                        ثبت سفارش
+                        {submitting ? 'در حال ثبت…' : 'ثبت سفارش'}
                     </button>
                     <button
                         type="button"

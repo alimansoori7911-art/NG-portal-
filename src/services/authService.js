@@ -65,7 +65,13 @@ export const authService = {
         return api.post("/auth/register", payload).then(unwrap);
     },
 
-    // action یکی از: login | verify_contact | reset_password | register
+    /* action یکی از: login | verify_contact | reset_password | register
+
+       ⚠️ اندپوینت GET /auth/otp/status/{task_id} عمداً پیاده نشده:
+       بک‌اند تأیید کرده که فقط برای trace کردن taskهای Celery در حالت
+       debug است و به کلاینت مربوط نیست.
+       به همین دلیل به فیلد otp در پاسخ هم نباید تکیه کرد — آن هم فقط
+       در حالت debug پر می‌شود. */
     requestOtp({ action, phone_number, email, username }) {
         return api
             .post("/auth/otp/request", { action, phone_number, email, username })
@@ -93,7 +99,10 @@ export const authService = {
 
     /* POST /auth/contact/verify — تأیید هویت (کد ملی، نام، نام خانوادگی).
        نیازمند لاگین است (اسپک بلوک security ندارد ولی بک‌اند تأیید کرده).
-       TODO: نوع company_id مشخص نیست — فعلاً فقط اگر مقدار داشت فرستاده می‌شود. */
+
+       company_id از نوع string و اختیاری است (تأیید شده).
+       national_id باید دقیقاً ۱۰ رقم باشد — الگوی ^\d{10}$ در اسپک.
+       birth_date اختیاری و در قالب date است. */
     verifyIdentity({ first_name, last_name, national_id, birth_date, company_id }) {
         return api
             .post("/auth/contact/verify", {

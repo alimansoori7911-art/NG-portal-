@@ -1,0 +1,164 @@
+/* اعداد از tab222.svg:
+   فیلد ۴۲۳×۶۳، radius 5.5، حاشیه #8CABD9 (خطا: #660000)
+   ستون‌ها x=103.5 و x=599.5 → فاصله‌ی افقی ۷۳
+   گام عمودی ۱۲۸ (y = 392.5 و 520.5)
+   عنوان ۱۲۶×۳۸ در y=292
+   دکمه «صدور فاکتور الکترونیکی» ۱۹۸×۴۰ در y=666 */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 22px;
+    background: #192D4C;
+}
+
+.title {
+    height: 38px;
+    margin: 0 0 40px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+}
+
+/* دو ستون ثابت ۴۲۳px، دو ردیف */
+.grid {
+    width: 100%;
+    max-width: 919px;
+    display: grid;
+    grid-template-columns: repeat(2, 423px);
+    justify-content: center;
+    column-gap: 73px;
+    row-gap: 65px;
+}
+
+/* ── فیلد ── */
+.fieldWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    height: 63px;
+    padding: 0 16px;
+    border: 1px solid #8CABD9;
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.field:focus-within {
+    border-color: #1474FF;
+}
+
+.fieldError {
+    border-color: #660000;
+}
+
+.fieldError .fieldLabel,
+.fieldError .fieldInput {
+    color: #FF6369;
+}
+
+.fieldLabel {
+    color: #8CABD9;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fieldInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.errorText {
+    margin: 0;
+    color: #FF6369;
+    font-size: var(--font-size-xs);
+    text-align: right;
+}
+
+/* ── دکمه ── */
+.submitBtn {
+    height: 40px;
+    min-width: 198px;
+    margin-top: 60px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1023px) {
+    .grid {
+        grid-template-columns: 1fr;
+        column-gap: 0;
+        row-gap: 20px;
+        max-width: 480px;
+    }
+
+    .submitBtn {
+        margin-top: 32px;
+    }
+}

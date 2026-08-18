@@ -28,6 +28,28 @@ export const MSG = {
     GENERIC: 'خطایی رخ داد. لطفاً دوباره تلاش کنید.',
 }
 
+/*
+  پیام بک‌اند فعلاً فقط انگلیسی است (بک‌اند گفته ترجمه در آینده اضافه می‌شود).
+  کدها به‌صورت CAPITAL_CASE می‌آیند: VALIDATION_ERROR، NOT_FOUND و ...
+  این نگاشت پیام فارسی معادل را می‌دهد؛ اگر کدی اینجا نبود، پیام خام
+  بک‌اند نمایش داده می‌شود.
+*/
+const ERROR_MESSAGES = {
+    BAD_REQUEST: 'درخواست نامعتبر است.',
+    UNAUTHORIZED: 'دسترسی مجاز نیست. لطفاً دوباره وارد شوید.',
+    FORBIDDEN: 'اجازه‌ی انجام این عملیات را ندارید.',
+    NOT_FOUND: 'موردی یافت نشد.',
+    METHOD_NOT_ALLOWED: 'این عملیات پشتیبانی نمی‌شود.',
+    CONFLICT: 'این اطلاعات قبلاً ثبت شده است.',
+    VALIDATION_ERROR: 'اطلاعات واردشده معتبر نیست.',
+    INTERNAL_SERVER_ERROR: 'خطای سرور. لطفاً بعداً تلاش کنید.',
+}
+
+/** پیام فارسی متناظر با کد خطا؛ در نبود نگاشت، پیام خام بک‌اند */
+export function localizeError(code, fallback) {
+    return ERROR_MESSAGES[code] ?? fallback ?? MSG.GENERIC
+}
+
 /** تبدیل ارقام فارسی و عربی به لاتین — کاربر ممکن است با کیبورد فارسی تایپ کند */
 export function toEnglishDigits(value = '') {
     return String(value)

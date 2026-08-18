@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from './ProductsDemo.module.css'
 
-function ProductsDemo() {
+/**
+ * بخش درخواست دمو.
+ *
+ * onRequestDemo / loading اختیاری‌اند: اگر صفحه‌ی والد آن‌ها را ندهد،
+ * دکمه فقط ظاهر است (رفتار قبلی). با اتصال به POST /orders/demo
+ * والد این دو را پاس می‌دهد.
+ */
+function ProductsDemo({ onRequestDemo, loading = false }) {
     const sectionRef = useRef(null)
     const [visible, setVisible] = useState(false)
 
@@ -36,12 +43,16 @@ function ProductsDemo() {
                     بهره مند شوید
                 </p>
 
+                {/* بک‌اند فقط یک POST /orders/demo دارد و تفکیک
+                    آنلاین/آفلاین ندارد، پس یک دکمه بیشتر نیست. */}
                 <div className={styles.buttons}>
-                    <button type="button" className={styles.demoBtn}>
-                        دمو آنلاین
-                    </button>
-                    <button type="button" className={styles.demoBtn}>
-                        دمو آفلاین
+                    <button
+                        type="button"
+                        className={styles.demoBtn}
+                        onClick={onRequestDemo}
+                        disabled={loading}
+                    >
+                        {loading ? 'در حال ارسال…' : 'درخواست دمو'}
                     </button>
                 </div>
             </div>

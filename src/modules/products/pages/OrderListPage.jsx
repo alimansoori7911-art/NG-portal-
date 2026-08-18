@@ -1,8 +1,7 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../../components/layout/Header/Header'
 import DataTable from '../../dashboard/components/DataTable/DataTable'
-import { MOCK_ORDERS } from '../data/mockOrders'
+import { useOrders } from '../hooks/useOrders'
 import styles from './OrderListPage.module.css'
 
 /* عرض ستون‌ها از SVG (از راست): 335 | 330 | 316 | 267 از ۱۲۴۸
@@ -16,9 +15,7 @@ const COLUMNS = [
 
 export default function OrderListPage() {
     const navigate = useNavigate()
-
-    // TODO: صفحه‌بندی واقعی پس از اتصال به بک‌اند
-    const [page, setPage] = useState(1)
+    const { rows, page, pageCount, loading, error, setPage } = useOrders()
 
     return (
         <div className={styles.page}>
@@ -26,15 +23,20 @@ export default function OrderListPage() {
 
             <main className={styles.main}>
                 <div className={styles.tableArea}>
+                    {error && <p className={styles.message} role="alert">{error}</p>}
+
                     <DataTable
                         columns={COLUMNS}
-                        rows={MOCK_ORDERS}
+                        rows={rows}
                         page={page}
-                        pageCount={2}
+                        pageCount={pageCount}
                         onPageChange={setPage}
                         align="right"
                         headerHeight={90}
                         paginationIndent={0}
+                        emptyMessage={
+                            loading ? 'در حال بارگذاری…' : 'هنوز سفارشی ثبت نکرده‌اید'
+                        }
                     />
                 </div>
 

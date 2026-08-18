@@ -9,7 +9,35 @@ import CloseOrderModal from '../components/CloseOrderModal/CloseOrderModal'
 import TagIcon from '../components/icons/TagIcon'
 import MonitorIcon from '../components/icons/MonitorIcon'
 import CheckIcon from '../components/icons/CheckIcon'
+import { orderService } from '../../../services/orderService'
 import styles from './NewOrderPage.module.css'
+
+/* برچسب فارسی فیلدهای فرم برای ساخت متن یادداشت سفارش */
+const NOTE_LABELS = {
+    username: 'نام کاربری',
+    organization: 'نام سازمان',
+    phone: 'شماره تماس',
+    email: 'ایمیل',
+    organizationId: 'شناسه سازمان',
+    mkId: 'MK ID',
+    address: 'آدرس',
+}
+
+/**
+ * تبدیل مقادیر فرم به متن ساخت‌یافته برای customer_note.
+ *
+ * موقتی است: به‌محض اینکه بک‌اند این فیلدها را در CreateOrder بپذیرد
+ * (یا از پروفایل کاربر بخواند) این تابع حذف می‌شود.
+ */
+function buildOrderNote(values) {
+    return Object.entries(NOTE_LABELS)
+        .map(([key, label]) => {
+            const value = values[key]?.trim()
+            return value ? `${label}: ${value}` : null
+        })
+        .filter(Boolean)
+        .join('\n')
+}
 
 /**
  * جریان ثبت سفارش — پنج مرحله در یک روت با state داخلی.
@@ -34,6 +62,8 @@ export default function NewOrderPage() {
     const [orderForm, setOrderForm] = useState(null)
     const [formDirty, setFormDirty] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState('')
 
     const isFirstStep = step === 0
 
@@ -56,11 +86,29 @@ export default function NewOrderPage() {
         setStep(FORM_STEP)
     }
 
-    const handleSubmitForm = (values) => {
+    const handleSubmitForm = async (values) => {
         setOrderForm(values)
         setFormDirty(false)
-        // TODO: ارسال به بک‌اند؛ فعلاً مستقیم به مرحله‌ی وضعیت می‌رود
-        setStep(2)
+        setSubmitError('')
+        setSubmitting(true)
+
+        try {
+            /* CreateOrder فقط plan_id/product_id/quantity/customer_note می‌گیرد.
+               فیلدهای هویتی فرم (نام، ایمیل، شماره، سازمان) در اسکیما جایی
+               ندارند — بک‌اند کاربر را از توکن می‌شناسد. تا اضافه شدن آن‌ها،
+               مقادیر فرم به‌صورت متن ساخت‌یافته در customer_note می‌روند تا
+               داده‌ای از دست نرود. رجوع به BACKEND_NEEDS.md */
+            await orderService.createOrder({
+                plan_id: selectedPlan?.id,
+                quantity: 1,
+                customer_note: buildOrderNote(values),
+            })
+            setStep(2)
+        } catch (err) {
+            setSubmitError(err?.message || 'ثبت سفارش ناموفق بود')
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     const renderStep = () => {
@@ -77,6 +125,8 @@ export default function NewOrderPage() {
                         onBack={() => setStep(0)}
                         onClose={requestClose}
                         onSubmit={handleSubmitForm}
+                        submitting={submitting}
+                        error={submitError}
                     />
                 )
 

@@ -1,0 +1,299 @@
+/* اعداد از SVG فیگما:
+   دکمه‌های آیکونی x=43 و x=98، ۴۰×۴۰، radius 10، fill #0D1726
+   آواتار x=266، ۴۰×۴۰، دایره
+   جستجو x=516، ۳۴۶×۴۰، radius 10، fill #0D1726
+   ارتفاع نوار: دکمه‌ها در y=30 → ۱۰۰px با احتساب فاصله */
+
+.topbar {
+    position: relative;
+    flex-shrink: 0;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: 0 40px;
+}
+
+/* موقعیت جستجو در فیگما: مرکزش ۵۰۰px از لبه‌ی راستِ ستون محتوا
+   (x=516..862 از ۱۱۸۹) — یعنی ۴۲٪ از راست، نه دقیقاً وسط.
+   با margin-right ثابت و margin-left خودکار همین نسبت حفظ می‌شود
+   و بقیه‌ی فضا به دکمه‌های سمت چپ می‌رسد. */
+
+.title {
+    margin: 0;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: 24px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ── جستجو ── */
+/* از جریان flex خارج است تا موقعیتش دقیقاً همان فیگما بماند و
+   با طول عنوان یا نام کاربر جابه‌جا نشود. */
+.searchBox {
+    position: absolute;
+    top: 50%;
+    right: 42.1%;
+    transform: translate(50%, -50%);
+    display: flex;
+    align-items: center;
+    width: 346px;
+    height: 40px;
+    border-radius: 10px;
+    background: #0D1726;
+}
+
+.searchInput {
+    flex: 1;
+    height: 100%;
+    padding: 0 40px 0 16px;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    direction: ltr;
+    text-align: left;
+}
+
+.searchInput::placeholder {
+    color: #47597A;
+}
+
+/* آیکون سمت راست باکس چون placeholder انگلیسی و چپ‌چین است */
+.searchIcon {
+    position: absolute;
+    right: 14px;
+    color: #47597A;
+    pointer-events: none;
+}
+
+/* ── سمت چپ: کاربر و دکمه‌ها ── */
+/* جستجو absolute است، پس دکمه‌ها با auto به لبه‌ی چپ می‌روند */
+.actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 14px;
+    margin-right: auto;
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #7A7A7A;
+    color: var(--color-white);
+    flex-shrink: 0;
+}
+
+.userName {
+    white-space: nowrap;
+}
+
+.userChevron {
+    color: #8CABD9;
+}
+
+.iconBtn {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.iconBtn:hover {
+    color: var(--color-white);
+    background: #16243B;
+}
+
+/* ── همبرگر: فقط موبایل ── */
+.menuToggle {
+    display: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    cursor: pointer;
+}
+
+@media (max-width: 1023px) {
+    .topbar {
+        height: 72px;
+        gap: var(--spacing-md);
+        padding: 0 16px;
+    }
+
+    .menuToggle {
+        display: grid;
+    }
+
+    .searchBox,
+    .userName,
+    .userChevron {
+        display: none;
+    }
+
+    .title {
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* ═══ زنگ اعلان‌ها ═══ */
+.bellWrap {
+    position: relative;
+    display: inline-flex;
+}
+
+/* دکمه باید مرجع جایگذاری نشانگر باشد */
+.bellWrap .iconBtn {
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: 8px;
+    background: #F44336;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.bellPanel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 40;
+    width: 320px;
+    padding: 8px;
+    background: #0D1726;
+    border: 1px solid #203A60;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
+}
+
+.bellHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px 10px;
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid #192D4C;
+}
+
+.bellMarkAll {
+    border: none;
+    background: transparent;
+    color: #7AB0FF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+}
+
+.bellMarkAll:hover {
+    color: var(--color-white);
+}
+
+.bellList {
+    max-height: 320px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.bellItem {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    text-align: right;
+    cursor: pointer;
+}
+
+.bellItem:hover {
+    background: #132239;
+}
+
+.bellItemUnread .bellItemTitle::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: #1474FF;
+    vertical-align: middle;
+}
+
+.bellItemTitle {
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+/* متن اعلان حداکثر دو خط — بقیه با … کوتاه می‌شود */
+.bellItemBody {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.bellItemDate {
+    color: #4E6E9E;
+    font-family: var(--font-family);
+    font-size: 11px;
+}
+
+.bellEmpty {
+    margin: 0;
+    padding: 18px 8px;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}

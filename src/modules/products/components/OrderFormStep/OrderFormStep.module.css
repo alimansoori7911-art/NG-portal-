@@ -235,3 +235,10 @@
         max-width: 426px;
     }
 }
+/* پیام خطای ثبت سفارش */
+.error {
+    margin: 0 0 12px;
+    color: #FF6369;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}

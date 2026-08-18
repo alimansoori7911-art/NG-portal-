@@ -1,0 +1,68 @@
+/* اعداد از SVG:
+   نوار راهنما ۹۶۱×۷۳، radius 5.5، حاشیه #7AB0FF، پس‌زمینه #000814
+   کارت جدول از y=127 شروع می‌شود → ۲۷px فاصله از نوار راهنما */
+
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── نوار راهنما ── */
+.hint {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    min-height: 73px;
+    margin-bottom: 27px;
+    padding: 12px 56px 12px 20px;
+    border: 1px solid #7AB0FF;
+    border-radius: 5.5px;
+    background: #000814;
+}
+
+.hintText {
+    margin: 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    line-height: 1.8;
+    text-align: right;
+}
+
+/* ضربدر سمت چپ — در RTL انتهای نوار */
+.hintClose {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.hintClose:hover {
+    background: var(--color-white);
+}
+
+@media (max-width: 1023px) {
+    .hint {
+        min-height: 60px;
+        margin-bottom: 16px;
+        padding: 10px 48px 10px 14px;
+    }
+
+    .hintText {
+        font-size: var(--font-size-sm);
+    }
+}

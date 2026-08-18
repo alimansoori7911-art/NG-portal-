@@ -1,0 +1,156 @@
+/* اعداد از SVG فیگما:
+   کارت ۳۳۲ عرض، radius 28، fill #0D1726
+     جمع‌شده ارتفاع ۷۹ | باز ارتفاع ۲۸۱
+   تصویر ۲۶۸×۱۳۴ radius 15 — یعنی ۳۲px حاشیه‌ی داخلی هر طرف */
+
+/* حاشیه‌ی شفاف تا کارت نخوانده که حاشیه‌ی آبی می‌گیرد، ۱px بزرگ‌تر
+   از بقیه نشود و ردیف نپرد. */
+.card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid transparent;
+    border-radius: 28px;
+    background: #0D1726;
+    padding: 0 20px;
+    overflow: hidden;
+    transition: background var(--transition-fast);
+}
+
+.card:hover {
+    background: #132239;
+}
+
+/* ── سربرگ ── */
+/* ارتفاع ثابت ۷۹ در حالت جمع؛ در حالت باز کمی بیشتر می‌شود */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 79px;
+    padding: 12px 0;
+}
+
+.logo {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+.titleBlock {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.titleRow {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.title {
+    margin: 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.summary {
+    color: #668FCC;
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+/* متن کوتاه در حالت جمع — یک خط با سه‌نقطه */
+.collapsedBody {
+    margin: 0;
+    color: #8CABD9;
+    font-size: var(--font-size-xs);
+    line-height: 1.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ── دکمه‌ی باز/بسته ── */
+.toggle {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #8CABD9;
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.toggle:hover {
+    color: var(--color-white);
+}
+
+.chevron {
+    transition: transform var(--transition-base);
+}
+
+.expanded .chevron {
+    transform: rotate(180deg);
+}
+
+/* ── بدنه‌ی باز ── */
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-bottom: 20px;
+}
+
+.bodyText {
+    margin: 0;
+    color: #8CABD9;
+    font-size: var(--font-size-xs);
+    line-height: 1.75;
+    text-align: justify;
+}
+
+/* بنر ۲۶۸×۱۳۴ — نسبت ۲:۱ حفظ می‌شود و در عرض کارت کشیده می‌شود */
+.banner {
+    width: 100%;
+    aspect-ratio: 2 / 1;
+    border-radius: 15px;
+    object-fit: cover;
+}
+
+@media (max-width: 1023px) {
+    .card {
+        padding: 0 16px;
+    }
+
+    .header {
+        min-height: 68px;
+    }
+}
+
+/* ═══ نشانگر نخوانده ═══ */
+/* اعلان نخوانده حاشیه‌ی کم‌رنگ آبی و نقطه‌ای کنار عنوان می‌گیرد. */
+.card.unread {
+    border-color: #1474FF;
+}
+
+.dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: #1474FF;
+    vertical-align: middle;
+}

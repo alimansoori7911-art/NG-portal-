@@ -1,0 +1,128 @@
+/* اعداد از SVG (فریم ۱۴۴۰×۱۳۸۴):
+   کارت x=74 y=316، ۳۲۰×۴۰۰، radius 20، fill #060B13
+   گام افقی ۳۶۰ → gap 40 | گام عمودی ۴۴۰ → gap 40
+   دکمه‌ها در y=668 یعنی ۳۵۲ از بالای کارت → ۲۴px تا کف
+   رنگ متن: برچسب #8CABD9، مقدار #7AB0FF */
+
+.card {
+    display: flex;
+    flex-direction: column;
+    width: 320px;
+    min-height: 400px;
+    padding: 28px 24px 24px;
+    border-radius: 20px;
+    background: #060B13;
+}
+
+/* ── ردیف‌های «برچسب = مقدار» ── */
+.meta {
+    margin: 0 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* در فیگما برچسب سمت راست و مقدار سمت چپِ آن است، با = بینشان.
+   چون کل کارت راست‌چین است، ترتیب DOM همان ترتیب بصری می‌شود. */
+.metaRow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+}
+
+.metaLabel {
+    flex-shrink: 0;
+    color: #8CABD9;
+}
+
+.metaLabel::after {
+    content: ' =';
+    color: #8CABD9;
+}
+
+.metaValue {
+    margin: 0;
+    color: #7AB0FF;
+    text-align: right;
+}
+
+/* ── قابلیت‌ها ── */
+/* در فیگما این بخش چپ‌چین است چون نام قابلیت‌ها انگلیسی است */
+.features {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    direction: ltr;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm);
+}
+
+.featureName {
+    color: #7AB0FF;
+    font-weight: 500;
+}
+
+.featureSep,
+.featureValue {
+    color: #7AB0FF;
+}
+
+/* ── دکمه‌ها ── */
+/* در RTL اولین فرزند سمت راست می‌نشیند؛ فیگما ویرایش را سمت راست
+   و حذف را سمت چپش گذاشته. */
+.actions {
+    margin-top: auto;
+    padding-top: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.editBtn,
+.deleteBtn {
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.editBtn {
+    width: 96px;
+}
+
+.deleteBtn {
+    width: 82px;
+}
+
+.editBtn:hover {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+.deleteBtn:hover {
+    background: rgba(229, 72, 77, 0.15);
+    color: #FF6369;
+}
+
+@media (max-width: 1023px) {
+    .card {
+        width: 100%;
+        min-height: 0;
+    }
+}

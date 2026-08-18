@@ -1,0 +1,243 @@
+/* اعداد از tab11.svg و tab33.svg:
+   عنوان ۳۸px در y=292
+   فیلد متن ۴۲۳×۶۳ در x=608.5 y=378.5 (حاشیه #8CABD9)
+   فیلد کانال ۴۲۵×۶۵ در x=158.5 (حاشیه #203A60 — کم‌رنگ‌تر چون خالی است)
+   ناحیه متن پیام ۸۸۳×۱۹۳ در x=153.5 y=483.5، radius 6.5
+   دکمه‌ها در y=724، ارتفاع ۴۰، radius 10 */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #E0EDFF;
+    color: #060B13;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 22px;
+    background: #192D4C;
+}
+
+.title {
+    height: 38px;
+    margin: 0 0 40px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+}
+
+/* ردیف بالا — دو فیلد ۴۲۳px با فاصله‌ی ۲۵ (608.5 - 158.5 - 425) */
+.topRow {
+    width: 100%;
+    max-width: 883px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+/* حالت ریلیز نوت — فقط یک فیلد، سمت راست */
+.topRowSingle {
+    grid-template-columns: 423px;
+    justify-content: flex-start;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    height: 63px;
+    padding: 0 16px;
+    border: 1px solid #8CABD9;
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.field:focus-within {
+    border-color: #1474FF;
+}
+
+.fieldError {
+    border-color: #660000;
+}
+
+.fieldError .fieldLabel,
+.fieldError .fieldInput {
+    color: #FF6369;
+}
+
+.fieldLabel {
+    color: #8CABD9;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fieldInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+/* ── select کانال ── */
+/* فلش پیش‌فرض مرورگر حذف و آیکون سفارشی سمت چپ گذاشته می‌شود */
+.selectRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select {
+    flex: 1;
+    appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+}
+
+.select option {
+    background: #0D1726;
+    color: var(--color-white);
+}
+
+.selectIcon {
+    flex-shrink: 0;
+    color: #8CABD9;
+    pointer-events: none;
+}
+
+/* ── ناحیه‌ی متن پیام ── */
+.textareaWrapper {
+    width: 100%;
+    max-width: 883px;
+    min-height: 193px;
+    margin-top: 42px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid #203A60;
+    border-radius: 6.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.textareaWrapper:focus-within {
+    border-color: #1474FF;
+}
+
+.textarea {
+    flex: 1;
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 2;
+    resize: none;
+}
+
+.errorText {
+    width: 100%;
+    max-width: 883px;
+    margin: 8px 0 0;
+    color: #FF6369;
+    font-size: var(--font-size-xs);
+    text-align: right;
+}
+
+/* ── دکمه‌ها ── */
+.actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 48px;
+}
+
+.actionBtn {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.actionBtn:hover:not(:disabled) {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+.actionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1023px) {
+    .topRow,
+    .topRowSingle {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        max-width: 480px;
+    }
+
+    .textareaWrapper {
+        max-width: 480px;
+        margin-top: 20px;
+    }
+
+    .actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 28px;
+    }
+
+    .actionBtn {
+        padding: 0 14px;
+        font-size: var(--font-size-xs);
+    }
+}

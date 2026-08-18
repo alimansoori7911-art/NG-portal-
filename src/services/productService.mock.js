@@ -213,12 +213,17 @@ export const mockProductApi = {
         return clone(PRODUCT);
     },
 
+    /* ⚠️ عمداً آرایه‌ی تودرتو برمی‌گرداند.
+       بک‌اند تأیید کرده که این اندپوینت list[PlansOutput] است و
+       PlansOutput خودش آرایه‌ای از PlanOutput است. اگر اینجا تخت
+       برگردانیم، باگ در dev دیده نمی‌شود و فقط سر production بالا می‌آید.
+       تخت‌کردنش وظیفه‌ی flattenPlans در usePlans است. */
     async getProductPlans(slug) {
         await delay();
         if (slug !== PRODUCT.slug) {
             throw { status: 404, code: "NOT_FOUND", message: "محصول یافت نشد" };
         }
-        return clone(PLANS);
+        return [clone(PLANS)];
     },
 
     async getCategories() {

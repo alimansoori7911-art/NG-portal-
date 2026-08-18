@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import DataTable from '../../components/DataTable/DataTable'
-import { MOCK_TICKETS } from '../data/mockTickets'
+import { useDepartments } from '../../../helpdesk/hooks/useDepartments'
+import { useTickets } from '../../../helpdesk/hooks/useTickets'
 
 /* عرض ستون‌ها از SVG (از راست): 226 | 242 | 285 | 267  از ۱۰۲۰ */
 const COLUMNS = [
@@ -10,16 +10,27 @@ const COLUMNS = [
     { key: 'status', label: 'وضعیت', width: '26.18%' },
 ]
 
+/**
+ * تیکت‌های کاربر در داشبورد.
+ *
+ * ستون «نوع درخواست» در بک‌اند فیلد مستقلی ندارد؛ نزدیک‌ترین چیز
+ * موضوع تیکت (subject) است که همان را نشان می‌دهیم.
+ */
 export default function TicketsPage() {
-    // TODO: صفحه‌بندی واقعی پس از اتصال به بک‌اند (meta.total / meta.per_page)
-    const [page, setPage] = useState(1)
+    const { nameOf } = useDepartments()
+    const { rows, page, pageCount, loading, error, setPage } = useTickets(nameOf)
+
+    const tableRows = rows.map((t) => ({ ...t, type: t.subject || '—' }))
+
+    if (loading) return <p>در حال دریافت تیکت‌ها…</p>
+    if (error) return <p role="alert">{error}</p>
 
     return (
         <DataTable
             columns={COLUMNS}
-            rows={MOCK_TICKETS}
+            rows={tableRows}
             page={page}
-            pageCount={2}
+            pageCount={pageCount}
             onPageChange={setPage}
         />
     )

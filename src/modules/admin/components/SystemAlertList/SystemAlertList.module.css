@@ -1,0 +1,137 @@
+/* اعداد از tab2.svg:
+   کارت x=214.5 عرض ۷۵۹ ارتفاع ۷۶، radius 7.5، fill #060B13
+   گام عمودی ۱۰۱ → فاصله‌ی ۲۵ بین کارت‌ها
+   رنگ حاشیه بر اساس نوع اعلان */
+
+.list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    overflow-y: auto;
+    padding-bottom: 8px;
+}
+
+.list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 4px;
+}
+
+.card {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 759px;
+    min-height: 76px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    border: 1px solid;
+    border-radius: 7.5px;
+    background: #060B13;
+}
+
+/* ── انواع اعلان ── */
+.info {
+    border-color: #7AB0FF;
+}
+
+.info .title,
+.info .icon,
+.info .message,
+.info .meta {
+    color: #7AB0FF;
+}
+
+.error {
+    border-color: #F44336;
+}
+
+.error .title,
+.error .icon,
+.error .message,
+.error .meta {
+    color: #F44336;
+}
+
+.warning {
+    border-color: #FF9800;
+}
+
+.warning .title,
+.warning .icon,
+.warning .message,
+.warning .meta {
+    color: #FF9800;
+}
+
+/* ── محتوا ── */
+.body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon {
+    flex-shrink: 0;
+}
+
+.title {
+    margin: 0;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+}
+
+.message {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    line-height: 1.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* تاریخ و ساعت زیر هم، سمت چپ کارت */
+.meta {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 10px;
+    line-height: 1.4;
+    direction: ltr;
+}
+
+.empty {
+    margin: 40px 0;
+    color: #47597A;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+@media (max-width: 1023px) {
+    .card {
+        gap: 10px;
+        padding: 10px 14px;
+    }
+
+    .message {
+        white-space: normal;
+    }
+}

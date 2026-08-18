@@ -1,0 +1,120 @@
+/* اعداد از SVG فیگما (فریم ۱۴۴۰×۱۰۲۴):
+   سایدبار عرض ۲۵۱، از x=1189 تا لبه‌ی راست
+   لوگو x=1276 y=40 اندازه ۷۶×۴۰
+   آیتم‌ها: مرکز y = 144.5، 205.8، 277.6، 339.3، 401.9، 477.5 → گام ~۶۴ */
+
+.sidebar {
+    flex-shrink: 0;
+    width: 251px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #000000;
+}
+
+/* ── لوگو ── */
+.logoWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 0 44px;
+}
+
+.logo {
+    width: 76px;
+    height: 40px;
+    object-fit: contain;
+}
+
+/* ── منو ── */
+.menu {
+    display: flex;
+    flex-direction: column;
+}
+
+/* هر آیتم ۶۴px ارتفاع دارد. متن راست‌چین با آیکون سمت راستش —
+   در RTL اولین فرزند (متن) سمت راست می‌نشیند، پس ترتیب DOM
+   متن ← آیکون است. */
+.item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    height: 64px;
+    padding: 0 24px 0 16px;
+    color: #668FCC;
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.item:hover {
+    color: #8CABD9;
+}
+
+.itemIcon {
+    flex-shrink: 0;
+}
+
+.itemLabel {
+    white-space: nowrap;
+}
+
+/* آیتم فعال: متن روشن‌تر + نوار آبی در لبه‌ی راست (سمت بیرونی) */
+.itemActive {
+    color: #E0EDFF;
+}
+
+.itemActive::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    border-radius: 4px 0 0 4px;
+    background: #1474FF;
+}
+
+.itemActive .itemIcon {
+    color: #7AB0FF;
+}
+
+/* ── حالت کشویی زیر ۱۰۲۴px ── */
+.backdrop {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-fast);
+    }
+
+    .backdropOpen {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 50;
+        height: 100dvh;
+        transform: translateX(100%);
+        transition: transform var(--transition-base);
+    }
+
+    .sidebarOpen {
+        transform: translateX(0);
+    }
+}

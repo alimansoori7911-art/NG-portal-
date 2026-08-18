@@ -1,0 +1,81 @@
+/* اعداد از product1.svg:
+   تب «محصولات و پلن‌ها» ۱۶۶×۴۰ در y=140
+   دکمه «ایجاد پلن» ۱۰۸×۴۰ در x=74 y=244 (سمت راست، زیر تب)
+   کارت‌ها از y=316 با گام ۳۶۰ افقی و ۴۴۰ عمودی → gap 40 */
+
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tabs {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    height: 40px;
+    margin: 40px 0 24px;
+}
+
+.tabActive {
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #1474FF;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* ── نوار ایجاد ── */
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    margin-bottom: 32px;
+}
+
+.createBtn {
+    height: 40px;
+    min-width: 108px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.createBtn:hover {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+/* ── شبکه‌ی کارت‌ها ── */
+/* سه ستون ثابت ۳۲۰px با gap 40 — مطابق فیگما.
+   ردیف دوم در فیگما وسط‌چین است چون دو کارت بیشتر ندارد؛
+   justify-content: center همین رفتار را می‌دهد. */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    padding-bottom: 40px;
+}
+
+@media (max-width: 1023px) {
+    .tabs {
+        margin: 20px 0 16px;
+    }
+
+    .grid {
+        gap: 20px;
+    }
+}

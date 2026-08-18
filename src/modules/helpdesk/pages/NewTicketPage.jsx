@@ -9,11 +9,11 @@ import Input from '../../../components/ui/Input/Input'
 import Select from '../../../components/ui/Select/Select'
 import Textarea from '../../../components/ui/Textarea/Textarea'
 import Button from '../../../components/ui/Button/Button'
+import Alert from '../../../components/ui/Alert/Alert'
 import { useAuthStore } from '../../../store/authStore'
+import { useDepartments } from '../hooks/useDepartments'
+import { ticketService } from '../../../services/ticketService'
 import styles from './NewTicketPage.module.css'
-
-// TODO: بعداً از بک‌اند خوانده می‌شود
-const DEPARTMENTS = ['پشتیبانی فنی', 'فروش', 'مالی و حسابداری', 'امور مشتریان']
 
 const schema = z.object({
     username: z.string().min(1, 'نام کاربری الزامی است'),
@@ -27,6 +27,18 @@ const schema = z.object({
     description: z.string().min(10, 'توضیحات حداقل ۱۰ کاراکتر باشد'),
 })
 
+/* موضوع تیکت از خط اول توضیحات ساخته می‌شود چون فرم فیگما فیلد
+   جداگانه‌ای برای موضوع ندارد ولی بک‌اند subject را اجباری کرده
+   (بین ۳ تا ۲۵۵ کاراکتر). */
+const SUBJECT_MAX = 255
+
+function makeSubject(description) {
+    const firstLine = description.trim().split('\n')[0].trim()
+    return firstLine.length > SUBJECT_MAX
+        ? `${firstLine.slice(0, SUBJECT_MAX - 1)}…`
+        : firstLine
+}
+
 // استخراج مقدار از آرایه‌ی identifiers کاربر
 const identifier = (user, type) =>
     user?.identifiers?.find((i) => i.type === type)?.value ?? ''
@@ -35,6 +47,14 @@ function NewTicketPage() {
     const navigate = useNavigate()
     const user = useAuthStore((s) => s.user)
     const [submitting, setSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState(null)
+
+    const {
+        names: departmentNames,
+        idOf,
+        loading: departmentsLoading,
+        error: departmentsError,
+    } = useDepartments()
 
     const {
         register,
@@ -66,11 +86,40 @@ function NewTicketPage() {
         }))
     }, [user, reset])
 
+    /* بک‌اند تیکت را در دو مرحله می‌سازد: اول خود تیکت (فقط دپارتمان
+       و موضوع) و بعد متن توضیحات به‌عنوان اولین پیام.
+       اگر مرحله‌ی دوم شکست بخورد تیکت ساخته شده ولی بدون متن است،
+       پس کاربر را به صفحه‌ی چت همان تیکت می‌فرستیم تا خودش بفرستد. */
     const onSubmit = async (data) => {
+        const departmentId = idOf(data.department)
+        if (!departmentId) {
+            setSubmitError('دپارتمان انتخاب‌شده معتبر نیست')
+            return
+        }
+
         setSubmitting(true)
-        // TODO: اتصال به سرویس بک‌اند
-        console.log('ticket payload:', data)
-        setSubmitting(false)
+        setSubmitError(null)
+
+        let ticket
+        try {
+            ticket = await ticketService.createTicket({
+                department_id: departmentId,
+                subject: makeSubject(data.description),
+            })
+        } catch (err) {
+            setSubmitError(err?.message || 'ثبت تیکت ناموفق بود')
+            setSubmitting(false)
+            return
+        }
+
+        try {
+            await ticketService.reply(ticket.id, data.description)
+            navigate('/helpdesk/tickets')
+        } catch {
+            navigate(`/helpdesk/tickets/${ticket.id}/chat`)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     return (
@@ -112,9 +161,10 @@ function NewTicketPage() {
                             render={({ field }) => (
                                 <Select
                                     label="دپارتمان"
-                                    options={DEPARTMENTS}
+                                    options={departmentNames}
                                     value={field.value}
                                     onChange={field.onChange}
+                                    disabled={departmentsLoading}
                                 />
                             )}
                         />
@@ -130,8 +180,16 @@ function NewTicketPage() {
                         </div>
                     </div>
 
+                    <Alert onClose={() => setSubmitError(null)}>
+                        {submitError || departmentsError}
+                    </Alert>
+
                     <div className={styles.actions}>
-                        <Button type="submit" disabled={!isValid} loading={submitting}>
+                        <Button
+                            type="submit"
+                            disabled={!isValid || departmentsLoading}
+                            loading={submitting}
+                        >
                             ثبت درخواست
                         </Button>
                         {/* TODO: مسیر لیست تیکت‌ها بعداً مشخص می‌شود */}

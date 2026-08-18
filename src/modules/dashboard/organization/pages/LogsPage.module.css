@@ -1,0 +1,186 @@
+/* اعداد از SVG:
+   کادر فیلتر ۸۸۳×۱۰۳، radius 10.5، حاشیه #264573
+   دکمه‌ها ۱۶۷×۵۵، radius 10.5، x = 276.5 | 474.5 | 672.5 → فاصله ۳۱
+   ردیف لاگ ۹۸۷×۶۳، radius 9.5، fill #060B13، گام ۸۸ → فاصله ۲۵ */
+
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── نوار فیلتر ── */
+.filterBar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 31px;
+    min-height: 103px;
+    margin-bottom: 40px;
+    padding: 0 20px;
+    border: 1px solid #264573;
+    border-radius: 10.5px;
+    background: #000814;
+}
+
+.filterBtn {
+    min-width: 167px;
+    height: 55px;
+    padding: 0 16px;
+    border: 1px solid;
+    border-radius: 10.5px;
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+/* رنگ هر دکمه از SVG — همان رنگ حاشیه‌ی ردیف‌های متناظر.
+   سلکتورها با .filterBtn محدود شده‌اند تا با کلاس‌های هم‌نام
+   روی ردیف‌های لاگ تداخل نکنند. */
+.filterBtn.warning {
+    border-color: #E85D04;
+    color: #E85D04;
+}
+
+.filterBtn.error {
+    border-color: #990000;
+    color: #F44336;
+}
+
+.filterBtn.info {
+    border-color: #7AB0FF;
+    color: #7AB0FF;
+}
+
+/* فیلتر فعال — پرشده با رنگ خودش */
+.filterBtn.filterActive.warning {
+    background: #E85D04;
+    color: var(--color-white);
+}
+
+.filterBtn.filterActive.error {
+    background: #990000;
+    color: var(--color-white);
+}
+
+.filterBtn.filterActive.info {
+    background: #7AB0FF;
+    color: #000814;
+}
+
+/* ── فهرست لاگ‌ها ── */
+.list {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-bottom: 8px;
+}
+
+.list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list::-webkit-scrollbar-thumb {
+    background: #192D4C;
+    border-radius: 4px;
+}
+
+/* ردیف لاگ — زمان سمت چپ، پیام سمت راست */
+.row {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 63px;
+    padding: 10px 20px;
+    border: 1px solid;
+    border-radius: 9.5px;
+    background: #060B13;
+}
+
+/* رنگ حاشیه و متن ردیف بر اساس سطح — رنگ‌ها از SVG */
+.row.info {
+    border-color: #7AB0FF;
+}
+
+.row.info .message,
+.row.info .time {
+    color: #7AB0FF;
+}
+
+.row.error {
+    border-color: #990000;
+}
+
+.row.error .message,
+.row.error .time {
+    color: #F44336;
+}
+
+.row.warning {
+    border-color: #E85D04;
+}
+
+.row.warning .message,
+.row.warning .time {
+    color: #E85D04;
+}
+
+.message {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* زمان در فیگما سمت چپ و کوچک‌تر است */
+.time {
+    flex-shrink: 0;
+    order: -1;
+    font-size: 10px;
+    opacity: 0.9;
+}
+
+.empty {
+    margin: 40px 0;
+    color: #47597A;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+@media (max-width: 1023px) {
+    .filterBar {
+        gap: 12px;
+        min-height: 80px;
+        margin-bottom: 20px;
+    }
+
+    .filterBtn {
+        min-width: 0;
+        flex: 1;
+        height: 44px;
+        font-size: var(--font-size-sm);
+    }
+
+    .list {
+        gap: 14px;
+    }
+
+    .message {
+        font-size: var(--font-size-xs);
+        white-space: normal;
+    }
+}

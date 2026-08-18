@@ -1,10 +1,49 @@
+import { useState } from 'react'
 import styles from './Footer.module.css'
 import logo from '../../../assets/images/logo/logowhite.png'
-import { Mail, Phone, Send } from 'lucide-react'
+import { Mail, Phone, Send, LoaderCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { contactService } from '../../../services/contactService'
+import { HTTP, MSG } from '../../../constants/auth'
+
+const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 
 function Footer() {
     const navigate = useNavigate()
+
+    const [email, setEmail] = useState('')
+    const [loading, setLoading] = useState(false)
+    /* { type: 'success' | 'error', text } — زیر فیلد نمایش داده می‌شود.
+       فوتر ته صفحه است، پس پیام باید کنار خود فیلد باشد نه بالای صفحه. */
+    const [feedback, setFeedback] = useState(null)
+
+    const handleSubscribe = async (e) => {
+        e.preventDefault()
+
+        if (!isValidEmail(email)) {
+            setFeedback({ type: 'error', text: 'ایمیل معتبر وارد کنید' })
+            return
+        }
+
+        setLoading(true)
+        setFeedback(null)
+        try {
+            await contactService.subscribe(email.trim())
+            setFeedback({ type: 'success', text: 'عضویت شما در خبرنامه ثبت شد' })
+            setEmail('')
+        } catch (err) {
+            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+                setFeedback({ type: 'error', text: MSG.RATE_LIMIT })
+            } else if (err.status === HTTP.CONFLICT) {
+                // این ایمیل قبلاً ثبت شده — خطا نیست، اطلاع‌رسانی است
+                setFeedback({ type: 'success', text: 'این ایمیل قبلاً در خبرنامه ثبت شده است' })
+            } else {
+                setFeedback({ type: 'error', text: err?.message || MSG.GENERIC })
+            }
+        } finally {
+            setLoading(false)
+        }
+    }
 
     return (
         <footer className={styles.footer}>
@@ -62,16 +101,44 @@ function Footer() {
                 {/* ستون چپ — خبرنامه + شبکه‌های اجتماعی */}
                 <div className={styles.col}>
                     <h4 className={styles.colTitle}>عضویت در خبرنامه</h4>
-                    <div className={styles.newsletter}>
+                    {/* form تا کلید Enter هم فرم را ارسال کند */}
+                    <form className={styles.newsletter} onSubmit={handleSubscribe} noValidate>
                         <input
                             type="email"
                             placeholder="آدرس ایمیل خود را وارد کنید"
                             className={styles.input}
+                            value={email}
+                            onChange={(e) => {
+                                setEmail(e.target.value)
+                                if (feedback) setFeedback(null)
+                            }}
+                            aria-label="آدرس ایمیل برای عضویت در خبرنامه"
+                            disabled={loading}
                         />
-                        <button className={styles.inputBtn}>
-                            <Send size={16} />
+                        <button
+                            type="submit"
+                            className={styles.inputBtn}
+                            disabled={loading}
+                            aria-label="عضویت در خبرنامه"
+                        >
+                            {loading ? (
+                                <LoaderCircle size={16} className={styles.spinner} />
+                            ) : (
+                                <Send size={16} />
+                            )}
                         </button>
-                    </div>
+                    </form>
+
+                    {feedback && (
+                        <p
+                            className={`${styles.feedback} ${
+                                feedback.type === 'error' ? styles.feedbackError : styles.feedbackSuccess
+                            }`}
+                            role="status"
+                        >
+                            {feedback.text}
+                        </p>
+                    )}
                     <div className={styles.socialWrapper}>
                         <span className={styles.socialLabel}>ما را در شبکه های اجتماعی دنبال کنید</span>
                         <div className={styles.socialIcons}>
