@@ -1,0 +1,404 @@
+digraph NGCorion_Full_Project_Flow {
+  rankdir=TB;
+  compound=true;
+  newrank=true;
+  splines=spline;
+  overlap=false;
+  nodesep=0.42;
+  ranksep=0.78;
+  bgcolor="white";
+  pad="0.25";
+
+  graph [
+    label="NGCorion — Full Project Flow",
+    labelloc="t",
+    fontsize=24,
+    fontname="Vazirmatn"
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Vazirmatn",
+    fontsize=10,
+    margin="0.16,0.10",
+    color="#6a6a6a",
+    penwidth=1.1,
+    fillcolor="#ffffff"
+  ];
+
+  edge [
+    fontname="Vazirmatn",
+    fontsize=8,
+    color="#5a5a5a",
+    arrowsize=0.72,
+    penwidth=1.15
+  ];
+
+  /* ===================== PUBLIC / ENTRY ===================== */
+  subgraph cluster_public {
+    label="ورودی عمومی";
+    style="rounded,filled";
+    color="#f2c9d7";
+    fillcolor="#fff8fb";
+
+    public_health    [label="Health\nGET /health", fillcolor="#ffffff"];
+    public_contact   [label="Contact Us\nPOST /landing/contact", fillcolor="#ffffff"];
+    public_subscribe [label="Subscribe\nPOST /landing/subscribe", fillcolor="#ffffff"];
+    public_catalog   [label="Browse Catalog\nGET /products/\nGET /products/{slug}\nGET /products/{slug}/plans", fillcolor="#ffffff"];
+
+    public_contact_note   [label="public intake", shape=note, fillcolor="#fff0f6", color="#c67aa0"];
+    public_subscribe_note  [label="newsletter / lead capture", shape=note, fillcolor="#fff0f6", color="#c67aa0"];
+  }
+
+  /* ===================== AUTH ===================== */
+  subgraph cluster_auth {
+    label="احراز هویت / نشست / OTP";
+    style="rounded,filled";
+    color="#cfd8dc";
+    fillcolor="#f7f9fb";
+
+    auth_register       [label="Register\nPOST /auth/register", fillcolor="#ffffff"];
+    auth_login          [label="Login\nPOST /auth/login", fillcolor="#ffffff"];
+    auth_refresh        [label="Refresh Token\nPOST /auth/refresh", fillcolor="#ffffff"];
+    auth_logout         [label="Logout\nPOST /auth/logout", fillcolor="#ffffff"];
+    auth_me             [label="Current User\nGET /auth/me", fillcolor="#ffffff"];
+    auth_sessions       [label="Session List\nGET /auth/sessions", fillcolor="#ffffff"];
+    auth_session_delete [label="Delete Session\nDELETE /auth/sessions/{session_id}", fillcolor="#ffffff"];
+
+    auth_contact_verify [label="Verify Contact\nPOST /auth/contact/verify", fillcolor="#ffffff"];
+    auth_otp_request    [label="Request OTP\nPOST /auth/otp/request", fillcolor="#ffffff"];
+    auth_otp_verify     [label="Verify OTP\nPOST /auth/otp/verify", fillcolor="#ffffff"];
+    auth_reset_verify   [label="Verify Reset OTP\nPOST /auth/otp/reset-password/verify", fillcolor="#ffffff"];
+    auth_pwd_reset      [label="Reset Password\nPOST /auth/password/reset", fillcolor="#ffffff"];
+    auth_pwd_change     [label="Change Password\nPOST /auth/password/change", fillcolor="#ffffff"];
+
+    auth_gate           [label="Protected Routes\nCookieAuth / BearerAuth", shape=ellipse, fillcolor="#eaf3ff"];
+    auth_ready          [label="Authenticated User", shape=ellipse, fillcolor="#edf6ff"];
+
+    otp_branch_login    [label="OTP branch: login", shape=ellipse, fillcolor="#f1f8ff"];
+    otp_branch_verify   [label="OTP branch: verify_contact", shape=ellipse, fillcolor="#f1f8ff"];
+    otp_branch_reset    [label="OTP branch: reset_password", shape=ellipse, fillcolor="#f1f8ff"];
+    otp_branch_register [label="OTP branch: register", shape=ellipse, fillcolor="#f1f8ff"];
+
+    auth_flow_note      [label="OTP is direct flow\n(no task polling node)", shape=note, fillcolor="#eef7ff", color="#7aa1c6"];
+  }
+
+  /* ===================== CATALOG ===================== */
+  subgraph cluster_catalog {
+    label="کاتالوگ / محصول / پلن / قیمت";
+    style="rounded,filled";
+    color="#d7c2ef";
+    fillcolor="#faf7ff";
+
+    cat_categories    [label="Categories\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_products      [label="Products\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_versions      [label="Product Versions\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_features      [label="Features\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_plans         [label="Plans\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_plan_features [label="Plan Features\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_billing_terms [label="Billing Terms\nAdmin CRUD", fillcolor="#ffffff"];
+    cat_plan_prices   [label="Plan Prices\nAdmin CRUD", fillcolor="#ffffff"];
+
+    cat_public_features [label="Public Features\nGET /products/features", fillcolor="#fdfdff"];
+    cat_public_plans    [label="Public Plans\nGET /products/plans\nGET /products/plans/{plan_id}", fillcolor="#fdfdff"];
+
+    cat_value_types   [label="Feature value_type\nbool / int / decimal / text / json", shape=ellipse, fillcolor="#f3edff"];
+    cat_term_codes    [label="PlanPrice term_code\nmonthly / yearly / perpetual / trial", shape=ellipse, fillcolor="#f3edff"];
+    cat_visibility    [label="is_active / is_public / is_trial", shape=ellipse, fillcolor="#f3edff"];
+  }
+
+  /* ===================== ORDERS / FINANCE ===================== */
+  subgraph cluster_orders {
+    label="سفارش / پرداخت / اسناد مالی";
+    style="rounded,filled";
+    color="#bfd8ff";
+    fillcolor="#f7fbff";
+
+    order_create        [label="Create Order\nGET, POST /orders/", fillcolor="#ffffff"];
+    order_demo          [label="Demo Order\nPOST /orders/demo", fillcolor="#ffffff"];
+    order_detail        [label="Order Detail / Dashboard\nGET /orders/{order_id}", fillcolor="#ffffff"];
+    order_cancel        [label="Cancel Order\nPOST /orders/{order_id}/cancel", fillcolor="#fff1f1", color="#cc4b4b"];
+
+    order_admin_list    [label="Admin Review Orders\nGET /admin/orders/", fillcolor="#ffffff"];
+    order_quote         [label="Issue Quote / Proforma\nPOST /admin/orders/{order_id}/quote", fillcolor="#fffdf2", color="#b28c00"];
+    order_payment_submit [label="Submit Payment Proof\nPOST /orders/{order_id}/payments", fillcolor="#ffffff"];
+    order_payment_verify [label="Verify Payment\nPOST /admin/orders/{order_id}/payments/{payment_id}/verify", fillcolor="#ffffff"];
+    order_status_update  [label="Change Order Status\nPOST /admin/orders/{order_id}/status", fillcolor="#ffffff"];
+
+    order_proforma      [label="Proforma\nDashboard document\n(before payment)", shape=note, fillcolor="#fff8dd", color="#b28c00"];
+    order_invoice       [label="Invoice\nDashboard document\n(after payment verification)", shape=note, fillcolor="#eaf7ea", color="#2f7d32"];
+
+    order_state_requested        [label="REQUESTED", shape=ellipse, fillcolor="#eef5ff"];
+    order_state_review           [label="AWAITING_ADMIN_REVIEW", shape=ellipse, fillcolor="#eef5ff"];
+    order_state_quoted           [label="QUOTATION_ISSUED", shape=ellipse, fillcolor="#eef5ff"];
+    order_state_awaiting_payment [label="AWAITING_PAYMENT", shape=ellipse, fillcolor="#eef5ff"];
+    order_state_paid             [label="PAID_CONFIRMED", shape=ellipse, fillcolor="#e8f5e9"];
+    order_state_invoiced         [label="INVOICED", shape=ellipse, fillcolor="#e8f5e9"];
+    order_state_working          [label="TECHNICAL_IN_PROGRESS", shape=ellipse, fillcolor="#e8f5e9"];
+    order_state_completed        [label="COMPLETED", shape=ellipse, fillcolor="#e8f5e9"];
+    order_state_failed           [label="FAILED", shape=ellipse, fillcolor="#fff1f1"];
+    order_state_rejected         [label="REJECTED", shape=ellipse, fillcolor="#fff1f1"];
+    order_state_canceled         [label="CANCELED", shape=ellipse, fillcolor="#fff1f1"];
+    order_state_refunded         [label="REFUNDED", shape=ellipse, fillcolor="#fff1f1"];
+
+    order_type_purchase [label="OrderType: purchase", shape=ellipse, fillcolor="#edf6ff"];
+    order_type_demo     [label="OrderType: demo", shape=ellipse, fillcolor="#edf6ff"];
+
+    payment_methods [label="Payment methods\noffline / cash / bank_transfer /\ncard_to_card / other", shape=ellipse, fillcolor="#edf6ff"];
+
+    customer_dashboard [label="Customer Dashboard\nOrders / Proforma / Invoice", shape=folder, fillcolor="#f1f8ff", color="#4c84c8"];
+  }
+
+  /* ===================== TICKETING ===================== */
+  subgraph cluster_ticketing {
+    label="تیکتینگ / پشتیبانی";
+    style="rounded,filled";
+    color="#f0d98a";
+    fillcolor="#fffdf3";
+
+    ticket_departments   [label="Departments\nGET /ticketing/departments\nGET /ticketing/departments/{department_id}", fillcolor="#ffffff"];
+    ticket_dept_admin    [label="Admin Departments\nPOST /admin/departments\nPATCH /admin/departments/{department_id}\nDELETE /admin/departments/{department_id}", fillcolor="#ffffff"];
+    ticket_members       [label="Department Members\nGET, POST /admin/departments/{department_id}/members\nDELETE /admin/departments/{department_id}/members/{member_id}", fillcolor="#ffffff"];
+
+    ticket_create        [label="Create / List Tickets\nGET, POST /ticketing/tickets", fillcolor="#ffffff"];
+    ticket_detail        [label="View / Update Ticket\nGET, PATCH /ticketing/tickets/{ticket_id}", fillcolor="#ffffff"];
+    ticket_messages      [label="Message Thread\nGET /ticketing/tickets/{ticket_id}/messages", fillcolor="#ffffff"];
+    ticket_reply         [label="Reply\nPOST /ticketing/tickets/{ticket_id}/reply", fillcolor="#ffffff"];
+    ticket_link_order    [label="Link Order and Ticket\nPOST /admin/orders/{order_id}/tickets/link", fillcolor="#ffffff"];
+
+    ticket_state_open          [label="open", shape=ellipse, fillcolor="#fffbe8"];
+    ticket_state_in_progress   [label="in_progress", shape=ellipse, fillcolor="#fffbe8"];
+    ticket_state_wait_customer [label="waiting_for_customer", shape=ellipse, fillcolor="#fffbe8"];
+    ticket_state_resolved      [label="resolved", shape=ellipse, fillcolor="#eef7ea"];
+    ticket_state_closed        [label="closed", shape=ellipse, fillcolor="#eef7ea"];
+    ticket_state_cancelled     [label="cancelled", shape=ellipse, fillcolor="#fff1f1"];
+    ticket_state_spam          [label="spam", shape=ellipse, fillcolor="#fff1f1"];
+
+    ticket_relation_type [label="Relation type\ntechnical / financial / general /\nsupport / installation / delivery", shape=ellipse, fillcolor="#fff4d8"];
+  }
+
+  /* ===================== NOTIFICATIONS ===================== */
+  subgraph cluster_notifications {
+    label="اعلان‌ها";
+    style="rounded,filled";
+    color="#f2b37d";
+    fillcolor="#fff8f1";
+
+    notif_templates    [label="Manage Templates\nGET, POST /admin/notifications/templates\nGET, PATCH, DELETE /admin/notifications/templates/{template_id}", fillcolor="#ffffff"];
+    notif_admin_send   [label="Send Notification\nPOST /admin/notifications", fillcolor="#ffffff"];
+
+    notif_inbox        [label="Inbox\nGET /notifications/", fillcolor="#ffffff"];
+    notif_detail       [label="Notification Detail\nGET /notifications/{notification_id}", fillcolor="#ffffff"];
+    notif_read         [label="Mark Read\nPATCH /notifications/{notification_id}/read", fillcolor="#ffffff"];
+    notif_delete       [label="Delete Notification\nDELETE /notifications/{notification_id}", fillcolor="#ffffff"];
+    notif_bulk_read    [label="Bulk Read\nPATCH /notifications/bulk/read", fillcolor="#ffffff"];
+    notif_bulk_delete  [label="Bulk Delete\nDELETE /notifications/bulk", fillcolor="#ffffff"];
+
+    notif_state_unread [label="Unread", shape=ellipse, fillcolor="#fff1e6"];
+    notif_state_read   [label="Read", shape=ellipse, fillcolor="#e8f5e9"];
+
+    notif_type [label="Notification types\nsystem / kyc / ticket / order / security", shape=ellipse, fillcolor="#fff1e6"];
+  }
+
+  /* ===================== ADMIN ===================== */
+  subgraph cluster_admin {
+    label="ادمین / بک‌آفیس";
+    style="rounded,filled";
+    color="#c9e7cf";
+    fillcolor="#f6fbf7";
+
+    admin_gate    [label="Admin Access", shape=ellipse, fillcolor="#edf8ef"];
+    admin_catalog [label="Catalog Maintenance", fillcolor="#ffffff"];
+    admin_orders  [label="Order Operations", fillcolor="#ffffff"];
+    admin_support [label="Support Operations", fillcolor="#ffffff"];
+    admin_notify   [label="Notification Operations", fillcolor="#ffffff"];
+  }
+
+  /* ===================== PUBLIC FLOW ===================== */
+  public_health -> public_contact [style=dashed, label="entry"];
+  public_health -> public_subscribe [style=dashed, label="entry"];
+  public_health -> public_catalog [style=dashed, label="entry"];
+
+  public_contact -> public_contact_note [style=dotted, arrowhead=none];
+  public_subscribe -> public_subscribe_note [style=dotted, arrowhead=none];
+
+  public_contact -> auth_register [style=dashed, label="onboarding"];
+  public_subscribe -> notif_admin_send [style=dashed, label="lead capture"];
+  public_catalog -> cat_public_plans [label="browse"];
+  public_catalog -> cat_public_features [label="browse"];
+
+  /* ===================== AUTH FLOW ===================== */
+  auth_register -> auth_otp_request [label="register"];
+  auth_otp_request -> auth_otp_verify [label="OTP sent"];
+  auth_otp_verify -> otp_branch_register [style=dashed, label="register"];
+  auth_otp_verify -> otp_branch_login [style=dashed, label="login"];
+  auth_otp_verify -> otp_branch_verify [style=dashed, label="verify_contact"];
+  auth_otp_verify -> otp_branch_reset [style=dashed, label="reset_password"];
+
+  otp_branch_register -> auth_login [label="after verify"];
+  otp_branch_login    -> auth_login [label="after verify"];
+  otp_branch_verify   -> auth_contact_verify;
+  otp_branch_reset    -> auth_reset_verify;
+
+  auth_reset_verify -> auth_pwd_reset [label="allow reset"];
+  auth_login -> auth_ready [label="success"];
+  auth_ready -> auth_gate [label="protected"];
+  auth_login -> auth_me;
+  auth_login -> auth_refresh;
+  auth_login -> auth_logout;
+  auth_login -> auth_sessions;
+  auth_sessions -> auth_session_delete;
+  auth_pwd_change -> auth_logout [style=dotted, label="session hygiene"];
+
+  /* ===================== ADMIN GATE ===================== */
+  auth_gate -> admin_gate [label="admin-only", style=dashed];
+  admin_gate -> admin_catalog;
+  admin_gate -> admin_orders;
+  admin_gate -> admin_support;
+  admin_gate -> admin_notify;
+
+  /* ===================== CATALOG FLOW ===================== */
+  cat_categories -> cat_products;
+  cat_products -> cat_versions;
+  cat_products -> cat_plans;
+  cat_features -> cat_plan_features;
+  cat_plans -> cat_plan_features;
+  cat_plans -> cat_plan_prices;
+  cat_billing_terms -> cat_plan_prices;
+
+  cat_features -> cat_public_features;
+  cat_plans -> cat_public_plans;
+  cat_plan_features -> cat_public_plans;
+  cat_plan_prices -> cat_public_plans;
+  cat_visibility -> cat_public_plans;
+  cat_value_types -> cat_features;
+  cat_term_codes -> cat_plan_prices;
+
+  admin_catalog -> cat_categories;
+  admin_catalog -> cat_products;
+  admin_catalog -> cat_versions;
+  admin_catalog -> cat_features;
+  admin_catalog -> cat_plans;
+  admin_catalog -> cat_plan_features;
+  admin_catalog -> cat_billing_terms;
+  admin_catalog -> cat_plan_prices;
+
+  /* ===================== ORDER FLOW ===================== */
+  auth_ready -> order_create [label="authenticated"];
+  cat_public_plans -> order_create [label="select plan"];
+  cat_public_features -> order_create [style=dotted, label="feature context"];
+
+  order_create -> order_type_purchase;
+  order_demo -> order_type_demo;
+
+  order_create -> order_state_requested;
+  order_demo -> order_state_requested;
+
+  order_state_requested -> order_admin_list [label="new order"];
+  order_state_requested -> order_detail;
+
+  order_admin_list -> order_state_review [label="review"];
+  order_admin_list -> order_quote [label="approve + price"];
+
+  order_quote -> order_state_quoted;
+  order_state_quoted -> order_proforma [label="issue proforma"];
+  order_proforma -> order_state_awaiting_payment [label="send to customer"];
+
+  order_state_awaiting_payment -> order_payment_submit [label="customer pays"];
+  order_payment_submit -> payment_methods;
+  order_payment_submit -> order_detail [label="store payment record"];
+  order_payment_submit -> order_payment_verify [label="admin review"];
+
+  order_payment_verify -> order_state_paid;
+  order_state_paid -> order_invoice [label="issue invoice"];
+  order_invoice -> order_state_invoiced;
+
+  order_state_invoiced -> order_state_working [label="technical start"];
+  order_state_working -> order_state_completed [label="done"];
+
+  order_state_review -> order_state_rejected [label="reject"];
+  order_state_review -> order_state_failed [label="failed"];
+  order_state_paid -> order_state_refunded [label="refund"];
+
+  order_detail -> order_cancel [label="customer cancel"];
+  order_cancel -> order_state_canceled;
+
+  order_status_update -> order_state_completed;
+  order_status_update -> order_state_rejected;
+  order_status_update -> order_state_failed;
+  order_status_update -> order_state_refunded;
+
+  order_detail -> customer_dashboard [label="show documents"];
+  customer_dashboard -> order_proforma [style=dashed, label="view"];
+  customer_dashboard -> order_invoice [style=dashed, label="view"];
+
+  order_quote -> order_proforma [style=dotted, label="business logic / dashboard document"];
+  order_payment_verify -> order_invoice [style=dotted, label="business logic / dashboard document"];
+
+  /* ===================== TICKETING FLOW ===================== */
+  auth_ready -> ticket_create [label="authenticated"];
+  ticket_departments -> ticket_create [label="choose department"];
+
+  ticket_create -> ticket_state_open;
+  ticket_create -> ticket_detail;
+  ticket_detail -> ticket_messages;
+  ticket_detail -> ticket_reply;
+  ticket_reply -> ticket_messages;
+
+  ticket_messages -> ticket_state_in_progress;
+  ticket_messages -> ticket_state_wait_customer;
+  ticket_messages -> ticket_state_resolved;
+  ticket_messages -> ticket_state_closed;
+  ticket_messages -> ticket_state_cancelled;
+  ticket_messages -> ticket_state_spam;
+
+  ticket_link_order -> ticket_create [label="context link"];
+  ticket_relation_type -> ticket_link_order;
+
+  ticket_dept_admin -> ticket_members;
+  admin_support -> ticket_dept_admin;
+  admin_support -> ticket_members;
+
+  /* ===================== NOTIFICATION FLOW ===================== */
+  notif_templates -> notif_type;
+  notif_templates -> notif_admin_send;
+  admin_notify -> notif_templates;
+  admin_notify -> notif_admin_send;
+
+  notif_admin_send -> notif_inbox;
+  notif_inbox -> notif_detail;
+  notif_inbox -> notif_read;
+  notif_inbox -> notif_delete;
+  notif_inbox -> notif_bulk_read;
+  notif_inbox -> notif_bulk_delete;
+
+  notif_read -> notif_state_read;
+  notif_inbox -> notif_state_unread;
+
+  order_payment_submit -> notif_admin_send [style=dotted, label="payment event"];
+  order_payment_verify -> notif_admin_send [style=dotted, label="order update"];
+  order_status_update -> notif_admin_send [style=dotted, label="status update"];
+  ticket_reply -> notif_admin_send [style=dotted, label="ticket update"];
+
+  /* ===================== SHARED ACCESS ===================== */
+  auth_gate -> order_create [style=dashed, label="protected"];
+  auth_gate -> order_detail [style=dashed, label="protected"];
+  auth_gate -> notif_inbox [style=dashed, label="protected"];
+  auth_gate -> ticket_create [style=dashed, label="protected"];
+
+  /* ===================== LEGEND ===================== */
+  subgraph cluster_legend {
+    label="راهنما";
+    style="rounded,dashed";
+    color="#b9b9b9";
+    fillcolor="#ffffff";
+
+    lg1 [label="solid edge = main flow", shape=plaintext];
+    lg2 [label="dashed edge = access / branch / auxiliary route", shape=plaintext];
+    lg3 [label="dotted edge = business logic or inferred document milestone", shape=plaintext];
+    lg4 [label="note = dashboard/document milestone", shape=plaintext];
+    lg5 [label="red tone = terminal / cancel / reject / failure", shape=plaintext];
+  }
+}
+

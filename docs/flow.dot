@@ -1,0 +1,123 @@
+digraph NGCorionOrderFlow {
+  rankdir=LR;
+  compound=true;
+  graph [fontname="Helvetica", fontsize=15, labelloc="t",
+         label="NGCorion Order Lifecycle\nCustomer · Admin · License Server (Celery) · Ticketing"];
+  node  [fontname="Helvetica", shape=box, style="rounded,filled", fontsize=10];
+  edge  [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  /* ================= CUSTOMER LANE ================= */
+  subgraph cluster_customer {
+    label="Customer";
+    style="rounded,filled"; fillcolor="#eef5fb"; color="#3a7bd5";
+
+    c_login   [label="Register / Login", fillcolor="#ffffff"];
+    c_choose  [label="Choose Product + Plan\norder_type: purchase | demo (= trial, once per user)\nplan defines delivery: install-by-us | license-only", fillcolor="#ffffff"];
+    c_submit  [label="Submit Order\nPOST /orders/\n[REQUESTED]", fillcolor="#ffffff"];
+    c_pay     [label="Accept Proforma & Pay\n(payment = acceptance)", fillcolor="#ffffff"];
+    c_proof   [label="Submit Payment Proof\nPOST /orders/{id}/payments\n[AWAITING_PAYMENT]", fillcolor="#ffffff"];
+    c_invoice [label="Receive Invoice\n(email + download link)\n[INVOICED]", fillcolor="#ffffff"];
+    c_receive [label="Receive Product / License\n[COMPLETED]", fillcolor="#ffffff"];
+    c_cancel  [label="Cancel Order\nPOST /orders/{id}/cancel\n[CANCELED]", fillcolor="#ffe1e1", color="#d9534f"];
+
+    c_login -> c_choose;
+    c_choose -> c_submit;
+    c_pay -> c_proof;
+  }
+
+  /* ================= ADMIN LANE ================= */
+  subgraph cluster_admin {
+    label="Admin";
+    style="rounded,filled"; fillcolor="#eef7ee"; color="#4cae4c";
+
+    a_list      [label="List Orders\nGET /admin/orders/", fillcolor="#ffffff"];
+    a_review    [label="Review Order\n[AWAITING_ADMIN_REVIEW]", fillcolor="#ffffff"];
+    a_price     [label="Create plan_base_price\n(per-user pricing)\n& attach by id", fillcolor="#ffffff"];
+    a_proforma  [label="Send Proforma\n(PDF / email / notify)\nPOST /admin/orders/{id}/quote\n[QUOTATION_ISSUED]", fillcolor="#ffffff"];
+    a_verify    [label="Verify Payment Proof\nPOST /admin/orders/{id}/payments/{pid}/verify\n[PAID_CONFIRMED]", fillcolor="#ffffff"];
+    a_invoice   [label="Invoice generated & emailed\nauto (not manual)\n[INVOICED]", fillcolor="#e8f4fd"];
+    a_starttech [label="Start Technical Work\nPOST /admin/orders/{id}/status\n[TECHNICAL_IN_PROGRESS]", fillcolor="#ffffff"];
+    a_complete  [label="Complete Order\n[COMPLETED]", fillcolor="#ffffff"];
+    a_reject    [label="Reject\nPOST /admin/orders/{id}/status\n[REJECTED]", fillcolor="#ffe1e1", color="#d9534f"];
+
+    a_list -> a_review;
+    a_review -> a_price;
+    a_price -> a_proforma;
+    a_verify -> a_invoice;
+    a_invoice -> a_starttech;
+  }
+
+  /* ================= INSTALLATION (install-by-us, tracked via ticket) ================= */
+  subgraph cluster_install {
+    label="Installation (install-by-us)\nTracked via TicketStatus";
+    style="rounded,filled"; fillcolor="#fff9f0"; color="#e6a23c";
+
+    i_ticket [label="Auto-created Ticket\nTicketStatus:\nopen -> in_progress ->\nwaiting_for_customer -> resolved/closed", fillcolor="#ffffff"];
+    i_done   [label="Installation successful", fillcolor="#ffffff"];
+    i_ticket -> i_done;
+  }
+
+  /* ================= LICENSE SERVER LANE ================= */
+  subgraph cluster_license {
+    label="Secondary License Server\n(server-to-server via Celery)";
+    style="rounded,filled"; fillcolor="#f6f0fb"; color="#8e6fb5";
+
+    l_request [label="Create / Activate License\n(called via Celery)", fillcolor="#ffffff"];
+    l_active  [label="License Activated", fillcolor="#ffffff"];
+    l_request -> l_active;
+  }
+
+  /* ================= TICKETING (optional, any stage) ================= */
+  subgraph cluster_ticketing {
+    label="Ticketing (optional, any stage)";
+    style="rounded,filled"; fillcolor="#fffcee"; color="#c9a227";
+
+    t_user  [label="User creates ticket\n-> client auto-links to order", fillcolor="#ffffff"];
+    t_admin [label="Admin links ticket\nPOST /admin/orders/{id}/tickets/link", fillcolor="#ffffff"];
+  }
+
+  /* ================= MAIN FLOW (cross-lane) ================= */
+  c_submit    -> a_review   [label="order created"];
+  a_proforma  -> c_pay      [label="proforma sent"];
+  c_proof     -> a_verify   [label="proof submitted"];
+  a_invoice   -> c_invoice  [label="emailed + link", style=dashed, color="#4cae4c"];
+  a_starttech -> i_ticket   [label="install-by-us (from plan)"];
+  a_starttech -> l_request  [label="license-only (from plan)"];
+  i_done      -> a_complete [label="installed"];
+  l_active    -> a_complete [label="activated"];
+  a_complete  -> c_receive;
+
+  /* ================= CANCEL (user only) / REJECT (admin only) ================= */
+  edge [style=dashed, color="#d9534f"];
+  c_submit    -> c_cancel;
+  c_pay       -> c_cancel;
+  c_proof     -> c_cancel;
+  a_review    -> a_reject;
+  a_price     -> a_reject;
+  a_proforma  -> a_reject;
+  a_verify    -> a_reject;
+  a_invoice   -> a_reject;
+  a_starttech -> a_reject;
+  i_ticket    -> a_reject;
+
+  /* ================= PAYMENT TIMEOUT (auto-reject) ================= */
+  c_proof -> a_reject [label="no payment within\ntimeout (e.g. 1 week)\nauto-reject", color="#e6a23c", style=dashed];
+
+  /* ================= TICKET LINKS (dotted, any stage) ================= */
+  edge [style=dotted, color="#c9a227", constraint=false];
+  t_user  -> c_submit [label="link"];
+  t_user  -> c_proof  [label="link"];
+  t_admin -> a_review [label="link"];
+
+  /* ================= LEGEND ================= */
+  subgraph cluster_legend {
+    label="Legend";
+    style=dashed; color="#999999"; fontsize=10;
+    lg1 [label="[STATUS] = OrderStatus enum value", shape=note, fillcolor="#ffffff"];
+    lg2 [label="Solid = main flow\nDashed red = cancel(user) / reject(admin)\nDashed amber = timeout auto-reject\nDotted amber = ticket link", shape=note, fillcolor="#ffffff"];
+    lg3 [label="Cancel = user only · Reject = admin only · both at any non-terminal stage", shape=note, fillcolor="#ffffff"];
+    lg4 [label="Demo = trial, once per user; second request auto-rejected", shape=note, fillcolor="#ffffff"];
+    lg5 [label="Invoice = auto after payment (email + download link, not exposed in openapi)", shape=note, fillcolor="#ffffff"];
+  }
+}
+
