@@ -131,8 +131,18 @@ export const authService = {
             .then(unwrap);
     },
 
-    getSessions() {
-        return api.get("/auth/sessions").then(unwrap);
+    /* GET /auth/sessions — نشست‌های فعال کاربر.
+
+       در اسپک جدید خروجی از { sessions: [...] } به آرایه‌ی تخت تغییر
+       کرد و صفحه‌بندی گرفت، پس مثل بقیه‌ی لیست‌ها کل پاسخ برگردانده
+       می‌شود تا صفحه به meta.pagination دسترسی داشته باشد. */
+    getSessions({ page = 1, limit = 10 } = {}) {
+        return api
+            .get("/auth/sessions", { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }));
     },
 
     removeSession(sessionId) {

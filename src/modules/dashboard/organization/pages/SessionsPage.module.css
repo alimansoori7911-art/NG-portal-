@@ -86,3 +86,22 @@
         font-size: var(--font-size-xs);
     }
 }
+
+/* نشست جاری — به‌جای دکمه‌ی حذف، برچسب نشان داده می‌شود چون بستنش
+   یعنی خروج از همان صفحه‌ای که کاربر در آن ایستاده. */
+.currentBadge {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid var(--interactive-border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.error {
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}

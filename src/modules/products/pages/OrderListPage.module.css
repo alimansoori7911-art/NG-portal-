@@ -127,3 +127,34 @@
     background: var(--interactive-border);
     color: var(--color-white);
 }
+
+/* دو دکمه‌ی عملیات کنار هم؛ روی صفحه‌ی باریک زیر هم می‌روند */
+.rowActions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.cancelBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid var(--status-error-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.cancelBtn:hover {
+    background: var(--status-error-border);
+    color: var(--color-white);
+}
