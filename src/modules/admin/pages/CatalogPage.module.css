@@ -79,3 +79,24 @@
         gap: 20px;
     }
 }
+
+/* پیام‌های حالت — بارگذاری، خطا، خالی */
+.state {
+    margin: 0;
+    padding: 24px 4px;
+    color: var(--text-body);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.error {
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.createBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

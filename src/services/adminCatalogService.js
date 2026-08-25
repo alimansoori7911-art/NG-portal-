@@ -13,10 +13,13 @@ const unwrap = (res) => res.data?.data
  *       ولی فیگمایشان نرسیده — با رسیدن طرح اضافه می‌شوند.
  */
 export const adminCatalogService = {
-    /* GET /admin/plans — لیست همه‌ی پلن‌ها (شامل غیرعمومی‌ها) */
-    getPlans({ page = 1, limit = 20 } = {}) {
+    /* GET /admin/plans — لیست همه‌ی پلن‌ها (شامل غیرعمومی‌ها).
+
+       include قیمت‌ها و قابلیت‌ها را در همان پاسخ می‌آورد؛ بدون آن
+       برای هر کارت دو درخواست جداگانه لازم می‌شد. */
+    getPlans({ page = 1, limit = 20, include = ['prices', 'features'] } = {}) {
         return api
-            .get('/admin/plans', { params: { page, limit } })
+            .get('/admin/plans', { params: { page, limit, include } })
             .then((res) => ({
                 items: res.data?.data ?? [],
                 pagination: res.data?.meta?.pagination ?? null,

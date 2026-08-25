@@ -2,12 +2,7 @@ import { useState } from 'react'
 import PlanCard from '../components/PlanCard/PlanCard'
 import PlanForm from '../components/PlanForm/PlanForm'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
-import {
-    MOCK_PLANS,
-    MOCK_FEATURES,
-    MOCK_BILLING_TERMS,
-    termName,
-} from '../data/mockCatalog'
+import { useCatalog } from '../hooks/useCatalog'
 import { buildPlanCode } from '../utils/planCode'
 import styles from './CatalogPage.module.css'
 
@@ -16,23 +11,42 @@ const TABS = [{ id: 'plans', label: 'محصولات و پلن‌ها' }]
 /**
  * محصولات و کاتالوگ — شبکه‌ی کارت پلن‌ها و فرم ساخت/ویرایش.
  *
- * برخلاف بقیه‌ی صفحات ادمین، بک‌اند این بخش کامل آماده است:
- *   GET/POST/PATCH/DELETE /admin/plans و /admin/plans/{id}/features|prices
- *
- * TODO: اتصال به adminCatalogService پس از در دسترس بودن سرور.
- *       فعلاً روی MOCK_PLANS کار می‌کند تا UI قابل بررسی باشد.
+ * وصل به /admin/plans و زیرمجموعه‌هایش. منطق نگاشت داده و ترتیب
+ * درخواست‌ها در useCatalog است تا این فایل فقط نمایش بماند.
  */
 export default function CatalogPage() {
-    const [plans, setPlans] = useState(MOCK_PLANS)
+    const {
+        plans,
+        features,
+        terms,
+        loading,
+        error,
+        saving,
+        saveError,
+        clearSaveError,
+        termName,
+        savePlan,
+        deletePlan,
+    } = useCatalog()
 
     /* null = نمای شبکه | 'new' = فرم ساخت | شیء پلن = فرم ویرایش */
     const [editing, setEditing] = useState(null)
     const [pendingDelete, setPendingDelete] = useState(null)
-    const [saving, setSaving] = useState(false)
 
-    const openCreate = () => setEditing('new')
-    const openEdit = (plan) => setEditing(plan)
-    const closeForm = () => setEditing(null)
+    const openCreate = () => {
+        clearSaveError()
+        setEditing('new')
+    }
+
+    const openEdit = (plan) => {
+        clearSaveError()
+        setEditing(plan)
+    }
+
+    const closeForm = () => {
+        clearSaveError()
+        setEditing(null)
+    }
 
     /* مقادیر قابلیت‌ها در کارت آرایه‌اند ولی فرم شیء می‌خواهد */
     const toFormValues = (plan) =>
@@ -46,49 +60,19 @@ export default function CatalogPage() {
               }
 
     const handleSubmit = async (values) => {
-        setSaving(true)
-        try {
-            const features = MOCK_FEATURES.map((f) => ({
-                key: f.code,
-                label: f.name,
-                value: values.features[f.code] ?? '',
-            }))
-
-            /* code در CreatePlan اجباری است ولی فیگما آن را نمی‌پرسد،
-               پس از external_plan_code ساخته می‌شود.
-               product_id هم در مسیر اندپوینت است نه بدنه؛ چون فعلاً یک
-               محصول داریم، اولین محصول انتخاب می‌شود.
-
-               TODO: هنگام اتصال واقعی —
-                 adminCatalogService.createPlan(productId, {
-                     ...values, code: buildPlanCode(values)
-                 })
-               و سپس ثبت قیمت با term_code انتخاب‌شده:
-                 adminCatalogService.createPlanPrice(planId, { term_code, ... }) */
-            const code = buildPlanCode(values)
-
-            if (editing === 'new') {
-                setPlans((list) => [
-                    ...list,
-                    { ...values, code, id: Date.now(), features },
-                ])
-            } else {
-                setPlans((list) =>
-                    list.map((p) =>
-                        p.id === editing.id ? { ...p, ...values, features } : p
-                    )
-                )
-            }
-            closeForm()
-        } finally {
-            setSaving(false)
-        }
+        /* code در CreatePlan اجباری است ولی فیگما آن را نمی‌پرسد، پس
+           از external_plan_code ساخته می‌شود (با پسوند تصادفی تا با
+           پلن‌های هم‌نام تداخل نکند). */
+        const ok = await savePlan(values, {
+            code: buildPlanCode(values),
+            editing,
+        })
+        if (ok) closeForm()
     }
 
-    const confirmDelete = () => {
-        // TODO: adminCatalogService.deletePlan(pendingDelete.id)
-        setPlans((list) => list.filter((p) => p.id !== pendingDelete.id))
-        setPendingDelete(null)
+    const confirmDelete = async () => {
+        const ok = await deletePlan(pendingDelete.id)
+        if (ok) setPendingDelete(null)
     }
 
     return (
@@ -102,14 +86,21 @@ export default function CatalogPage() {
             </div>
 
             {editing ? (
-                <PlanForm
-                    initialValues={toFormValues(editing)}
-                    featureList={MOCK_FEATURES}
-                    termList={MOCK_BILLING_TERMS}
-                    saving={saving}
-                    onSubmit={handleSubmit}
-                    onClose={closeForm}
-                />
+                <>
+                    {saveError && (
+                        <p className={styles.error} role="alert">
+                            {saveError}
+                        </p>
+                    )}
+                    <PlanForm
+                        initialValues={toFormValues(editing)}
+                        featureList={features}
+                        termList={terms}
+                        saving={saving}
+                        onSubmit={handleSubmit}
+                        onClose={closeForm}
+                    />
+                </>
             ) : (
                 <>
                     <div className={styles.toolbar}>
@@ -117,10 +108,29 @@ export default function CatalogPage() {
                             type="button"
                             className={styles.createBtn}
                             onClick={openCreate}
+                            disabled={loading}
                         >
                             ایجاد پلن
                         </button>
                     </div>
+
+                    {saveError && (
+                        <p className={styles.error} role="alert">
+                            {saveError}
+                        </p>
+                    )}
+
+                    {loading && <p className={styles.state}>در حال دریافت پلن‌ها…</p>}
+
+                    {!loading && error && (
+                        <p className={styles.state} role="alert">
+                            {error}
+                        </p>
+                    )}
+
+                    {!loading && !error && plans.length === 0 && (
+                        <p className={styles.state}>هنوز پلنی ساخته نشده است.</p>
+                    )}
 
                     <div className={styles.grid}>
                         {plans.map((plan) => (
