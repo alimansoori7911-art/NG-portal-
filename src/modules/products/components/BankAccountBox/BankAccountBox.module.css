@@ -1,0 +1,89 @@
+/* جعبه‌ی اطلاعات حساب — هم‌شکل با جدول مبلغ در همان صفحه.
+   رنگ‌ها از توکن‌های styles/variables.css */
+
+.box {
+    width: 100%;
+    padding: clamp(12px, 2vh, 18px) clamp(14px, 2vw, 22px);
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface-card);
+}
+
+.title {
+    margin: 0 0 10px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.list {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line-default);
+}
+
+.row:first-child {
+    padding-top: 0;
+    border-top: none;
+}
+
+.label {
+    flex: 0 0 auto;
+    color: var(--text-body);
+    font-size: var(--font-size-sm);
+}
+
+.value {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.text {
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+    /* شماره‌ی بلند نباید چیدمان را بشکند */
+    overflow-wrap: anywhere;
+}
+
+.copyBtn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--interactive-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.copyBtn:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+@media (max-width: 600px) {
+    .row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}

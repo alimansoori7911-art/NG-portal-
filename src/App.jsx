@@ -17,6 +17,7 @@ import NewTicketPage from "./modules/helpdesk/pages/NewTicketPage";
 import HelpdeskTicketsPage from "./modules/helpdesk/pages/TicketsPage";
 import OrderListPage from "./modules/products/pages/OrderListPage";
 import NewOrderPage from "./modules/products/pages/NewOrderPage";
+import OrderPaymentPage from "./modules/products/pages/OrderPaymentPage";
 import TicketChatPage from "./modules/helpdesk/pages/TicketChatPage";
 /* داشبورد */
 import DashboardLayout from "./modules/dashboard/components/DashboardLayout/DashboardLayout";
@@ -74,6 +75,11 @@ function App() {
                     {/* ثبت و پیگیری سفارش */}
                     <Route path="/products/buy/orders" element={<OrderListPage />} />
                     <Route path="/products/buy/new" element={<NewOrderPage />} />
+                    {/* پیش‌فاکتور و ثبت رسید — یک صفحه با دو حالت */}
+                    <Route
+                        path="/products/buy/orders/:id/payment"
+                        element={<OrderPaymentPage />}
+                    />
 
                     {/* تیکتینگ Help Desk */}
                     <Route path="/helpdesk" element={<HelpdeskPage />} />

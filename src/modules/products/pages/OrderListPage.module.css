@@ -104,3 +104,26 @@
     font-size: var(--font-size-sm);
     text-align: right;
 }
+
+/* دکمه‌ی رفتن به پیش‌فاکتور — فقط برای سفارش‌های قابل پرداخت */
+.payBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid var(--interactive-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.payBtn:hover {
+    background: var(--interactive-border);
+    color: var(--color-white);
+}

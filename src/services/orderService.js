@@ -15,6 +15,10 @@ export const ORDER_STATUS = {
     COMPLETED: 'تحویل محصول',
     CANCELED: 'لغو شده',
     REJECTED: 'رد شده',
+    /* اسپک ۱۲ وضعیت دارد؛ این دو جا افتاده بودند و بدون آن‌ها
+       کاربر کد خام انگلیسی می‌دید. */
+    FAILED: 'ناموفق',
+    REFUNDED: 'مسترد شده',
 }
 
 export const statusLabel = (status) => ORDER_STATUS[status] ?? status ?? ''

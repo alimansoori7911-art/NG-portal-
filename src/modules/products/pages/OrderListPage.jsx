@@ -4,18 +4,45 @@ import DataTable from '../../dashboard/components/DataTable/DataTable'
 import { useOrders } from '../hooks/useOrders'
 import styles from './OrderListPage.module.css'
 
-/* عرض ستون‌ها از SVG (از راست): 335 | 330 | 316 | 267 از ۱۲۴۸
-   متن‌ها راست‌چین با padding-right ۹۷ */
-const COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '26.84%' },
-    { key: 'date', label: 'تاریخ', width: '26.44%', ltr: true },
-    { key: 'plan', label: 'پلن', width: '25.32%', ltr: true },
-    { key: 'status', label: 'وضعیت', width: '21.39%' },
-]
+/* وضعیت‌هایی که در آن‌ها کاربر باید بتواند پیش‌فاکتور را ببیند و
+   رسید بپردازد. طبق فلو، پرداخت از «صدور پیش‌فاکتور» شروع می‌شود و
+   تا وقتی فاکتور صادر نشده ادامه دارد. */
+const PAYABLE = new Set([
+    'QUOTATION_ISSUED',
+    'AWAITING_PAYMENT',
+    'PAID_CONFIRMED',
+])
 
 export default function OrderListPage() {
     const navigate = useNavigate()
     const { rows, page, pageCount, loading, error, setPage } = useOrders()
+
+    /* ستون عملیات — DataTable کلیک روی ردیف ندارد و چون کامپوننت
+       مشترک است تغییرش نمی‌دهیم؛ دکمه‌ی صریح هم برای کاربر روشن‌تر
+       است که کجا باید کلیک کند. */
+    const COLUMNS = [
+        { key: 'index', label: 'ردیف', width: '20%' },
+        { key: 'date', label: 'تاریخ', width: '20%', ltr: true },
+        { key: 'plan', label: 'پلن', width: '22%', ltr: true },
+        { key: 'status', label: 'وضعیت', width: '20%' },
+        {
+            key: 'action',
+            label: '',
+            width: '18%',
+            render: (row) =>
+                PAYABLE.has(row.rawStatus) ? (
+                    <button
+                        type="button"
+                        className={styles.payBtn}
+                        onClick={() =>
+                            navigate(`/products/buy/orders/${row.id}/payment`)
+                        }
+                    >
+                        پیش‌فاکتور و پرداخت
+                    </button>
+                ) : null,
+        },
+    ]
 
     return (
         <div className={styles.page}>
