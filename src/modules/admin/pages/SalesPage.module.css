@@ -138,3 +138,69 @@
         padding: 0 10px;
     }
 }
+
+/* ═══ نوار عملیات سفارش ═══ */
+/* برخلاف لایسنس که فقط دکمه دارد، سفارش فهرست رسیدها را هم زیر
+   دکمه‌ها نشان می‌دهد. */
+
+.orderActions {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    padding: 4px 0;
+}
+
+.rowActionBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* ─── منوی تغییر وضعیت ─── */
+
+.statusWrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.statusMenu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    min-width: 100%;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: var(--surface-card);
+    box-shadow: var(--shadow-lg);
+}
+
+.statusOption {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-body);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.statusOption:hover {
+    background: var(--surface-hover);
+    color: var(--color-white);
+}
+
+.actionError {
+    margin: 0;
+    color: var(--status-error);
+    font-size: var(--font-size-xs);
+    text-align: center;
+}

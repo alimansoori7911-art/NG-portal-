@@ -1,0 +1,99 @@
+/* فهرست رسیدها در نوار عملیات سفارش */
+
+.empty {
+    margin: 0;
+    padding: 8px 4px;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--line-default);
+    border-radius: 8px;
+    background: var(--surface-admin);
+}
+
+.main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.amount {
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+}
+
+.meta {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+/* شماره‌ی پیگیری — تنها راه پیدا کردن واریز در صورت‌حساب بانک،
+   پس برجسته‌تر از بقیه‌ی جزئیات نشان داده می‌شود. */
+.tracking {
+    flex: 0 0 auto;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+}
+
+.verified {
+    flex: 0 0 auto;
+    color: var(--status-success);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.verifyBtn {
+    flex: 0 0 auto;
+    height: 30px;
+    padding: 0 14px;
+    border: 1px solid var(--interactive-border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.verifyBtn:hover:not(:disabled) {
+    background: var(--interactive-border);
+    color: var(--color-white);
+}
+
+.verifyBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 767px) {
+    .row {
+        flex-wrap: wrap;
+    }
+
+    .main {
+        flex-basis: 100%;
+    }
+}

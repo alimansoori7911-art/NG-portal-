@@ -2,7 +2,11 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import LicenseForm from '../components/LicenseForm/LicenseForm'
-import { MOCK_SALES_ORDERS, MOCK_LICENSES } from '../data/mockSales'
+import QuoteForm from '../components/QuoteForm/QuoteForm'
+import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPanel'
+import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
+import { ORDER_STATUS } from '../../../services/orderService'
+import { MOCK_LICENSES } from '../data/mockSales'
 import styles from './SalesPage.module.css'
 
 /* عرض ستون‌ها از tab11.svg (جدول سفارش‌ها) */
@@ -25,15 +29,29 @@ const LICENSE_COLUMNS = [
     { key: 'server', label: 'سرور متصل', width: '18.56%', ltr: true },
 ]
 
-/* دکمه‌های نوار عملیات — ترتیب از راست، مطابق SVG.
-   TODO: هیچ‌کدام اندپوینت ندارند. رجوع به BACKEND_NEEDS.md */
-const ORDER_ACTIONS = ['صدور فاکتور', 'مشاهده فاکتور']
+/* عملیات لایسنس — هنوز هیچ اندپوینتی ندارد.
+   TODO: رجوع به BACKEND_NEEDS.md */
 const LICENSE_ACTIONS = [
     'فعال سازی لایسنس',
     'غیرفعال سازی لایسنس',
     'تمدید زمان لایسنس',
     'فسخ لایسنس',
 ]
+
+/* وضعیت‌هایی که ادمین می‌تواند دستی به آن‌ها ببرد.
+   بقیه‌ی وضعیت‌ها خودکارند (مثل PAID_CONFIRMED که با تأیید رسید
+   می‌آید) یا فقط کاربر می‌تواند بزند (CANCELED). */
+const MANUAL_STATUSES = [
+    'AWAITING_ADMIN_REVIEW',
+    'TECHNICAL_IN_PROGRESS',
+    'COMPLETED',
+    'REJECTED',
+    'FAILED',
+    'REFUNDED',
+]
+
+/* در کدام وضعیت‌ها صدور پیش‌فاکتور معنا دارد */
+const QUOTABLE = new Set(['REQUESTED', 'AWAITING_ADMIN_REVIEW', 'QUOTATION_ISSUED'])
 
 const TABS = [
     { id: 'orders', label: 'پیگیری سفارش‌ها / خریدها' },
@@ -48,30 +66,44 @@ const TABS = [
  */
 export default function SalesPage() {
     const [tab, setTab] = useState('orders')
-    const [page, setPage] = useState(1)
+    const [licensePage, setLicensePage] = useState(1)
     const [selectedId, setSelectedId] = useState(null)
     const [creating, setCreating] = useState(false)
+    /* کدام سفارش در حال صدور پیش‌فاکتور است */
+    const [quoting, setQuoting] = useState(null)
+    /* منوی باز تغییر وضعیت */
+    const [statusMenu, setStatusMenu] = useState(false)
 
     /* در فیگما نمونه‌ی خطا روی «نام کاربری» نشان داده شده.
        TODO: با اتصال واقعی، خطا از پاسخ ۴۲۲ بک‌اند می‌آید. */
     const [fieldErrors, setFieldErrors] = useState({})
 
+    const orders = useAdminOrders()
+    const actions = useOrderActions(() => {
+        orders.reload()
+        setStatusMenu(false)
+    })
+
     const switchTab = (id) => {
         setTab(id)
-        setPage(1)
+        setLicensePage(1)
         setSelectedId(null)
         setCreating(false)
+        setQuoting(null)
     }
 
-    const toggleRow = (row) =>
+    const toggleRow = (row) => {
         setSelectedId((id) => (id === row.id ? null : row.id))
+        setStatusMenu(false)
+        actions.clearError()
+    }
 
     const isLicenses = tab === 'licenses'
-    const actions = isLicenses ? LICENSE_ACTIONS : ORDER_ACTIONS
 
-    const rowActions = () => (
+    /* ─── نوار عملیات لایسنس (هنوز بدون اندپوینت) ─── */
+    const licenseRowActions = () => (
         <div className={styles.rowActions}>
-            {actions.map((label) => (
+            {LICENSE_ACTIONS.map((label) => (
                 <button
                     key={label}
                     type="button"
@@ -95,6 +127,88 @@ export default function SalesPage() {
             </button>
         </div>
     )
+
+    /* ─── نوار عملیات سفارش ───
+       سه کار اصلی فلو: صدور پیش‌فاکتور، تأیید رسید، تغییر وضعیت. */
+    const orderRowActions = (row) => {
+        const order = row.raw
+
+        return (
+            <div className={styles.orderActions} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.rowActions}>
+                    <button
+                        type="button"
+                        className={styles.rowActionBtn}
+                        onClick={() => setQuoting(order)}
+                        disabled={!QUOTABLE.has(order.status)}
+                        title={
+                            QUOTABLE.has(order.status)
+                                ? undefined
+                                : 'در این وضعیت صدور پیش‌فاکتور معنا ندارد'
+                        }
+                    >
+                        صدور پیش‌فاکتور
+                    </button>
+
+                    <div className={styles.statusWrap}>
+                        <button
+                            type="button"
+                            className={styles.rowActionBtn}
+                            onClick={() => setStatusMenu((v) => !v)}
+                            disabled={actions.busy}
+                            aria-expanded={statusMenu}
+                        >
+                            {actions.busy ? 'در حال تغییر…' : 'تغییر وضعیت'}
+                        </button>
+
+                        {statusMenu && (
+                            <ul className={styles.statusMenu} role="listbox">
+                                {MANUAL_STATUSES.map((code) => (
+                                    <li key={code}>
+                                        <button
+                                            type="button"
+                                            className={styles.statusOption}
+                                            onClick={() =>
+                                                actions.changeStatus(order.id, code)
+                                            }
+                                            role="option"
+                                            aria-selected={order.status === code}
+                                        >
+                                            {ORDER_STATUS[code]}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+
+                    <button
+                        type="button"
+                        className={styles.rowActionsClose}
+                        onClick={() => setSelectedId(null)}
+                        aria-label="بستن نوار عملیات"
+                    >
+                        <X size={14} strokeWidth={3} />
+                    </button>
+                </div>
+
+                {/* رسیدها — تأیید هرکدام جداگانه */}
+                <PaymentVerifyPanel
+                    payments={order.payments}
+                    busy={actions.busy}
+                    onVerify={(paymentId) =>
+                        actions.verifyPayment(order.id, paymentId)
+                    }
+                />
+
+                {actions.error && (
+                    <p className={styles.actionError} role="alert">
+                        {actions.error}
+                    </p>
+                )}
+            </div>
+        )
+    }
 
     const handleCreateLicense = (values, { withActivation }) => {
         /* TODO: اندپوینت ساخت لایسنس وجود ندارد.
@@ -124,7 +238,21 @@ export default function SalesPage() {
                 ))}
             </div>
 
-            {creating ? (
+            {quoting ? (
+                <QuoteForm
+                    order={quoting}
+                    busy={actions.busy}
+                    error={actions.error}
+                    onSubmit={async (values) => {
+                        const ok = await actions.quote(quoting.id, values)
+                        if (ok) setQuoting(null)
+                    }}
+                    onClose={() => {
+                        setQuoting(null)
+                        actions.clearError()
+                    }}
+                />
+            ) : creating ? (
                 <LicenseForm
                     fieldErrors={fieldErrors}
                     onSubmit={handleCreateLicense}
@@ -140,31 +268,44 @@ export default function SalesPage() {
                         setFieldErrors({})
                     }}
                 />
-            ) : (
+            ) : isLicenses ? (
                 <>
-                    {/* دکمه‌ی ایجاد فقط در تب لایسنس‌ها هست */}
-                    {isLicenses && (
-                        <div className={styles.toolbar}>
-                            <button
-                                type="button"
-                                className={styles.createBtn}
-                                onClick={() => setCreating(true)}
-                            >
-                                ایجاد لایسنس
-                            </button>
-                        </div>
-                    )}
+                    <div className={styles.toolbar}>
+                        <button
+                            type="button"
+                            className={styles.createBtn}
+                            onClick={() => setCreating(true)}
+                        >
+                            ایجاد لایسنس
+                        </button>
+                    </div>
 
                     <AdminTable
-                        columns={isLicenses ? LICENSE_COLUMNS : ORDER_COLUMNS}
-                        rows={isLicenses ? MOCK_LICENSES : MOCK_SALES_ORDERS}
-                        page={page}
-                        onPageChange={setPage}
+                        columns={LICENSE_COLUMNS}
+                        rows={MOCK_LICENSES}
+                        page={licensePage}
+                        onPageChange={setLicensePage}
                         selectedId={selectedId}
                         onRowClick={toggleRow}
-                        renderRowActions={rowActions}
+                        renderRowActions={licenseRowActions}
                     />
                 </>
+            ) : (
+                <AdminTable
+                    columns={ORDER_COLUMNS}
+                    rows={orders.rows}
+                    page={orders.page}
+                    pageCount={orders.pageCount}
+                    onPageChange={orders.setPage}
+                    selectedId={selectedId}
+                    onRowClick={toggleRow}
+                    renderRowActions={orderRowActions}
+                    emptyMessage={
+                        orders.loading
+                            ? 'در حال دریافت سفارش‌ها…'
+                            : orders.error || 'سفارشی ثبت نشده است'
+                    }
+                />
             )}
         </div>
     )

@@ -129,3 +129,84 @@ export const orderService = {
             .then(unwrap)
     },
 }
+
+/**
+ * عملیات سفارش در پنل ادمین.
+ *
+ * این پنج اندپوینت با هم «حلقه‌ی گم‌شده»ی فلو بودند: بدون آن‌ها ادمین
+ * نمی‌توانست سفارشی را از «بررسی» به «تکمیل» ببرد و صفحه‌ی پرداخت
+ * کاربر هم عملاً بی‌فایده بود (کسی نبود پیش‌فاکتور صادر کند یا رسید
+ * را تأیید کند).
+ */
+export const adminOrderService = {
+    /* GET /admin/orders/ — همه‌ی سفارش‌های سیستم.
+       فیلترها: status، order_type، user_id، product_id، plan_id،
+       order_number — همه اختیاری. */
+    getOrders({
+        page = 1,
+        limit = 10,
+        status,
+        order_type,
+        user_id,
+        order_number,
+    } = {}) {
+        return api
+            .get('/admin/orders/', {
+                params: { page, limit, status, order_type, user_id, order_number },
+            })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* POST /admin/orders/{id}/quote — صدور پیش‌فاکتور.
+       فقط quoted_amount اجباری است؛ تخفیف و مالیات پیش‌فرض صفرند.
+
+       ⚠️ فلو می‌گوید ادمین اول یک plan_base_price اختصاصی می‌سازد و
+       بعد به سفارش می‌چسباند، ولی AdminPriceOrder چنین فیلدی ندارد
+       و فقط مبلغ می‌گیرد. تفسیر ساده‌تر (مبلغ مستقیم) پیاده شده و
+       تناقض در BACKEND_NEEDS.md ثبت شده است. */
+    quote(orderId, { quoted_amount, discount_amount = 0, tax_amount = 0, admin_note }) {
+        return api
+            .post(`/admin/orders/${orderId}/quote`, {
+                quoted_amount: String(quoted_amount),
+                discount_amount: String(discount_amount),
+                tax_amount: String(tax_amount),
+                admin_note,
+            })
+            .then(unwrap)
+    },
+
+    /* POST /admin/orders/{id}/payments/{pid}/verify — تأیید رسید.
+       بعد از این، وضعیت سفارش به PAID_CONFIRMED می‌رود و طبق فلو
+       فاکتور خودکار صادر می‌شود. */
+    verifyPayment(orderId, paymentId, note) {
+        return api
+            .post(`/admin/orders/${orderId}/payments/${paymentId}/verify`, { note })
+            .then(unwrap)
+    },
+
+    /* POST /admin/orders/{id}/status — تغییر دستی وضعیت.
+       برای رد کردن، شروع کار فنی، و تکمیل سفارش. */
+    changeStatus(orderId, status, note) {
+        return api
+            .post(`/admin/orders/${orderId}/status`, { status, note })
+            .then(unwrap)
+    },
+
+    /* POST /admin/orders/{id}/tickets/link — اتصال تیکت به سفارش.
+
+       ⚠️ اسپک ticket_id را integer گرفته ولی همه‌جای دیگرِ تیکتینگ
+       UUID است. تا روشن شدن، مقدار دست‌نخورده فرستاده می‌شود. */
+    linkTicket(orderId, { ticket_id, relation_type = 'general', is_primary = false, note }) {
+        return api
+            .post(`/admin/orders/${orderId}/tickets/link`, {
+                ticket_id,
+                relation_type,
+                is_primary,
+                note,
+            })
+            .then(unwrap)
+    },
+}

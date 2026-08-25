@@ -1,0 +1,197 @@
+/* هم‌شکل با InvoiceForm و LicenseForm در همین پنل:
+   عنوان روی چیپ تیره، فیلد radius 5.5 با حاشیه‌ی روشن.
+   رنگ‌ها از توکن‌های styles/variables.css */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--text-bright);
+    color: var(--surface-admin);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.title {
+    height: 38px;
+    margin: 0 0 8px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.subtitle {
+    margin: 0 0 28px;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+/* ─── فیلدها ─── */
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 40px;
+    width: 100%;
+    max-width: 940px;
+}
+
+.fullWidth {
+    grid-column: 1 / -1;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: var(--text-body);
+    font-size: var(--font-size-xs);
+}
+
+.input,
+.textarea {
+    width: 100%;
+    padding: 0 14px;
+    border: 1px solid var(--text-body);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.input {
+    height: 48px;
+}
+
+.textarea {
+    padding: 12px 14px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.input:focus,
+.textarea:focus {
+    border-color: var(--interactive);
+}
+
+/* ─── پیش‌نمایش مبلغ نهایی ─── */
+/* ادمین قبل از ثبت می‌بیند کاربر چه عددی خواهد دید */
+
+.preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    max-width: 940px;
+    margin-top: 24px;
+    padding: 14px 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-size: var(--font-size-sm);
+}
+
+.previewValue {
+    color: var(--text-bright);
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+}
+
+.error {
+    width: 100%;
+    max-width: 940px;
+    margin: 12px 0 0;
+    color: var(--status-error);
+    font-size: var(--font-size-sm);
+}
+
+/* ─── دکمه‌ها ─── */
+
+.actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 28px;
+}
+
+.primaryBtn,
+.ghostBtn {
+    height: 40px;
+    padding: 0 24px;
+    border-radius: 10px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.primaryBtn {
+    border: none;
+    background: var(--interactive-border);
+    color: var(--color-white);
+}
+
+.primaryBtn:hover:not(:disabled) {
+    background: var(--color-action-hover);
+}
+
+.ghostBtn {
+    border: 1px solid var(--interactive-border);
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.ghostBtn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--color-white);
+}
+
+.primaryBtn:disabled,
+.ghostBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 767px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        width: 100%;
+        flex-direction: column;
+    }
+}
