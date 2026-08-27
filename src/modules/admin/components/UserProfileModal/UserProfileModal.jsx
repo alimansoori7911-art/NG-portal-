@@ -2,21 +2,24 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
-import {
-    MOCK_USER_ORDERS,
-    MOCK_USER_LICENSES,
-    MOCK_USER_TICKETS,
-} from '../../data/mockUsers'
+import { MOCK_USER_LICENSES, MOCK_USER_TICKETS } from '../../data/mockUsers'
+import { useUserOrders } from '../../hooks/useUserOrders'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './UserProfileModal.module.css'
 
-/* عرض ستون‌ها از SVG — هر جدول از x=72.5 تا x=1116.5 (۱۰۴۴) */
+/* عرض ستون‌ها از SVG — هر جدول از x=72.5 تا x=1116.5 (۱۰۴۴)
+
+   دو ستون «مبلغ» و «وضعیت» در فیگما نبودند و اضافه شده‌اند: بک‌اند
+   هر دو را می‌دهد و بدون آن‌ها تاریخچه‌ی خرید چیز مفیدی نمی‌گوید.
+   عرض‌ها از سه ستون اصلی کم شده تا جمع همچنان ۱۰۰٪ بماند. */
 const ORDER_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '18.65%' },
-    { key: 'plan', label: 'نوع پلن', width: '31.12%', ltr: true },
-    { key: 'orderCode', label: 'کد سفارش', width: '30.56%', ltr: true },
-    { key: 'date', label: 'تاریخ', width: '19.67%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '10%' },
+    { key: 'plan', label: 'نوع پلن', width: '24%', ltr: true },
+    { key: 'orderCode', label: 'کد سفارش', width: '22%', ltr: true },
+    { key: 'amount', label: 'مبلغ', width: '18%' },
+    { key: 'status', label: 'وضعیت', width: '14%' },
+    { key: 'date', label: 'تاریخ', width: '12%', ltr: true },
 ]
 
 const LICENSE_COLUMNS = [
@@ -86,13 +89,19 @@ function SectionTitle({ children }) {
  *
  * «اطلاعات شخصی» از `GET /admin/auth/users/{id}` می‌آید و واقعی است.
  *
- * TODO: سه جدول پایین (سفارش‌ها، لایسنس‌ها، تیکت‌ها) هنوز داده‌ی نمونه‌اند
- *       چون اندپوینت «به تفکیک کاربر» ندارند. `GET /admin/orders/` فیلتر
- *       user_id ندارد و ماژول لایسنس اصلاً وجود ندارد.
+ * «تاریخچه خرید» هم واقعی است — `GET /admin/orders/?user_id=`.
+ *
+ * TODO: دو جدول لایسنس و تیکت هنوز داده‌ی نمونه‌اند: ماژول لایسنس اصلاً
+ *       وجود ندارد و `GET /ticketing/tickets` فقط `assigned_to_user_id`
+ *       (کارشناس) را فیلتر می‌کند نه صاحب تیکت.
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
 export default function UserProfileModal({ open, user, onClose }) {
+    /* فقط وقتی مودال باز است درخواست می‌رود؛ با بسته بودن userId تهی
+       می‌ماند و هوک چیزی نمی‌خواند. */
+    const orders = useUserOrders(open ? user?.id : null)
+
     useEffect(() => {
         if (!open) return
 
@@ -168,8 +177,13 @@ export default function UserProfileModal({ open, user, onClose }) {
                     <SectionTitle>تاریخچه خرید و سفارشات</SectionTitle>
                     <AdminTable
                         columns={ORDER_COLUMNS}
-                        rows={MOCK_USER_ORDERS}
+                        rows={orders.rows}
                         paginate={false}
+                        emptyMessage={
+                            orders.loading
+                                ? 'در حال دریافت سفارش‌ها…'
+                                : orders.error || 'سفارشی برای این کاربر ثبت نشده است'
+                        }
                     />
 
                     {/* ── لایسنس‌ها ── */}
