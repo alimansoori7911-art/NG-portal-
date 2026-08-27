@@ -3,11 +3,12 @@ import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
 import {
-    MOCK_USER_PROFILE,
     MOCK_USER_ORDERS,
     MOCK_USER_LICENSES,
     MOCK_USER_TICKETS,
 } from '../../data/mockUsers'
+import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
+import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './UserProfileModal.module.css'
 
 /* عرض ستون‌ها از SVG — هر جدول از x=72.5 تا x=1116.5 (۱۰۴۴) */
@@ -34,18 +35,39 @@ const TICKET_COLUMNS = [
     { key: 'department', label: 'دپارتمان', width: '19.92%' },
 ]
 
-/* فیلدهای اطلاعات شخصی — ترتیب دو ستونه‌ی فیگما.
-   ستاره یعنی اجباری؛ در فیگما کنار برچسب آمده. */
-const PROFILE_FIELDS = [
-    { key: 'username', label: 'نام کاربری', required: true, ltr: true },
-    { key: 'nationalId', label: 'کد ملی' },
-    { key: 'firstName', label: 'نام', required: true },
-    { key: 'email', label: 'ایمیل', required: true, ltr: true },
-    { key: 'lastName', label: 'نام خانوادگی' },
-    { key: 'password', label: 'رمز عبور', required: true, ltr: true },
-    { key: 'phone', label: 'شماره موبایل', required: true, ltr: true },
-    { key: 'organization', label: 'نام سازمان' },
-]
+/**
+ * فیلدهای اطلاعات شخصی — ترتیب دو ستونه‌ی فیگما.
+ * ستاره یعنی اجباری؛ در فیگما کنار برچسب آمده.
+ *
+ * ⚠️ فیلد «رمز عبور» فیگما حذف شد: بک‌اند رمز را برنمی‌گرداند (و
+ * نباید برگرداند). جایش «وضعیت احراز هویت» آمد که داده‌ی واقعی دارد.
+ *
+ * ⚠️ «نام سازمان» هم حذف شد — `UserResponseSchema` فیلد شرکت ندارد
+ * (بر خلاف `Profile` در /auth/me). رجوع به BACKEND_NEEDS.md
+ */
+function profileFieldsOf(user) {
+    const kyc = user?.kyc_profile
+    const { date: registeredAt } = formatJalaliDateTime(user?.created_at)
+
+    return [
+        { key: 'username', label: 'نام کاربری', required: true, ltr: true,
+          value: identifierOf(user, 'username') },
+        { key: 'nationalId', label: 'کد ملی', ltr: true,
+          value: identifierOf(user, 'national_id') },
+        { key: 'firstName', label: 'نام', required: true,
+          value: kyc?.first_name ?? '' },
+        { key: 'email', label: 'ایمیل', required: true, ltr: true,
+          value: identifierOf(user, 'email') },
+        { key: 'lastName', label: 'نام خانوادگی',
+          value: kyc?.last_name ?? '' },
+        { key: 'kycStatus', label: 'وضعیت احراز هویت',
+          value: kyc ? kycStatusLabel(kyc.status) : '' },
+        { key: 'phone', label: 'شماره موبایل', required: true, ltr: true,
+          value: identifierOf(user, 'phone') },
+        { key: 'registeredAt', label: 'تاریخ ثبت نام', ltr: true,
+          value: registeredAt },
+    ]
+}
 
 /* عنوان هر بخش با خط جداکننده در دو طرف */
 function SectionTitle({ children }) {
@@ -62,10 +84,15 @@ function SectionTitle({ children }) {
  * چهار بخش: اطلاعات شخصی، تاریخچه خرید، لایسنس‌ها، تیکت‌ها.
  * ضربدر بالای صفحه مودال را می‌بندد و به لیست کاربران برمی‌گردد.
  *
- * TODO: فیلدها فقط خواندنی‌اند و دکمه‌های «ویرایش اطلاعات» و
- *       «احراز هویت دستی» هنوز عملکردی ندارند — اندپوینت ندارند.
+ * «اطلاعات شخصی» از `GET /admin/auth/users/{id}` می‌آید و واقعی است.
+ *
+ * TODO: سه جدول پایین (سفارش‌ها، لایسنس‌ها، تیکت‌ها) هنوز داده‌ی نمونه‌اند
+ *       چون اندپوینت «به تفکیک کاربر» ندارند. `GET /admin/orders/` فیلتر
+ *       user_id ندارد و ماژول لایسنس اصلاً وجود ندارد.
+ * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
+ *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
-export default function UserProfileModal({ open, onClose }) {
+export default function UserProfileModal({ open, user, onClose }) {
     useEffect(() => {
         if (!open) return
 
@@ -116,8 +143,7 @@ export default function UserProfileModal({ open, onClose }) {
                     </div>
 
                     <div className={styles.fields}>
-                        {PROFILE_FIELDS.map(({ key, label, required, ltr }) => {
-                            const value = MOCK_USER_PROFILE[key]
+                        {profileFieldsOf(user).map(({ key, label, required, ltr, value }) => {
                             return (
                                 <div
                                     key={key}

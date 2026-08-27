@@ -10,6 +10,9 @@ import styles from './ConfirmDialog.module.css'
  *  confirmLabel / cancelLabel: برچسب دکمه‌ها
  *  onConfirm / onClose: رفتار دکمه‌ها
  *  loading: دکمه‌ی تأیید را غیرفعال می‌کند
+ *  children: محتوای اختیاری زیر پیام — برای دیالوگ‌هایی که علاوه بر
+ *            تأیید، ورودی هم می‌گیرند (مثل انتخاب نقش کاربر)
+ *  confirmDisabled: غیرفعال کردن تأیید تا وقتی ورودی کامل نشده
  */
 export default function ConfirmDialog({
                                           open,
@@ -20,6 +23,8 @@ export default function ConfirmDialog({
                                           onConfirm,
                                           onClose,
                                           loading = false,
+                                          children,
+                                          confirmDisabled = false,
                                       }) {
     const confirmRef = useRef(null)
 
@@ -67,6 +72,7 @@ export default function ConfirmDialog({
 
                 <div className={styles.body}>
                     <p className={styles.message}>{message}</p>
+                    {children}
                 </div>
 
                 {/* در RTL اولین فرزند سمت راست قرار می‌گیرد */}
@@ -76,7 +82,7 @@ export default function ConfirmDialog({
                         type="button"
                         className={styles.button}
                         onClick={onConfirm}
-                        disabled={loading}
+                        disabled={loading || confirmDisabled}
                     >
                         {confirmLabel}
                     </button>

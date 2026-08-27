@@ -118,3 +118,20 @@
         padding: 0 10px;
     }
 }
+
+/* خطای عملیات (حذف، تغییر نقش، تغییر وضعیت) — بالای جدول */
+.error {
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+/* پیام «در حال دریافت» تب لاگ ممیزی */
+.hint {
+    margin: 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}

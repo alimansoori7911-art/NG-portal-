@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import AuditLogList from '../components/AuditLogList/AuditLogList'
 import UserProfileModal from '../components/UserProfileModal/UserProfileModal'
-import { MOCK_ADMIN_USERS, MOCK_AUDIT_LOGS } from '../data/mockUsers'
+import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
+import Select from '../../../components/ui/Select/Select'
+import { useAdminUsers, useUserActions, useRoles } from '../hooks/useAdminUsers'
+import { useAuditLogs } from '../hooks/useAuditLogs'
 import styles from './UsersPage.module.css'
 
 /* عرض ستون‌ها از SVG (از راست): 107.8 | 161.4 | 173.9 | 167.7 | 152.1 | 166 | 115.1
@@ -19,16 +22,6 @@ const COLUMNS = [
     { key: 'registeredAt', label: 'تاریخ ثبت نام', width: '9.57%', ltr: true },
 ]
 
-/* دکمه‌های نوار عملیات — ترتیب و عرض از SVG (از راست به چپ).
-   TODO: به‌جز «پروفایل جامع کاربر» بقیه هنوز عملکردی ندارند. */
-const ROW_ACTIONS = [
-    'ویرایش اطلاعات',
-    'تغییر نقش',
-    'حذف کاربر',
-    'تغییر وضعیت',
-    'پروفایل جامع کاربر',
-]
-
 const TABS = [
     { id: 'users', label: 'لیست کاربران' },
     { id: 'audit', label: 'لاگ ممیزی (Audit Log)' },
@@ -37,35 +30,121 @@ const TABS = [
 /**
  * کاربران و دسترسی‌ها — دو تب: لیست کاربران و لاگ ممیزی.
  *
- * TODO: هر دو روی داده‌ی نمونه‌اند؛ اندپوینتی برای کاربران و لاگ
- *       در اسپک نیست. رجوع به BACKEND_NEEDS.md
+ * هر دو تب به بک‌اند وصل‌اند (`/admin/auth/users` و `/audit/`).
+ *
+ * ⚠️ دو مورد از فیگما پیاده نشده چون بک‌اند ندارد:
+ *   - «برچسب VIP» — چنین فیلدی در مدل کاربر نیست
+ *   - «ویرایش اطلاعات» — `UserUpdateSchema` فقط is_active/is_blocked
+ *     می‌پذیرد، پس ایمیل و نام قابل ویرایش نیستند
+ * رجوع به BACKEND_NEEDS.md
  */
 export default function UsersPage() {
     const [tab, setTab] = useState('users')
-    const [page, setPage] = useState(1)
+
+    const {
+        rows,
+        page,
+        pageCount,
+        loading,
+        error,
+        setPage,
+        reload,
+    } = useAdminUsers()
+
+    /* نقش‌ها فقط وقتی لازم‌اند که دیالوگ تغییر نقش باز شود */
+    const [roleDialog, setRoleDialog] = useState(null)
+    const { roles, loading: rolesLoading } = useRoles(roleDialog !== null)
+    const [selectedRole, setSelectedRole] = useState('')
+
+    const {
+        busy,
+        error: actionError,
+        clearError,
+        toggleActive,
+        remove,
+        assignRole,
+    } = useUserActions(reload)
+
+    /* لاگ ممیزی فقط وقتی تب دومش باز است بارگذاری می‌شود */
+    const audit = useAuditLogs()
 
     /* ردیف انتخاب‌شده — با کلیک روی آن نوار عملیات زیرش باز می‌شود */
     const [selectedId, setSelectedId] = useState(null)
-    const [profileOpen, setProfileOpen] = useState(false)
+    const [profileUser, setProfileUser] = useState(null)
+    const [deleteTarget, setDeleteTarget] = useState(null)
 
-    const toggleRow = (row) =>
-        setSelectedId((id) => (id === row.id ? null : row.id))
+    const toggleRow = useCallback(
+        (row) => setSelectedId((id) => (id === row.id ? null : row.id)),
+        []
+    )
 
-    const rowActions = () => (
+    const confirmDelete = async () => {
+        const ok = await remove(deleteTarget.id)
+        if (ok) {
+            setDeleteTarget(null)
+            setSelectedId(null)
+        }
+    }
+
+    const confirmRole = async () => {
+        const role = roles.find((r) => r.name === selectedRole)
+        if (!role) return
+
+        const ok = await assignRole(roleDialog.id, role.id)
+        if (ok) {
+            setRoleDialog(null)
+            setSelectedRole('')
+        }
+    }
+
+    const rowActions = (row) => (
         <div className={styles.rowActions}>
-            {ROW_ACTIONS.map((label) => (
-                <button
-                    key={label}
-                    type="button"
-                    className={styles.rowActionBtn}
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        if (label === 'پروفایل جامع کاربر') setProfileOpen(true)
-                    }}
-                >
-                    {label}
-                </button>
-            ))}
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                disabled={busy}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setRoleDialog(row.raw)
+                }}
+            >
+                تغییر نقش
+            </button>
+
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                disabled={busy}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setDeleteTarget(row)
+                }}
+            >
+                حذف کاربر
+            </button>
+
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                disabled={busy}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    toggleActive(row.raw)
+                }}
+            >
+                {row.raw?.is_active ? 'غیرفعال کردن' : 'فعال کردن'}
+            </button>
+
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setProfileUser(row.raw)
+                }}
+            >
+                پروفایل جامع کاربر
+            </button>
 
             <button
                 type="button"
@@ -93,7 +172,7 @@ export default function UsersPage() {
                         className={`${styles.tab} ${tab === id ? styles.tabActive : ''}`}
                         onClick={() => {
                             setTab(id)
-                            setPage(1)
+                            setSelectedId(null)
                         }}
                         aria-current={tab === id ? 'true' : undefined}
                     >
@@ -102,24 +181,93 @@ export default function UsersPage() {
                 ))}
             </div>
 
+            {tab === 'users' && actionError && (
+                <p className={styles.error} role="alert" onClick={clearError}>
+                    {actionError}
+                </p>
+            )}
+
             {tab === 'users' ? (
                 <AdminTable
                     columns={COLUMNS}
-                    rows={MOCK_ADMIN_USERS}
+                    rows={rows}
                     page={page}
+                    pageCount={pageCount}
                     onPageChange={setPage}
                     selectedId={selectedId}
                     onRowClick={toggleRow}
                     renderRowActions={rowActions}
+                    emptyMessage={
+                        loading
+                            ? 'در حال دریافت کاربران…'
+                            : error || 'کاربری برای نمایش وجود ندارد'
+                    }
                 />
             ) : (
-                <AuditLogList items={MOCK_AUDIT_LOGS} />
+                <>
+                    {audit.error && (
+                        <p className={styles.error} role="alert">
+                            {audit.error}
+                        </p>
+                    )}
+                    {audit.loading && audit.items.length === 0 ? (
+                        <p className={styles.hint}>در حال دریافت لاگ‌ها…</p>
+                    ) : (
+                        <AuditLogList items={audit.items} />
+                    )}
+                </>
             )}
 
             <UserProfileModal
-                open={profileOpen}
-                onClose={() => setProfileOpen(false)}
+                open={profileUser !== null}
+                user={profileUser}
+                onClose={() => setProfileUser(null)}
             />
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                title="حذف کاربر"
+                message={
+                    deleteTarget
+                        ? `کاربر «${deleteTarget.username}» حذف می‌شود. این کار قابل بازگشت نیست. ادامه می‌دهید؟`
+                        : ''
+                }
+                confirmLabel="حذف کاربر"
+                cancelLabel="انصراف"
+                loading={busy}
+                onConfirm={confirmDelete}
+                onClose={() => !busy && setDeleteTarget(null)}
+            />
+
+            <ConfirmDialog
+                open={roleDialog !== null}
+                title="تغییر نقش کاربر"
+                message={
+                    rolesLoading
+                        ? 'در حال دریافت نقش‌ها…'
+                        : 'نقش تازه‌ای که می‌خواهید به این کاربر داده شود را انتخاب کنید. نقش‌های قبلی حذف نمی‌شوند.'
+                }
+                confirmLabel="تخصیص نقش"
+                cancelLabel="انصراف"
+                loading={busy}
+                confirmDisabled={!selectedRole}
+                onConfirm={confirmRole}
+                onClose={() => {
+                    if (busy) return
+                    setRoleDialog(null)
+                    setSelectedRole('')
+                }}
+            >
+                {/* Select با رشته کار می‌کند نه شیء، پس نام نقش نگه داشته
+                    می‌شود و هنگام تأیید به id تبدیل می‌شود. */}
+                <Select
+                    label="نقش"
+                    value={selectedRole}
+                    onChange={setSelectedRole}
+                    options={roles.map((r) => r.name)}
+                    disabled={rolesLoading || busy}
+                />
+            </ConfirmDialog>
         </div>
     )
 }

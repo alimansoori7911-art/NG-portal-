@@ -1,37 +1,13 @@
-/* داده‌ی نمایشی — مقادیر عیناً از فیگما گرفته شده‌اند.
-   TODO: با اتصال به بک‌اند حذف شود.
+/* داده‌ی نمایشی سه جدول پایینِ «پروفایل جامع کاربر» — مقادیر از فیگما.
 
-   ⚠️ اندپوینت لیست کاربران هنوز در اسپک وجود ندارد — `/admin/*` فعلاً
-   فقط محصولات، پلن‌ها، قیمت‌ها و دسته‌بندی دارد. رجوع به BACKEND_NEEDS.md */
-/* ۲۰ ردیف تا صفحه‌ی دوم هم محتوا داشته باشد (هر صفحه ۱۰ ردیف).
-   شماره‌ی ردیف پیوسته است تا موقع تعویض صفحه تفاوت دیده شود. */
-export const MOCK_ADMIN_USERS = Array.from({ length: 20 }, (_, i) => ({
-    id: i + 1,
-    index: i + 1,
-    email: 'test@gmail.com',
-    username: 'ahad12',
-    phone: '09937791943',
-    status: 'فعال',
-    role: 'کاربر عادی',
-    vip: 'غیرفعال',
-    registeredAt: '1404/4/18',
-}))
+   لیست کاربران و لاگ ممیزی از اینجا حذف شدند چون به بک‌اند وصل شدند
+   (`/admin/auth/users` و `/audit/`).
 
-/* ── پروفایل جامع کاربر (tab2) ──
-   TODO: هیچ‌کدام اندپوینت ندارند. رجوع به BACKEND_NEEDS.md */
-
-/* اطلاعات شخصی — ترتیب فیلدها دقیقاً مطابق فیگما (دو ستونه).
-   value خالی یعنی فیلد پر نشده و در فیگما حاشیه‌ی کم‌رنگ‌تر دارد. */
-export const MOCK_USER_PROFILE = {
-    username: 'sina352',
-    nationalId: '',
-    firstName: 'طه',
-    email: 'test@gmail.com',
-    lastName: '',
-    password: 'hdwdjd21',
-    phone: '09021105234',
-    organization: '',
-}
+   ⚠️ این سه تا مانده‌اند چون اندپوینت «به تفکیک کاربر» ندارند:
+     - سفارش‌ها: `GET /admin/orders/` فیلتر user_id ندارد
+     - لایسنس‌ها: کل ماژول وجود ندارد
+     - تیکت‌ها: `GET /ticketing/tickets` فیلتر user_id ندارد
+   TODO: با آمدن فیلتر یا اندپوینت، حذف شوند. رجوع به BACKEND_NEEDS.md */
 
 /* تاریخچه خرید و سفارشات */
 export const MOCK_USER_ORDERS = Array.from({ length: 7 }, (_, i) => ({
@@ -62,16 +38,4 @@ export const MOCK_USER_TICKETS = Array.from({ length: 7 }, (_, i) => ({
     status: 'در حال پیگیری',
     date: '1404/5/21',
     department: 'فنی',
-}))
-
-/* لاگ ممیزی (Audit Log) — دو ستونه در فیگما.
-   TODO: اندپوینت ندارد. */
-const AUDIT_ACTIONS = ['کسر از کیف پول', 'تغییر لایسنس']
-
-export const MOCK_AUDIT_LOGS = Array.from({ length: 28 }, (_, i) => ({
-    id: i + 1,
-    action: AUDIT_ACTIONS[i % 2],
-    admin: 'admin-support',
-    ip: '192.168.3.80',
-    time: '1404/4/12 21:54:06',
 }))
