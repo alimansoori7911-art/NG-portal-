@@ -24,6 +24,7 @@ import DashboardLayout from "./modules/dashboard/components/DashboardLayout/Dash
 import ServicesPage from "./modules/dashboard/organization/pages/ServicesPage";
 import DashboardTicketsPage from "./modules/dashboard/organization/pages/TicketsPage";
 import SessionsPage from "./modules/dashboard/organization/pages/SessionsPage";
+import AccountPage from "./modules/dashboard/organization/pages/AccountPage";
 import NotificationsPage from "./modules/dashboard/organization/pages/NotificationsPage";
 import InvoicesPage from "./modules/dashboard/organization/pages/InvoicesPage";
 import LogsPage from "./modules/dashboard/organization/pages/LogsPage";
@@ -98,6 +99,7 @@ function App() {
                         <Route path="invoices" element={<InvoicesPage />} />
                         <Route path="logs" element={<LogsPage />} />
                         <Route path="sessions" element={<SessionsPage />} />
+                        <Route path="account" element={<AccountPage />} />
                     </Route>
                 </Route>
 

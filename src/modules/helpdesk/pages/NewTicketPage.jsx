@@ -10,7 +10,7 @@ import Select from '../../../components/ui/Select/Select'
 import Textarea from '../../../components/ui/Textarea/Textarea'
 import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
-import { useAuthStore } from '../../../store/authStore'
+import { useAuthStore, getIdentifier } from '../../../store/authStore'
 import { useDepartments } from '../hooks/useDepartments'
 import { ticketService } from '../../../services/ticketService'
 import styles from './NewTicketPage.module.css'
@@ -38,10 +38,6 @@ function makeSubject(description) {
         ? `${firstLine.slice(0, SUBJECT_MAX - 1)}…`
         : firstLine
 }
-
-// استخراج مقدار از آرایه‌ی identifiers کاربر
-const identifier = (user, type) =>
-    user?.identifiers?.find((i) => i.type === type)?.value ?? ''
 
 function NewTicketPage() {
     const navigate = useNavigate()
@@ -80,9 +76,9 @@ function NewTicketPage() {
         if (!user) return
         reset((prev) => ({
             ...prev,
-            username: identifier(user, 'username'),
-            phone: identifier(user, 'phone_number'),
-            email: identifier(user, 'email'),
+            username: getIdentifier(user, 'username'),
+            phone: getIdentifier(user, 'phone'),
+            email: getIdentifier(user, 'email'),
         }))
     }, [user, reset])
 

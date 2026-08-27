@@ -1,0 +1,75 @@
+/* رنگ‌ها از همان پالت بقیه‌ی داشبورد:
+   پس‌زمینه‌ی کارت #132239، حاشیه #192D4C — مثل SessionsPage */
+
+/* سه کارت زیر هم: پروفایل، تأیید هویت (شرطی)، تغییر رمز.
+   محتوا از ارتفاع ستون بیشتر می‌شود پس خودِ صفحه اسکرول می‌گیرد. */
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+}
+
+/* کارت فرم — عرض محدود چون فیلدهای رمز کوتاه‌اند و کشیدنشان تا
+   انتهای صفحه‌ی ۱۰۲۲px خواندن را سخت می‌کند. */
+.card {
+    /* در ستون فلکس نباید کوتاه شود وگرنه محتوا له می‌شود */
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 520px;
+    padding: 28px;
+    border: 1px solid #192D4C;
+    border-radius: 16px;
+    background: #132239;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.cardIcon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--color-primary-ghost);
+}
+
+.cardTitle {
+    margin: 0 0 6px;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+}
+
+.cardHint {
+    margin: 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.8;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* دکمه در RTL سمت راست می‌ماند و تمام عرض را نمی‌گیرد */
+.actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 6px;
+}
+
+@media (max-width: 1023px) {
+    .card {
+        max-width: none;
+        padding: 20px;
+    }
+}

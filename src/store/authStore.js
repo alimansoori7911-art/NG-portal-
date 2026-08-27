@@ -59,6 +59,14 @@ export const useAuthStore = create((set) => ({
         return initPromise;
     },
 
+    /* تازه‌سازی اطلاعات کاربر از سرور — بعد از تأیید هویت لازم است
+       تا نام و وضعیت is_verified در کل اپ (از جمله سایدبار) به‌روز شود. */
+    async refreshUser() {
+        const user = await authService.getMe();
+        set({ user });
+        return user;
+    },
+
     async logout() {
         try {
             await authService.logout(); // به سرور خبر میدیم کوکی رو پاک کنه
@@ -85,14 +93,55 @@ window.addEventListener("auth:session-expired", () => {
 
 // ─────────────────────────────────────────────────────────────
 // سلکتورهای کمکی
-// UserSchema فیلد «نام» نداره؛ اطلاعات داخل آرایه‌ی identifiers است:
-//   [{ type: 'username', value: 'ali' }, { type: 'email', value: 'a@b.com' }]
-// این تابع بهترین گزینه رو برای نمایش در هدر پیدا می‌کنه.
+//
+// اسپک جدید (Profile) به‌جای آرایه‌ی identifiers، فیلدهای نام‌دار دارد:
+//   full_name / first_name / last_name  و  username|email|phone که هر
+//   کدام یک شیء { value, is_verified, ... } هستند.
+//
+// ترتیب اولویت: نام کامل → نام و نام خانوادگی → نام کاربری → ایمیل → شماره.
+// آرایه‌ی identifiers قدیمی به‌عنوان پشتیبان نگه داشته شده تا اگر بک‌اند
+// هنوز پاسخ قدیمی می‌دهد، نام کاربر ناگهان خالی نشود.
 // ─────────────────────────────────────────────────────────────
+/**
+ * مقدار یک شناسه‌ی کاربر — 'username' | 'email' | 'phone' | 'landline'.
+ *
+ * در اسپک جدید هر شناسه یک شیء { value, is_verified, ... } است، ولی
+ * شکل قدیمی (آرایه‌ی identifiers با type/value) هم پشتیبانی می‌شود.
+ *
+ * 'phone' در شکل قدیمی 'phone_number' نام داشت.
+ */
+export function getIdentifier(user, type) {
+    if (!user) return "";
+
+    const direct = user[type];
+    if (direct?.value) return direct.value;
+
+    if (user.identifiers?.length) {
+        const legacyType = type === "phone" ? "phone_number" : type;
+        return (
+            user.identifiers.find((i) => i.type === legacyType)?.value ?? ""
+        );
+    }
+
+    return "";
+}
+
 export function getDisplayName(user) {
-    if (!user?.identifiers?.length) return "";
-    const byType = (t) => user.identifiers.find((i) => i.type === t)?.value;
-    return byType("username") || byType("email") || byType("phone_number") || "";
+    if (!user) return "";
+
+    const fullName =
+        user.full_name?.trim() ||
+        [user.first_name, user.last_name].filter(Boolean).join(" ").trim();
+    if (fullName) return fullName;
+
+    /* شناسه‌ها شیء‌اند نه رشته — گرفتن مستقیم user.email یک
+       «[object Object]» روی سایدبار می‌گذاشت. getIdentifier هر دو
+       شکل قدیم و جدید را می‌فهمد. */
+    return (
+        getIdentifier(user, "username") ||
+        getIdentifier(user, "email") ||
+        getIdentifier(user, "phone")
+    );
 }
 
 export function hasRole(user, role) {

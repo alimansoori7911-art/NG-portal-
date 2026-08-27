@@ -7,7 +7,7 @@ import Select from '../../../components/ui/Select/Select'
 import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
 import { contactService } from '../../../services/contactService'
-import { useAuthStore, getDisplayName } from '../../../store/authStore'
+import { useAuthStore, getDisplayName, getIdentifier } from '../../../store/authStore'
 import { HTTP, MSG } from '../../../constants/auth'
 import styles from './ContactPage.module.css'
 
@@ -81,12 +81,10 @@ function ContactPage() {
     // پیش‌پر کردن از پروفایل — فقط وقتی کاربر لاگین باشد
     useEffect(() => {
         if (status !== 'authenticated' || !user) return
-        const identifierOf = (t) =>
-            user?.identifiers?.find((i) => i.type === t)?.value ?? ''
         setContact((prev) => ({
             name: prev.name || getDisplayName(user),
-            email: prev.email || identifierOf('email'),
-            phone: prev.phone || identifierOf('phone_number'),
+            email: prev.email || getIdentifier(user, 'email'),
+            phone: prev.phone || getIdentifier(user, 'phone'),
         }))
     }, [status, user])
 

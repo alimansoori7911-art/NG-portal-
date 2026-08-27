@@ -100,19 +100,18 @@ export const authService = {
     /* POST /auth/contact/verify — تأیید هویت (کد ملی، نام، نام خانوادگی).
        نیازمند لاگین است (اسپک بلوک security ندارد ولی بک‌اند تأیید کرده).
 
+       این تنها راهی است که کاربر می‌تواند اطلاعات پروفایلش را بنویسد؛
+       اندپوینت ویرایش پروفایل وجود ندارد. فیلدهای VerifyIdentityInput
+       دقیقاً روی Profile نگاشت می‌شوند.
+
        company_id از نوع string و اختیاری است (تأیید شده).
        national_id باید دقیقاً ۱۰ رقم باشد — الگوی ^\d{10}$ در اسپک.
-       birth_date اختیاری و در قالب date است. */
-    verifyIdentity({ first_name, last_name, national_id, birth_date, company_id }) {
-        return api
-            .post("/auth/contact/verify", {
-                first_name,
-                last_name,
-                national_id,
-                birth_date,
-                company_id,
-            })
-            .then(unwrap);
+       birth_date اختیاری و در قالب date است.
+
+       فقط first_name، last_name و national_id اجباری‌اند؛ بقیه با
+       undefined فرستاده نمی‌شوند تا مقدار قبلی را پاک نکنند. */
+    verifyIdentity(payload) {
+        return api.post("/auth/contact/verify", payload).then(unwrap);
     },
 
     /* ResetPasswordInput: { reset_token, new_password } — هر دو اجباری */
@@ -125,9 +124,15 @@ export const authService = {
             .then(unwrap);
     },
 
-    changeCredentials({ email, password, username }) {
+    /* POST /auth/password/change — تغییر رمز کاربرِ واردشده.
+       ChangedInput: { old_password, new_password } — هر دو اجباری.
+
+       ⚠️ این متد قبلاً { email, password, username } می‌فرستاد که مربوط
+       به اسپک قدیمی بود و دیگر پذیرفته نمی‌شود. رمز فعلی حالا واقعاً
+       بررسی می‌شود، پس داشتن توکن به‌تنهایی برای تغییر رمز کافی نیست. */
+    changePassword({ old_password, new_password }) {
         return api
-            .post("/auth/password/change", { email, password, username })
+            .post("/auth/password/change", { old_password, new_password })
             .then(unwrap);
     },
 

@@ -25,6 +25,28 @@ export function formatJalaliDateTime(iso) {
 }
 
 /**
+ * تبدیل تاریخ شمسیِ تایپ‌شده به قالب `date` بک‌اند (YYYY-MM-DD).
+ *
+ * ⚠️ چرا `jalaliToISO(...).slice(0, 10)` غلط است:
+ * خروجی `toISOString` بر حسب UTC است و تهران +۳:۳۰ (یا +۴:۳۰) جلوتر
+ * است. پس نیمه‌شبِ محلیِ ۱۳۷۰/۰۵/۲۰ در UTC می‌شود
+ * `1991-08-10T19:30:00Z` و ده کاراکتر اولش **روز قبل** را می‌دهد.
+ * یعنی تاریخ تولد کاربر یک روز عقب ذخیره می‌شد.
+ *
+ * اینجا اجزای تاریخِ **محلی** قالب‌بندی می‌شوند تا همان روزی که کاربر
+ * دیده ذخیره شود.
+ */
+export function jalaliToDateOnly(input) {
+    const iso = jalaliToISO(input)
+    if (!iso) return null
+
+    const d = new Date(iso)
+    const pad = (n) => String(n).padStart(2, '0')
+
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/**
  * تبدیل تاریخ شمسیِ تایپ‌شده به ISO برای ارسال به بک‌اند.
  *
  * ورودی مثل «۱۴۰۵/۰۵/۲۰» یا «1405-5-20». ارقام فارسی هم پذیرفته

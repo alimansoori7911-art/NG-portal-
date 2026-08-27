@@ -1,0 +1,130 @@
+/* هم‌پالت با بقیه‌ی داشبورد: کارت #132239، حاشیه #192D4C */
+
+.card {
+    /* در ستون فلکس نباید کوتاه شود */
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 520px;
+    padding: 28px;
+    border: 1px solid #192D4C;
+    border-radius: 16px;
+    background: #132239;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #192D4C;
+}
+
+.avatar {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #0D1726;
+    color: var(--color-primary-ghost);
+}
+
+.headerText {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.name {
+    margin: 0;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* نشان وضعیت تأیید هویت */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    align-self: flex-start;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    line-height: 1.9;
+}
+
+.badgeVerified {
+    background: rgba(47, 125, 50, 0.16);
+    color: #5BC46A;
+}
+
+.badgePending {
+    background: rgba(230, 162, 60, 0.16);
+    color: #E6A23C;
+}
+
+/* ── فهرست اطلاعات ── */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0;
+}
+
+.row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.label {
+    flex-shrink: 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: left;
+    /* آدرس شرکت می‌تواند بلند باشد و باید بشکند نه اینکه سرریز کند */
+    word-break: break-word;
+}
+
+.verifiedIcon {
+    flex-shrink: 0;
+    color: #5BC46A;
+}
+
+@media (max-width: 1023px) {
+    .card {
+        max-width: none;
+        padding: 20px;
+    }
+
+    /* در عرض کم، برچسب و مقدار زیر هم می‌روند تا مقدار له نشود */
+    .row {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .value {
+        text-align: right;
+    }
+}

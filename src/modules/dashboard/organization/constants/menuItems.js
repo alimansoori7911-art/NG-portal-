@@ -1,7 +1,11 @@
 /* آیتم‌های منوی داشبورد سازمانی — ترتیب و برچسب‌ها از فیگما.
 
    «وضعیت پشتیبانی» حذف شد چون در فیگما وجود ندارد، و «حسابداری»
-   طبق فیگما به «فاکتور» تغییر نام داد. */
+   طبق فیگما به «فاکتور» تغییر نام داد.
+
+   «حساب کاربری» در فیگما نیست و اضافه شده: تغییر رمز عبور در فلو
+   هست (`POST /auth/password/change`) ولی صفحه‌ای برایش طراحی نشده
+   بود. طبق قاعده‌ی پروژه، فلو مرجع است. */
 export const ORG_MENU_ITEMS = [
     { id: 'services', label: 'مدیریت سرویس', path: '/dashboard/services' },
     { id: 'tickets', label: 'مدیریت تیکت', path: '/dashboard/tickets' },
@@ -9,4 +13,5 @@ export const ORG_MENU_ITEMS = [
     { id: 'invoices', label: 'فاکتور', path: '/dashboard/invoices' },
     { id: 'logs', label: 'مدیریت LOG', path: '/dashboard/logs' },
     { id: 'sessions', label: 'مدیریت نشست ها', path: '/dashboard/sessions' },
+    { id: 'account', label: 'حساب کاربری', path: '/dashboard/account' },
 ]
