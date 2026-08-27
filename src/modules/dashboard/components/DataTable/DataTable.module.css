@@ -77,6 +77,30 @@
     height: 80px;
 }
 
+/* ─── ردیف کلیک‌پذیر ─── */
+/* فقط وقتی onRowClick داده شده باشد؛ ردیف‌های معمولی دست‌نخورده می‌مانند. */
+.rowClickable {
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.rowClickable:hover,
+.rowClickable:focus-visible {
+    background: #0D1726;
+}
+
+/* حلقه‌ی فوکوس داخل ردیف کشیده می‌شود چون outline روی <tr> در
+   بعضی مرورگرها اصلاً رندر نمی‌شود. */
+.rowClickable:focus-visible {
+    outline: 2px solid var(--color-primary-ghost);
+    outline-offset: -2px;
+}
+
+.rowBusy {
+    cursor: progress;
+    opacity: 0.6;
+}
+
 .cell {
     height: 80px;
     padding: 0 8px;

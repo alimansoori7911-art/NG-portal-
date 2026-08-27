@@ -15,6 +15,11 @@ import styles from './DataTable.module.css'
  *   headerHeight     ارتفاع ردیف هدر (px)
  *   paginationIndent تورفتگی صفحه‌بندی از لبه‌ی چپ کارت (px)
  *
+ * ردیف کلیک‌پذیر — فقط وقتی onRowClick داده شود:
+ *   onRowClick(row)  با کلیک یا Enter/Space صدا زده می‌شود
+ *   busyRowId        شناسه‌ی ردیفی که عملیاتش در جریان است
+ *   rowTitle(row)    متن tooltip هر ردیف
+ *
  * اعداد داشبورد (فریم ۱۴۴۰×۱۰۲۴):
  *   کارت  ۱۰۲۲×۸۱۸، radius 31، border 2px #0D1726
  *   هدر   ۹۸ | ردیف ۸۰ | جداکننده 2px #0D1726
@@ -30,6 +35,9 @@ export default function DataTable({
                                       headerHeight,
                                       paginationIndent,
                                       emptyMessage,
+                                      onRowClick,
+                                      busyRowId,
+                                      rowTitle,
                                   }) {
     const cssVars = {}
     if (headerHeight != null) cssVars['--header-height'] = `${headerHeight}px`
@@ -66,25 +74,48 @@ export default function DataTable({
                                 </td>
                             </tr>
                         ) : null}
-                        {rows.map((row, i) => (
-                            // TODO: کلیک روی ردیف پس از مشخص شدن صفحه‌ی جزئیات فعال شود
-                            <tr key={row.id ?? i} className={styles.row}>
-                                {columns.map((col) => (
-                                    <td key={col.key} className={styles.cell}>
-                                        {col.render ? (
-                                            col.render(row)
-                                        ) : (
-                                            <span
-                                                className={styles.cellText}
-                                                dir={col.ltr ? 'ltr' : undefined}
-                                            >
+                        {rows.map((row, i) => {
+                            const clickable = Boolean(onRowClick)
+                            const busy = clickable && busyRowId != null && row.id === busyRowId
+
+                            /* ردیف کلیک‌پذیر باید با کیبورد هم قابل استفاده باشد،
+                               وگرنه کاربری که ماوس ندارد اصلاً به فاکتورش نمی‌رسد. */
+                            const rowProps = clickable
+                                ? {
+                                    className: `${styles.row} ${styles.rowClickable} ${busy ? styles.rowBusy : ''}`,
+                                    onClick: () => !busy && onRowClick(row),
+                                    onKeyDown: (e) => {
+                                        if (e.key !== 'Enter' && e.key !== ' ') return
+                                        /* Space صفحه را اسکرول می‌کند اگر جلویش گرفته نشود */
+                                        e.preventDefault()
+                                        if (!busy) onRowClick(row)
+                                    },
+                                    role: 'button',
+                                    tabIndex: 0,
+                                    title: rowTitle?.(row),
+                                    'aria-busy': busy || undefined,
+                                }
+                                : { className: styles.row }
+
+                            return (
+                                <tr key={row.id ?? i} {...rowProps}>
+                                    {columns.map((col) => (
+                                        <td key={col.key} className={styles.cell}>
+                                            {col.render ? (
+                                                col.render(row)
+                                            ) : (
+                                                <span
+                                                    className={styles.cellText}
+                                                    dir={col.ltr ? 'ltr' : undefined}
+                                                >
                                                 {row[col.key]}
                                             </span>
-                                        )}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
+                                            )}
+                                        </td>
+                                    ))}
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>

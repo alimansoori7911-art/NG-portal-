@@ -55,6 +55,16 @@
     background: var(--color-white);
 }
 
+/* خطای باز کردن PDF — بالای جدول، پایین نوار راهنما */
+.error {
+    flex-shrink: 0;
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: right;
+}
+
 @media (max-width: 1023px) {
     .hint {
         min-height: 60px;
