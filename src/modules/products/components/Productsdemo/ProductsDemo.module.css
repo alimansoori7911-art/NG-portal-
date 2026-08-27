@@ -169,10 +169,33 @@
             box-shadow var(--transition-normal);
 }
 
-.demoBtn:hover {
+.demoBtn:hover:not(:disabled) {
     background: rgba(0, 8, 20, 0.45);
     border-color: var(--color-primary-ghost);
     box-shadow: 0 0 24px rgba(20, 116, 255, 0.35);
+}
+
+/* دمو یک‌بارمصرف است؛ دکمه‌ی غیرفعال نباید قابل کلیک به نظر برسد */
+.demoBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* توضیح زیر دکمه — قاعده‌ی یک‌بارمصرف بودن یا خطا */
+.note {
+    margin-top: var(--spacing-lg);
+    max-width: 520px;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+    text-align: center;
+}
+
+/* خطا باید مثل خطا دیده شود، نه مثل توضیح عادی */
+.noteError {
+    color: var(--status-error);
 }
 
 /* احترام به کاربرانی که motion نمی‌خوان */

@@ -83,14 +83,19 @@ export const orderService = {
     },
 
     /* POST /orders/demo — درخواست دمو.
-       همان ساختار CreateOrder ولی order_type اجباراً demo است. */
-    requestDemo({ plan_id, product_id, plan_base_price_id, quantity = 1, customer_note }) {
+
+       ⚠️ `CreateDemoOrder` با `CreateOrder` یکی نیست: فیلد
+       `plan_base_price_id` را **ندارد** (قیمت برای دمو بی‌معناست) و
+       همه‌ی فیلدهایش اختیاری‌اند، پس درخواست خالی هم معتبر است.
+
+       طبق فلو هر کاربر فقط **یک‌بار** می‌تواند دمو بگیرد و درخواست
+       دوم خودکار رد می‌شود. */
+    requestDemo({ plan_id, product_id, quantity = 1, customer_note } = {}) {
         return api
             .post('/orders/demo', {
                 order_type: 'demo',
                 plan_id,
                 product_id,
-                plan_base_price_id,
                 quantity,
                 customer_note,
             })

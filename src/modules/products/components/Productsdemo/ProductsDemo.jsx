@@ -2,13 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './ProductsDemo.module.css'
 
 /**
- * بخش درخواست دمو.
+ * بخش درخواست دمو — وصل به `POST /orders/demo`.
  *
- * onRequestDemo / loading اختیاری‌اند: اگر صفحه‌ی والد آن‌ها را ندهد،
- * دکمه فقط ظاهر است (رفتار قبلی). با اتصال به POST /orders/demo
- * والد این دو را پاس می‌دهد.
+ * طبق فلو دمو آزمایشی است و **فقط یک‌بار برای هر کاربر**؛ درخواست دوم
+ * خودکار رد می‌شود. پس اگر کاربر از قبل دمو گرفته باشد دکمه غیرفعال
+ * می‌شود و دلیلش گفته می‌شود، به‌جای اینکه تازه بعد از رد شدن بفهمد.
+ *
+ * کاربر مهمان به صفحه‌ی ورود هدایت می‌شود چون اندپوینت لاگین می‌خواهد.
  */
-function ProductsDemo({ onRequestDemo, loading = false }) {
+function ProductsDemo({
+    onRequestDemo,
+    loading = false,
+    alreadyRequested = false,
+    isAuthenticated = true,
+    message,
+    error,
+}) {
     const sectionRef = useRef(null)
     const [visible, setVisible] = useState(false)
 
@@ -50,11 +59,30 @@ function ProductsDemo({ onRequestDemo, loading = false }) {
                         type="button"
                         className={styles.demoBtn}
                         onClick={onRequestDemo}
-                        disabled={loading}
+                        disabled={loading || alreadyRequested}
                     >
-                        {loading ? 'در حال ارسال…' : 'درخواست دمو'}
+                        {loading
+                            ? 'در حال ارسال…'
+                            : alreadyRequested
+                              ? 'دمو قبلاً درخواست شده'
+                              : 'درخواست دمو'}
                     </button>
                 </div>
+
+                {/* قاعده‌ی «یک‌بار برای هر کاربر» باید *قبل* از کلیک
+                    دیده شود، نه بعد از رد شدن درخواست. */}
+                <p
+                    className={`${styles.note} ${error ? styles.noteError : ''}`}
+                    role={error ? 'alert' : undefined}
+                >
+                    {error ||
+                        message ||
+                        (!isAuthenticated
+                            ? 'برای درخواست دمو ابتدا وارد حساب خود شوید.'
+                            : alreadyRequested
+                              ? 'هر کاربر تنها یک‌بار می‌تواند دمو دریافت کند.'
+                              : 'دمو نسخه‌ی آزمایشی است و برای هر کاربر تنها یک‌بار قابل درخواست است.')}
+                </p>
             </div>
         </section>
     )
