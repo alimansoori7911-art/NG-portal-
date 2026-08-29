@@ -40,6 +40,12 @@
     font-size: var(--font-size-sm);
 }
 
+/* مبلغ رسیدِ تأییدنشده ادعای کاربر است، نه رقم قطعی */
+.claimed {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
 .meta {
     color: var(--text-muted-2);
     font-size: var(--font-size-xs);

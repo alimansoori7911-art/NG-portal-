@@ -44,6 +44,9 @@ export function useOrderPayment(orderId) {
      *
      * ورودی فرم به **تومان** است ولی بک‌اند **ریال** می‌خواهد، پس
      * اینجا تبدیل می‌شود. بقیه‌ی فیلدها دست‌نخورده می‌روند.
+     *
+     * ⚠️ مبلغ به `claimed_amount` می‌رود نه `amount`: طبق اسپک ۱۴ این
+     * فقط «ادعای کاربر» است و مبلغ قطعی را ادمین هنگام تأیید می‌گذارد.
      */
     const submitPayment = useCallback(
         async (form) => {
@@ -51,9 +54,12 @@ export function useOrderPayment(orderId) {
             setSubmitError(null)
             try {
                 await orderService.submitPayment(orderId, {
-                    amount: tomanToRial(form.amount),
+                    claimed_amount: tomanToRial(form.amount),
                     method: form.method,
                     payer_name: form.payerName || undefined,
+                    payer_national_id: form.payerNationalId || undefined,
+                    bank_name: form.bankName || undefined,
+                    account_number: form.accountNumber || undefined,
                     tracking_number: form.trackingNumber || undefined,
                     receipt_ref: form.receiptRef || undefined,
                     /* کاربر شمسی تایپ می‌کند ولی بک‌اند ISO می‌خواهد.

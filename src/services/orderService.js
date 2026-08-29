@@ -109,12 +109,25 @@ export const orderService = {
     },
 
     /* POST /orders/{id}/payments — ثبت رسید پرداخت.
-       amount اجباری و باید بزرگ‌تر از صفر باشد. */
+
+       ⚠️ در اسپک ۱۴ ساختار عوض شد: `amount` و `currency` از ورودی
+       **حذف شدند** و جایشان `claimed_amount` آمد که اختیاری است.
+       معنی‌اش هم فرق دارد — این «مبلغ ادعایی کاربر» است، نه مبلغ
+       قطعی؛ مبلغ قطعی را ادمین هنگام تأیید تعیین می‌کند.
+
+       در خروجی (`PaymentRecordOutput`) هر دو هستند: `claimed_amount`
+       ادعای کاربر و `amount` مبلغ تأییدشده.
+
+       سه فیلد جدید هم اضافه شد: bank_name، account_number و
+       payer_national_id (پیش‌فرض کد ملی خود کاربر، مگر شخص دیگری
+       پرداخت کرده باشد). */
     submitPayment(orderId, {
-        amount,
+        claimed_amount,
         method = 'bank_transfer',
-        currency = 'IRR',
         payer_name,
+        payer_national_id,
+        bank_name,
+        account_number,
         tracking_number,
         receipt_ref,
         paid_at,
@@ -122,15 +135,49 @@ export const orderService = {
     }) {
         return api
             .post(`/orders/${orderId}/payments`, {
-                amount,
+                claimed_amount,
                 method,
-                currency,
                 payer_name,
+                payer_national_id,
+                bank_name,
+                account_number,
                 tracking_number,
                 receipt_ref,
                 paid_at,
                 note,
             })
+            .then(unwrap)
+    },
+
+    /* GET /orders/{id}/payments — رسیدهای یک سفارش با صفحه‌بندی.
+       جدا از `OrderOutput.payments` است که همه را یک‌جا می‌دهد. */
+    getOrderPayments(orderId, { page = 1, limit = 20 } = {}) {
+        return api
+            .get(`/orders/${orderId}/payments`, { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* GET /orders/payments — همه‌ی پرداخت‌های کاربر جاری */
+    getMyPayments({ page = 1, limit = 20 } = {}) {
+        return api
+            .get('/orders/payments', { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* POST /orders/{id}/payments/attachments — گرفتن توکن آپلود رسید.
+
+       خروجی فقط یک JWT است؛ خود فایل بعداً با آن توکن به
+       `/dl/upload` فرستاده می‌شود. هر توکن **یک‌بارمصرف** است و
+       فقط یک فایل می‌گیرد. */
+    requestPaymentUploadToken(orderId, payload = {}) {
+        return api
+            .post(`/orders/${orderId}/payments/attachments`, payload)
             .then(unwrap)
     },
 }
@@ -183,12 +230,30 @@ export const adminOrderService = {
             .then(unwrap)
     },
 
+    /* GET /admin/orders/payments — همه‌ی پرداخت‌های سیستم.
+
+       خروجی `PaymentRecordOutputAdmin` است که برخلاف بقیه‌ی جدول‌های
+       ادمین **نام کاربر** را هم می‌دهد (`user_full_name`)، نه فقط
+       شناسه‌ی عددی. */
+    getAllPayments({ page = 1, limit = 20 } = {}) {
+        return api
+            .get('/admin/orders/payments', { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
     /* POST /admin/orders/{id}/payments/{pid}/verify — تأیید رسید.
        بعد از این، وضعیت سفارش به PAID_CONFIRMED می‌رود و طبق فلو
-       فاکتور خودکار صادر می‌شود. */
-    verifyPayment(orderId, paymentId, note) {
+       فاکتور خودکار صادر می‌شود.
+
+       ⚠️ در اسپک ۱۴ فیلد بدنه از `note` به `admin_note` تغییر نام داد. */
+    verifyPayment(orderId, paymentId, admin_note) {
         return api
-            .post(`/admin/orders/${orderId}/payments/${paymentId}/verify`, { note })
+            .post(`/admin/orders/${orderId}/payments/${paymentId}/verify`, {
+                admin_note,
+            })
             .then(unwrap)
     },
 

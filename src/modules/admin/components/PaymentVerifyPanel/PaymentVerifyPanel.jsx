@@ -12,6 +12,10 @@ import styles from './PaymentVerifyPanel.module.css'
  *
  * شماره‌ی پیگیری برجسته نشان داده می‌شود چون تنها چیزی است که ادمین
  * با آن می‌تواند واریز را در صورت‌حساب بانک پیدا کند.
+ *
+ * ⚠️ مبلغ رسیدِ تأییدنشده «ادعای کاربر» است (`claimed_amount`) نه مبلغ
+ * قطعی؛ برچسب «ادعایی» می‌گیرد تا ادمین آن را با واریز واقعی مقایسه
+ * کند و اشتباهی به‌عنوان مبلغ تأییدشده نخواند.
  */
 export default function PaymentVerifyPanel({ payments = [], busy, onVerify }) {
     if (payments.length === 0) {
@@ -32,12 +36,18 @@ export default function PaymentVerifyPanel({ payments = [], busy, onVerify }) {
                     <li className={styles.row} key={p.id}>
                         <div className={styles.main}>
                             <span className={styles.amount}>
-                                {formatToman(p.amount)}
+                                {formatToman(
+                                    verified ? p.amount : (p.claimed_amount ?? p.amount)
+                                )}
+                                {!verified && (
+                                    <span className={styles.claimed}> (ادعایی)</span>
+                                )}
                             </span>
                             <span className={styles.meta}>
                                 {PAYMENT_METHODS[p.method] ?? p.method}
                                 {date && ` · ${date} ${time}`}
                                 {p.payer_name && ` · ${p.payer_name}`}
+                                {p.bank_name && ` · ${p.bank_name}`}
                             </span>
                         </div>
 

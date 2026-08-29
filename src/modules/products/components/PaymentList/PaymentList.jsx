@@ -11,6 +11,11 @@ import styles from './PaymentList.module.css'
  *
  * وضعیت هر رسید از `verified_at` می‌آید: پر یعنی ادمین تأیید کرده،
  * تهی یعنی هنوز در انتظار بررسی است.
+ *
+ * ⚠️ دو مبلغ متفاوت‌اند (اسپک ۱۴): `claimed_amount` چیزی است که کاربر
+ * ادعا کرده و `amount` مبلغی که ادمین تأیید کرده. تا وقتی رسید تأیید
+ * نشده، مبلغ ادعایی نشان داده می‌شود — نمایش `amount`ِ تأییدنشده به
+ * کاربر می‌گوید مبلغی قطعی شده که هنوز نشده.
  */
 export default function PaymentList({ payments = [], payableRial, remainingRial }) {
     if (payments.length === 0) return null
@@ -29,7 +34,9 @@ export default function PaymentList({ payments = [], payableRial, remainingRial 
                     return (
                         <li className={styles.row} key={p.id}>
                             <span className={styles.amount}>
-                                {formatToman(p.amount)}
+                                {formatToman(
+                                    verified ? p.amount : (p.claimed_amount ?? p.amount)
+                                )}
                             </span>
 
                             <span className={styles.meta}>
