@@ -32,6 +32,21 @@ export const PAYMENT_METHODS = {
     other: 'سایر',
 }
 
+/* نوع رابطه‌ی تیکت با سفارش — enum TicketRelationType.
+   در فلو، `installation` مهم‌ترینشان است: پلن‌های install-by-us
+   تیکت نصب خودکار می‌گیرند و همان‌جا پیگیری می‌شوند. */
+export const TICKET_RELATION_TYPES = {
+    technical: 'فنی',
+    financial: 'مالی',
+    general: 'عمومی',
+    support: 'پشتیبانی',
+    installation: 'نصب',
+    delivery: 'تحویل',
+}
+
+export const relationTypeLabel = (type) =>
+    TICKET_RELATION_TYPES[type] ?? type ?? ''
+
 /**
  * سرویس سفارش‌ها — اندپوینت‌های کاربر (نه ادمین).
  * همه نیاز به لاگین دارند.

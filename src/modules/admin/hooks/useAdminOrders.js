@@ -125,5 +125,11 @@ export function useOrderActions(onDone) {
 
         changeStatus: (orderId, status, note) =>
             run(() => adminOrderService.changeStatus(orderId, status, note)),
+
+        /* اتصال تیکت به سفارش — گره‌ی «Ticketing (optional, any stage)»
+           در فلو. تا اسپک ۱۴ قابل استفاده نبود چون `ticket_id` عدد
+           بود در حالی که تیکت‌ها UUID دارند. */
+        linkTicket: (orderId, payload) =>
+            run(() => adminOrderService.linkTicket(orderId, payload)),
     }
 }

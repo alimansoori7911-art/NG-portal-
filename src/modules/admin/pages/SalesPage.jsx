@@ -4,8 +4,9 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import LicenseForm from '../components/LicenseForm/LicenseForm'
 import QuoteForm from '../components/QuoteForm/QuoteForm'
 import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPanel'
+import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
-import { ORDER_STATUS } from '../../../services/orderService'
+import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
 import { MOCK_LICENSES } from '../data/mockSales'
 import styles from './SalesPage.module.css'
 
@@ -71,6 +72,8 @@ export default function SalesPage() {
     const [creating, setCreating] = useState(false)
     /* کدام سفارش در حال صدور پیش‌فاکتور است */
     const [quoting, setQuoting] = useState(null)
+    /* سفارشی که نوار «اتصال تیکت»اش باز است */
+    const [linking, setLinking] = useState(null)
     /* منوی باز تغییر وضعیت */
     const [statusMenu, setStatusMenu] = useState(false)
 
@@ -90,6 +93,7 @@ export default function SalesPage() {
         setSelectedId(null)
         setCreating(false)
         setQuoting(null)
+        setLinking(null)
     }
 
     const toggleRow = (row) => {
@@ -184,6 +188,16 @@ export default function SalesPage() {
 
                     <button
                         type="button"
+                        className={styles.rowActionBtn}
+                        onClick={() => setLinking((v) => (v ? null : order))}
+                        disabled={actions.busy}
+                        aria-expanded={linking?.id === order.id}
+                    >
+                        اتصال تیکت
+                    </button>
+
+                    <button
+                        type="button"
                         className={styles.rowActionsClose}
                         onClick={() => setSelectedId(null)}
                         aria-label="بستن نوار عملیات"
@@ -191,6 +205,35 @@ export default function SalesPage() {
                         <X size={14} strokeWidth={3} />
                     </button>
                 </div>
+
+                {/* تیکت‌های وصل‌شده — طبق فلو تیکت در هر مرحله می‌تواند
+                    به سفارش بچسبد، پس ادمین باید ببیند چه چیزی وصل است. */}
+                {order.ticket_links?.length > 0 && (
+                    <ul className={styles.ticketLinks}>
+                        {order.ticket_links.map((l) => (
+                            <li key={l.id} className={styles.ticketLink}>
+                                <span dir="ltr">#{l.ticket_id?.slice(0, 8)}</span>
+                                <span className={styles.ticketRelation}>
+                                    {relationTypeLabel(l.relation_type)}
+                                    {l.is_primary && ' · اصلی'}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                {linking?.id === order.id && (
+                    <LinkTicketForm
+                        order={order}
+                        busy={actions.busy}
+                        error={actions.error}
+                        onCancel={() => setLinking(null)}
+                        onSubmit={async (values) => {
+                            const ok = await actions.linkTicket(order.id, values)
+                            if (ok) setLinking(null)
+                        }}
+                    />
+                )}
 
                 {/* رسیدها — تأیید هرکدام جداگانه */}
                 <PaymentVerifyPanel

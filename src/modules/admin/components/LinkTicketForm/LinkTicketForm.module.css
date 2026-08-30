@@ -1,0 +1,116 @@
+/* هم‌پالت با QuoteForm و PaymentVerifyPanel — از توکن‌های ادمین */
+
+.box {
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid var(--interactive-border);
+    border-radius: 12px;
+    background: var(--surface-card);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.icon {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.title {
+    margin: 0;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+/* دو فیلد کنار هم؛ در عرض کم زیر هم می‌روند */
+.fields {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.hint {
+    margin: 0 0 12px;
+    color: var(--text-muted-2);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.error {
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.checkbox input {
+    cursor: pointer;
+}
+
+.actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.submitBtn,
+.cancelBtn {
+    height: 36px;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.submitBtn {
+    border: none;
+    background: var(--interactive-border);
+    color: var(--color-white);
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: var(--color-action-hover);
+}
+
+.cancelBtn {
+    border: 1px solid var(--interactive-border);
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--color-white);
+}
+
+.submitBtn:disabled,
+.cancelBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .fields {
+        grid-template-columns: 1fr;
+    }
+}

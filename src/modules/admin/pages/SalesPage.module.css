@@ -204,3 +204,29 @@
     font-size: var(--font-size-xs);
     text-align: center;
 }
+
+/* ─── تیکت‌های وصل‌شده به سفارش ─── */
+.ticketLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ticketLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--interactive-border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.ticketRelation {
+    color: var(--text-muted-2);
+}
