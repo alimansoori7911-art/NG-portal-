@@ -5,6 +5,7 @@ import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
+import { healthService } from "../../../services/healthService";
 import { useAuthStore } from "../../../store/authStore";
 import { HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
 import styles from "./LoginPage.module.css";
@@ -71,6 +72,17 @@ export default function LoginPage() {
                 if (raw.password) setFieldErrors({ password: raw.password });
                 else if (firstMessage) setFieldErrors({ identifier: firstMessage });
                 setApiError(firstMessage || MSG.GENERIC);
+            } else if (err.status === 0) {
+                /* status=0 یعنی درخواست اصلاً به سرور نرسید. با یک
+                   health check معلوم می‌شود مشکل از اینترنت کاربر است
+                   یا خودِ سرور — دو حالتی که پیامشان یکی بود ولی
+                   کار کاربر فرق می‌کند. */
+                const up = await healthService.isUp();
+                setApiError(
+                    up
+                        ? "سرور در دسترس است ولی درخواست ورود ناموفق بود. دوباره تلاش کنید."
+                        : "ارتباط با سرور برقرار نشد. اتصال اینترنت خود را بررسی کنید."
+                );
             } else {
                 setApiError(err.message || MSG.GENERIC);
             }

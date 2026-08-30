@@ -99,4 +99,89 @@ export const adminUserService = {
             .post(`/admin/auth/users/${userId}/roles`, { role_id: roleId })
             .then(unwrap)
     },
+
+    /* POST /admin/auth/users — ساخت کاربر توسط ادمین.
+       UserCreateSchema: password و identifiers اجباری‌اند
+       (identifiers حداقل یک عضو با {type, value}). */
+    createUser({ password, identifiers, is_active = true, is_verified = false, kyc_profile, role_ids = [] }) {
+        return api
+            .post('/admin/auth/users', {
+                password,
+                identifiers,
+                is_active,
+                is_verified,
+                kyc_profile,
+                role_ids,
+            })
+            .then(unwrap)
+    },
+
+    /* POST /admin/auth/users/{id}/permissions — دسترسی مستقیم به کاربر
+       (جدا از دسترسی‌هایی که از راه نقش می‌آیند).
+
+       هر دسترسی با سه‌تایی {module, resource, action} شناخته می‌شود،
+       نه با شناسه. */
+    assignUserPermissions(userId, permissions) {
+        return api
+            .post(`/admin/auth/users/${userId}/permissions`, { permissions })
+            .then(unwrap)
+    },
+
+    /* ─── نقش‌ها و دسترسی‌ها ─── */
+
+    /* GET /admin/auth/permissions — فهرست همه‌ی دسترسی‌های سیستم */
+    getPermissions({ page = 1, limit = 100 } = {}) {
+        return api
+            .get('/admin/auth/permissions', { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* POST /admin/auth/roles — ساخت نقش (فقط name اجباری) */
+    createRole({ name, description, is_active = true }) {
+        return api
+            .post('/admin/auth/roles', { name, description, is_active })
+            .then(unwrap)
+    },
+
+    updateRole(roleId, payload) {
+        return api.patch(`/admin/auth/roles/${roleId}`, payload).then(unwrap)
+    },
+
+    /* DELETE /admin/auth/roles/{id}
+       ⚠️ نقش‌های سیستمی (`is_system`) نباید حذف شوند. */
+    deleteRole(roleId) {
+        return api.delete(`/admin/auth/roles/${roleId}`).then(unwrap)
+    },
+
+    /* GET /admin/auth/roles/{id}/permissions — دسترسی‌های یک نقش */
+    getRolePermissions(roleId, { page = 1, limit = 100 } = {}) {
+        return api
+            .get(`/admin/auth/roles/${roleId}/permissions`, {
+                params: { page, limit },
+            })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* POST /admin/auth/roles/{id}/permissions — تخصیص دسترسی به نقش */
+    assignRolePermissions(roleId, permissions) {
+        return api
+            .post(`/admin/auth/roles/${roleId}/permissions`, { permissions })
+            .then(unwrap)
+    },
+
+    /* GET /admin/auth/roles/{id}/users — کاربران دارای یک نقش */
+    getRoleUsers(roleId, { page = 1, limit = 20 } = {}) {
+        return api
+            .get(`/admin/auth/roles/${roleId}/users`, { params: { page, limit } })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
 }
