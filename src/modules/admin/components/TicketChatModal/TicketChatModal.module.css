@@ -190,3 +190,11 @@
         line-height: 1.9;
     }
 }
+
+/* فایل‌های پیوست داخل حباب پیام */
+.bubbleFiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}

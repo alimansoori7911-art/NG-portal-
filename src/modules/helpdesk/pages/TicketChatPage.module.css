@@ -226,6 +226,97 @@
     color: #7AB0FF;
 }
 
+/* ─── پیوست فایل ─── */
+
+/* ورودی بومی پنهان است؛ دکمه‌ی گیره صدایش می‌زند */
+.hiddenFile {
+    display: none;
+}
+
+.attachBtn {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #7AB0FF;
+    cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.attachBtn:hover:not(:disabled) {
+    color: #E0EDFF;
+    background: rgba(122, 176, 255, 0.12);
+}
+
+.attachBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* نوار فایلِ انتخاب‌شده — بالای نوار ورودی */
+.pending {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: center;
+    width: 884px;
+    max-width: 100%;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    flex-shrink: 0;
+
+    border: 1px solid #264573;
+    border-radius: 8px;
+    background: rgba(0, 8, 20, 0.6);
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.pendingName {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pendingRemove {
+    flex-shrink: 0;
+    padding: 0 4px;
+    border: none;
+    background: transparent;
+    color: #7AB0FF;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.pendingRemove:hover {
+    color: #FF6369;
+}
+
+/* فایل‌های پیوست داخل حباب پیام */
+.bubbleFiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+/* توضیح «پیام رفت ولی فایل نه» */
+.partialNote {
+    display: block;
+    margin-top: 6px;
+    font-size: var(--font-size-xs);
+    opacity: 0.85;
+}
+
 /* ─── صفحه‌های باریک ─── */
 
 @media (max-width: 1100px) {

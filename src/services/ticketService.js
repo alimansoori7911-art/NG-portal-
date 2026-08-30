@@ -114,6 +114,22 @@ export const ticketService = {
             .then(unwrap)
     },
 
+    /* GET /ticketing/tickets/{id}/messages/{mid}/attachments — توکن آپلود.
+
+       ⚠️ با اینکه «خواندن» به نظر می‌رسد، متدش GET است ولی ۲۰۱
+       برمی‌گرداند و یک JWT یک‌بارمصرف می‌دهد.
+
+       برخلاف نسخه‌ی پرداخت، این یکی **پیام موجود** را هدف می‌گیرد
+       (`message_id` در مسیر) و بدنه ندارد؛ پس اول باید پیام ارسال
+       شود و بعد فایل به آن پیوست شود.
+
+       هر توکن فقط **یک فایل** می‌گیرد. */
+    requestMessageUploadToken(ticketId, messageId) {
+        return api
+            .get(`/ticketing/tickets/${ticketId}/messages/${messageId}/attachments`)
+            .then(unwrap)
+    },
+
     /* PATCH /ticketing/tickets/{id} — ویرایش تیکت.
        هر فیلدی که ارسال نشود بدون تغییر می‌ماند.
        assigned_to_user_id = null یعنی برداشتن تخصیص. */

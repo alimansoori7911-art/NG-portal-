@@ -13,6 +13,7 @@ const toBubble = (m) => ({
     from: m.author_type === 'customer' ? 'user' : 'support',
     text: m.body,
     internal: m.message_type === 'internal_note',
+    attachments: m.attachments ?? [],
 })
 
 /**

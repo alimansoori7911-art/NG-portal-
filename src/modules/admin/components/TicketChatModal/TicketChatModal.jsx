@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { SendHorizontal, X } from 'lucide-react'
+import AttachmentLink from '../../../../components/ui/AttachmentLink/AttachmentLink'
 import styles from './TicketChatModal.module.css'
 
 /**
@@ -111,6 +112,19 @@ export default function TicketChatModal({
                                 {m.internal && ' (یادداشت داخلی)'}
                             </span>
                             <p className={styles.bubble}>{m.text}</p>
+
+                            {/* پیوست کاربر — کارشناس باید بتواند ببیندش */}
+                            {m.attachments?.length > 0 && (
+                                <div className={styles.bubbleFiles}>
+                                    {m.attachments.map((a) => (
+                                        <AttachmentLink
+                                            key={a.id}
+                                            attachment={a}
+                                            label={a.original_filename || 'مشاهده فایل'}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
 

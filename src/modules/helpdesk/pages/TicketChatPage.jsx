@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Paperclip } from 'lucide-react'
 import Header from '../../../components/layout/Header/Header'
+import AttachmentLink from '../../../components/ui/AttachmentLink/AttachmentLink'
+import { ACCEPT_ATTR } from '../../../services/fileService'
 import { useTicketChat } from '../hooks/useTicketChat'
 import styles from './TicketChatPage.module.css'
 
@@ -23,11 +26,22 @@ export default function TicketChatPage() {
     const navigate = useNavigate()
     const { id: ticketId } = useParams()
 
-    const { messages, loading, error, sending, sendError, send, canReply } =
-        useTicketChat(ticketId)
+    const {
+        messages,
+        loading,
+        error,
+        sending,
+        sendError,
+        partialUpload,
+        send,
+        clearSendError,
+        canReply,
+    } = useTicketChat(ticketId)
 
     const [draft, setDraft] = useState('')
+    const [file, setFile] = useState(null)
     const listRef = useRef(null)
+    const fileRef = useRef(null)
 
     /* با هر پیام تازه، انتهای گفتگو دیده شود */
     useEffect(() => {
@@ -40,8 +54,17 @@ export default function TicketChatPage() {
         if (sending) return
         /* پیش‌نویس فقط وقتی پاک می‌شود که ارسال موفق بوده باشد،
            تا در صورت خطا متن کاربر از دست نرود. */
-        const ok = await send(draft)
-        if (ok) setDraft('')
+        const ok = await send(draft, file)
+        if (ok) {
+            setDraft('')
+            setFile(null)
+            if (fileRef.current) fileRef.current.value = ''
+        }
+    }
+
+    const pickFile = (e) => {
+        setFile(e.target.files?.[0] ?? null)
+        clearSendError()
     }
 
     const onKeyDown = (e) => {
@@ -101,22 +124,67 @@ export default function TicketChatPage() {
                                 }`}
                             >
                                 {msg.text}
+
+                                {msg.attachments?.length > 0 && (
+                                    <div className={styles.bubbleFiles}>
+                                        {msg.attachments.map((a) => (
+                                            <AttachmentLink
+                                                key={a.id}
+                                                attachment={a}
+                                                label={a.original_filename || 'مشاهده فایل'}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         ))}
 
                         {sendError && (
                             <div className={`${styles.bubble} ${styles.user}`} role="alert">
                                 {sendError}
+                                {/* پیام رفته و فقط فایل نرفته — کاربر نباید
+                                    دوباره بفرستد وگرنه پیام تکراری می‌شود. */}
+                                {partialUpload && (
+                                    <span className={styles.partialNote}>
+                                        {' '}
+                                        پیام شما ارسال شد؛ فقط فایل بارگذاری نشد.
+                                        پیام را دوباره نفرستید.
+                                    </span>
+                                )}
                             </div>
                         )}
                     </div>
+
+                    {/* فایل انتخاب‌شده پیش از ارسال — تا کاربر بداند چه
+                        چیزی همراه پیام می‌رود و بتواند حذفش کند. */}
+                    {file && (
+                        <div className={styles.pending}>
+                            <Paperclip size={14} />
+                            <span className={styles.pendingName} dir="ltr">
+                                {file.name}
+                            </span>
+                            <button
+                                type="button"
+                                className={styles.pendingRemove}
+                                onClick={() => {
+                                    setFile(null)
+                                    if (fileRef.current) fileRef.current.value = ''
+                                }}
+                                aria-label="حذف فایل"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
 
                     <div className={styles.composer}>
                         <button
                             type="button"
                             className={styles.sendBtn}
                             onClick={submit}
-                            disabled={sending || !canReply || !draft.trim()}
+                            disabled={
+                                sending || !canReply || (!draft.trim() && !file)
+                            }
                             aria-label="ارسال پیام"
                         >
                             <SendIcon />
@@ -130,6 +198,27 @@ export default function TicketChatPage() {
                             onKeyDown={onKeyDown}
                             disabled={!canReply || loading}
                         />
+
+                        {/* ورودی فایل پنهان است و دکمه‌ی گیره آن را صدا
+                            می‌زند، چون ظاهر بومی‌اش با نوار چت نمی‌خواند. */}
+                        <input
+                            ref={fileRef}
+                            type="file"
+                            accept={ACCEPT_ATTR}
+                            className={styles.hiddenFile}
+                            onChange={pickFile}
+                            disabled={!canReply || sending}
+                        />
+                        <button
+                            type="button"
+                            className={styles.attachBtn}
+                            onClick={() => fileRef.current?.click()}
+                            disabled={!canReply || sending}
+                            aria-label="پیوست فایل"
+                            title="پیوست فایل (تصویر یا PDF، حداکثر ۵ مگابایت)"
+                        >
+                            <Paperclip size={18} />
+                        </button>
                     </div>
                 </div>
             </main>
