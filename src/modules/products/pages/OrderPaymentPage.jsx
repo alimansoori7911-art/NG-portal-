@@ -13,7 +13,9 @@ import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
 import BankAccountBox from '../components/BankAccountBox/BankAccountBox'
 import PaymentList from '../components/PaymentList/PaymentList'
-import { useOrderPayment } from '../hooks/useOrderPayment'
+import { useOrderPayment, toPaymentPayload } from '../hooks/useOrderPayment'
+import { usePaymentUpload } from '../hooks/usePaymentUpload'
+import { ACCEPT_ATTR } from '../../../services/fileService'
 import { formatToman, rialToToman } from '../../../utils/currency'
 import { PAYMENT_METHODS, statusLabel } from '../../../services/orderService'
 import styles from './OrderPaymentPage.module.css'
@@ -63,6 +65,7 @@ export default function OrderPaymentPage() {
         submitting,
         submitError,
         submitPayment,
+        reload,
         payableRial,
         remainingRial,
         isFullyPaid,
@@ -71,6 +74,12 @@ export default function OrderPaymentPage() {
     /* حالت صفحه: نمایش پیش‌فاکتور یا فرم ثبت رسید */
     const [mode, setMode] = useState('proforma')
     const [done, setDone] = useState(false)
+
+    /* پیوست رسید — اختیاری است، ولی اگر انتخاب شود مسیر ثبت عوض
+       می‌شود: یک اندپوینت جدا هم رکورد را می‌سازد هم توکن آپلود
+       می‌دهد. جزئیاتش در usePaymentUpload. */
+    const [file, setFile] = useState(null)
+    const upload = usePaymentUpload(orderId)
 
     const {
         register,
@@ -93,17 +102,26 @@ export default function OrderPaymentPage() {
     })
 
     const onSubmit = async (data) => {
-        const ok = await submitPayment({
+        const form = {
             ...data,
             method: methodCodeOf(data.method) ?? 'bank_transfer',
-        })
+        }
+
+        /* دو مسیر متفاوت — نباید هر دو صدا زده شوند وگرنه دو رسید
+           تکراری ثبت می‌شود. */
+        const ok = file
+            ? await upload.submitWithFile(toPaymentPayload(form), file)
+            : await submitPayment(form)
 
         if (ok) {
             /* کاربر همان‌جا می‌ماند تا باقی‌مانده را ببیند و در صورت
                نیاز رسید بعدی را ثبت کند (تصمیم چند-رسید). */
             reset()
+            setFile(null)
+            upload.reset()
             setDone(true)
             setMode('proforma')
+            await reload()
         }
     }
 
@@ -312,14 +330,70 @@ export default function OrderPaymentPage() {
                                             {...register('note')}
                                         />
                                     </div>
+
+                                    {/* پیوست تصویر رسید — اختیاری.
+                                        اگر انتخاب شود، ثبت از مسیر
+                                        attachments می‌رود که هم رکورد
+                                        می‌سازد هم توکن آپلود می‌دهد. */}
+                                    <div className={styles.fullWidth}>
+                                        <label className={styles.fileLabel}>
+                                            <span className={styles.fileLabelText}>
+                                                تصویر رسید (اختیاری) — JPG، PNG یا PDF،
+                                                حداکثر ۵ مگابایت
+                                            </span>
+                                            <input
+                                                type="file"
+                                                accept={ACCEPT_ATTR}
+                                                className={styles.fileInput}
+                                                disabled={upload.uploading}
+                                                onChange={(e) => {
+                                                    setFile(e.target.files?.[0] ?? null)
+                                                    upload.reset()
+                                                }}
+                                            />
+                                        </label>
+
+                                        {file && (
+                                            <p className={styles.fileName}>
+                                                <span dir="ltr">{file.name}</span>
+                                                {' · '}
+                                                {(file.size / 1024).toLocaleString('fa-IR', {
+                                                    maximumFractionDigits: 0,
+                                                })}{' '}
+                                                کیلوبایت
+                                            </p>
+                                        )}
+
+                                        {upload.uploading && upload.progress > 0 && (
+                                            <p className={styles.fileName}>
+                                                در حال بارگذاری… {upload.progress}٪
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* رسید ثبت شده ولی فایل نرفته — کاربر نباید
+                                فرم را دوباره بفرستد چون رسید تکراری می‌شود. */}
+                            {upload.partial && (
+                                <p className={styles.partialWarn} role="alert">
+                                    رسید شما ثبت شد ولی بارگذاری فایل انجام نشد.
+                                    فرم را دوباره نفرستید — برای پیوست تصویر با
+                                    پشتیبانی تماس بگیرید.
+                                </p>
+                            )}
+
+                            {upload.error && !upload.partial && (
+                                <p className={styles.partialWarn} role="alert">
+                                    {upload.error}
+                                </p>
+                            )}
 
                             <div className={styles.actions}>
                                 <Button
                                     type="submit"
                                     disabled={!isValid}
-                                    loading={submitting}
+                                    loading={submitting || upload.uploading}
                                 >
                                     ثبت رسید
                                 </Button>

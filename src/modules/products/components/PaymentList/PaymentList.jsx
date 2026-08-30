@@ -1,6 +1,7 @@
 import { formatToman } from '../../../../utils/currency'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import { PAYMENT_METHODS } from '../../../../services/orderService'
+import AttachmentLink from '../../../../components/ui/AttachmentLink/AttachmentLink'
 import styles from './PaymentList.module.css'
 
 /**
@@ -43,6 +44,10 @@ export default function PaymentList({ payments = [], payableRial, remainingRial 
                                 {PAYMENT_METHODS[p.method] ?? p.method}
                                 {date && ` · ${date}`}
                             </span>
+
+                            {(p.attachments ?? []).map((a) => (
+                                <AttachmentLink key={a.id} attachment={a} />
+                            ))}
 
                             <span
                                 className={`${styles.status} ${

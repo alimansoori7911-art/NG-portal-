@@ -203,6 +203,55 @@
     grid-column: 1 / -1;
 }
 
+/* ─── پیوست تصویر رسید ─── */
+.fileLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fileLabelText {
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+}
+
+/* ورودی فایل استایل بومیِ مرورگر را دارد؛ فقط قابش هماهنگ می‌شود */
+.fileInput {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px dashed #264573;
+    border-radius: 8px;
+    background: rgba(0, 8, 20, 0.25);
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.fileInput:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fileName {
+    margin: 8px 0 0;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+/* هشدار «رسید ثبت شد ولی فایل نرفت» */
+.partialWarn {
+    margin: 0 0 12px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+    text-align: right;
+}
+
 /* ─── دکمه‌ها ─── */
 
 .actions {

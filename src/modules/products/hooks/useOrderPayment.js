@@ -4,6 +4,33 @@ import { sumRial, tomanToRial } from '../../../utils/currency'
 import { jalaliToISO } from '../../../utils/datetime'
 
 /**
+ * تبدیل مقادیر فرم به بدنه‌ی `CreatePaymentRecord`.
+ *
+ * جدا از هوک است چون مسیر «ثبت با پیوست» هم دقیقاً همین بدنه را
+ * می‌خواهد و نباید دو جا تکرار شود.
+ *
+ * ⚠️ مبلغ به `claimed_amount` می‌رود نه `amount`: طبق اسپک ۱۴ این فقط
+ * «ادعای کاربر» است و مبلغ قطعی را ادمین هنگام تأیید می‌گذارد.
+ * ورودی فرم **تومان** است و بک‌اند **ریال** می‌خواهد.
+ */
+export function toPaymentPayload(form) {
+    return {
+        claimed_amount: tomanToRial(form.amount),
+        method: form.method,
+        payer_name: form.payerName || undefined,
+        payer_national_id: form.payerNationalId || undefined,
+        bank_name: form.bankName || undefined,
+        account_number: form.accountNumber || undefined,
+        tracking_number: form.trackingNumber || undefined,
+        receipt_ref: form.receiptRef || undefined,
+        /* کاربر شمسی تایپ می‌کند ولی بک‌اند ISO می‌خواهد.
+           تاریخ نامعتبر ارسال نمی‌شود چون فیلد اختیاری است. */
+        paid_at: jalaliToISO(form.paidAt) || undefined,
+        note: form.note || undefined,
+    }
+}
+
+/**
  * سفارش + رسیدهای پرداختش.
  *
  * بک‌اند چند رسید برای یک سفارش را پشتیبانی می‌کند
@@ -39,34 +66,13 @@ export function useOrderPayment(orderId) {
         load()
     }, [load])
 
-    /**
-     * ثبت رسید.
-     *
-     * ورودی فرم به **تومان** است ولی بک‌اند **ریال** می‌خواهد، پس
-     * اینجا تبدیل می‌شود. بقیه‌ی فیلدها دست‌نخورده می‌روند.
-     *
-     * ⚠️ مبلغ به `claimed_amount` می‌رود نه `amount`: طبق اسپک ۱۴ این
-     * فقط «ادعای کاربر» است و مبلغ قطعی را ادمین هنگام تأیید می‌گذارد.
-     */
+    /** ثبت رسید بدون پیوست — نگاشت فیلدها در `toPaymentPayload`. */
     const submitPayment = useCallback(
         async (form) => {
             setSubmitting(true)
             setSubmitError(null)
             try {
-                await orderService.submitPayment(orderId, {
-                    claimed_amount: tomanToRial(form.amount),
-                    method: form.method,
-                    payer_name: form.payerName || undefined,
-                    payer_national_id: form.payerNationalId || undefined,
-                    bank_name: form.bankName || undefined,
-                    account_number: form.accountNumber || undefined,
-                    tracking_number: form.trackingNumber || undefined,
-                    receipt_ref: form.receiptRef || undefined,
-                    /* کاربر شمسی تایپ می‌کند ولی بک‌اند ISO می‌خواهد.
-                       تاریخ نامعتبر ارسال نمی‌شود چون فیلد اختیاری است. */
-                    paid_at: jalaliToISO(form.paidAt) || undefined,
-                    note: form.note || undefined,
-                })
+                await orderService.submitPayment(orderId, toPaymentPayload(form))
                 /* سفارش دوباره خوانده می‌شود تا رسید تازه در فهرست
                    بیاید و «باقی‌مانده» به‌روز شود. */
                 await load({ silent: true })

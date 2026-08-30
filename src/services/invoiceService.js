@@ -1,4 +1,5 @@
 import api from './api'
+import { fileService } from './fileService'
 
 const unwrap = (res) => res.data?.data
 
@@ -51,26 +52,12 @@ export const invoiceService = {
         return api.get(`/invoice/${invoiceId}`).then(unwrap)
     },
 
-    /**
-     * POST /dl/{file_id} — گرفتن لینک دانلود موقت فایل.
-     *
-     * ⚠️ با اینکه «خواندن» است، متدش در اسپک POST است نه GET.
-     *
-     * لینک برگشتی presigned S3 است و بعد از `expires_in` ثانیه (طبق
-     * توضیح اسپک حدود یک ساعت) منقضی می‌شود. پس نباید ذخیره یا
-     * کش شود — هر بار که کاربر خواست فاکتور را ببیند دوباره گرفته شود.
-     */
-    getFileDownload(fileId) {
-        return api.post(`/dl/${fileId}`).then(unwrap)
-    },
+    /* دانلود فایل به `fileService` منتقل شد چون فقط مخصوص فاکتور
+       نیست و پیوست رسید هم از همان مسیر می‌آید. */
+    getFileDownload: fileService.getDownload,
 
     /* میان‌بر: از شناسه‌ی فایل تا خودِ URL.
        اگر فاکتور هنوز PDF ندارد (pdf_file_id تهی است) null می‌دهد تا
        صفحه بتواند دکمه را غیرفعال کند به‌جای باز کردن تب خالی. */
-    getPdfUrl(fileId) {
-        if (!fileId) return Promise.resolve(null)
-        return invoiceService
-            .getFileDownload(fileId)
-            .then((result) => result?.download_url ?? null)
-    },
+    getPdfUrl: fileService.getDownloadUrl,
 }

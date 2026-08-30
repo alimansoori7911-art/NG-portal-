@@ -1,0 +1,25 @@
+/* دکمه‌ی کوچک مشاهده‌ی فایل پیوست — کنار ردیف رسید می‌نشیند */
+.attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border: 1px solid #264573;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+}
+
+.attachment:hover:not(:disabled) {
+    border-color: var(--color-primary-ghost);
+}
+
+.attachment:disabled {
+    opacity: 0.5;
+    cursor: progress;
+}

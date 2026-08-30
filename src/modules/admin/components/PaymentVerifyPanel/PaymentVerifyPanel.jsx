@@ -1,6 +1,7 @@
 import { formatToman } from '../../../../utils/currency'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import { PAYMENT_METHODS } from '../../../../services/orderService'
+import AttachmentLink from '../../../../components/ui/AttachmentLink/AttachmentLink'
 import styles from './PaymentVerifyPanel.module.css'
 
 /**
@@ -56,6 +57,12 @@ export default function PaymentVerifyPanel({ payments = [], busy, onVerify }) {
                                 {p.tracking_number}
                             </span>
                         )}
+
+                        {/* تصویر رسید — مهم‌ترین چیزی که ادمین قبل از
+                            تأیید باید ببیند */}
+                        {(p.attachments ?? []).map((a) => (
+                            <AttachmentLink key={a.id} attachment={a} />
+                        ))}
 
                         {verified ? (
                             <span className={styles.verified}>✓ تأیید شده</span>
