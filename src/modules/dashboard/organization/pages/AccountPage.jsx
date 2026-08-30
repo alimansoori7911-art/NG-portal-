@@ -6,6 +6,7 @@ import Alert from '../../../../components/ui/Alert/Alert'
 import ProfileCard from '../components/ProfileCard/ProfileCard'
 import IdentityForm from '../components/IdentityForm/IdentityForm'
 import { authService, parseValidationErrors } from '../../../../services/authService'
+import { broadcastLogout } from '../../../../services/api'
 import { useAuthStore } from '../../../../store/authStore'
 import { HTTP, MSG } from '../../../../constants/auth'
 import styles from './AccountPage.module.css'
@@ -24,19 +25,23 @@ const EMPTY = { current: '', next: '', confirm: '' }
  * نبود چون `ChangedInput` رمز فعلی نمی‌گرفت؛ حالا `old_password`
  * اجباری است و بک‌اند واقعاً بررسی‌اش می‌کند.
  *
- * بعد از موفقیت کاربر خارج **نمی‌شود**: بک‌اند نشست‌ها را باطل نمی‌کند
- * و خارج کردن خودسرانه‌ی کاربر رفتار غیرمنتظره‌ای است. اگر بعداً قرار
- * شد نشست‌ها باطل شوند، اینجا باید مثل «خروج از همه» عمل کند.
+ * ⚠️ بعد از تغییر موفق رمز، بک‌اند **رفرش‌توکن را باطل می‌کند** (تأیید
+ * شده). پس نشست فعلی مرده است و کاربر باید دوباره وارد شود — دقیقاً
+ * مثل «خروج از همه دستگاه‌ها». اگر این کار را نکنیم کاربر با نشستی
+ * ادامه می‌دهد که تا اولین ۴۰۱ به‌ظاهر سالم است.
  */
 export default function AccountPage() {
     const user = useAuthStore((s) => s.user)
     const refreshUser = useAuthStore((s) => s.refreshUser)
+    const sessionExpired = useAuthStore((s) => s.sessionExpired)
 
     const [form, setForm] = useState(EMPTY)
     const [errors, setErrors] = useState({})
     const [loading, setLoading] = useState(false)
     const [notice, setNotice] = useState('')
     const [noticeVariant, setNoticeVariant] = useState('error')
+    /* بین تغییر موفق رمز و خروج خودکار — فرم قفل می‌ماند */
+    const [loggingOut, setLoggingOut] = useState(false)
 
     const setField = (key) => (e) => {
         setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -103,7 +108,26 @@ export default function AccountPage() {
             setForm(EMPTY)
             setErrors({})
             setNoticeVariant('success')
-            setNotice('رمز عبور با موفقیت تغییر کرد')
+            setNotice('رمز عبور تغییر کرد. برای ادامه دوباره وارد شوید…')
+
+            /* رفرش‌توکن باطل شده، پس نشست فعلی دیگر معتبر نیست.
+               `sessionExpired` استفاده می‌شود نه `logout`: کوکی از قبل
+               سمت سرور باطل شده و `POST /auth/logout` فقط یک ۴۰۱
+               بی‌فایده می‌گیرد. `broadcastLogout` بقیه‌ی تب‌ها را هم
+               پاک می‌کند.
+
+               یک مکث کوتاه تا کاربر پیام موفقیت را ببیند؛ بدون آن
+               ProtectedRoute بلافاصله به /login می‌برد و کاربر
+               نمی‌فهمد رمزش عوض شد یا نه. */
+            setTimeout(() => {
+                sessionExpired()
+                broadcastLogout()
+            }, 1500)
+
+            /* `loading` عمداً true می‌ماند تا در این ۱.۵ ثانیه فرم
+               دوباره فعال نشود و کاربر رمز را دوبار نفرستد. */
+            setLoggingOut(true)
+            return
         } catch (err) {
             /* ۴۰۱/۴۰۳ اینجا یعنی «رمز فعلی اشتباه است»، نه انقضای نشست:
                اگر توکن منقضی بود، interceptor خودش رفرش می‌کرد و اگر
@@ -209,7 +233,11 @@ export default function AccountPage() {
                     />
 
                     <div className={styles.actions}>
-                        <Button type="submit" loading={loading} disabled={!canSubmit}>
+                        <Button
+                            type="submit"
+                            loading={loading || loggingOut}
+                            disabled={!canSubmit || loggingOut}
+                        >
                             تغییر رمز عبور
                         </Button>
                     </div>

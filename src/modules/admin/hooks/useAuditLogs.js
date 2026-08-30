@@ -9,20 +9,28 @@ export const AUDIT_PER_PAGE = 20
 /**
  * تبدیل AuditLogSchema به آیتم AuditLogList.
  *
- * فیگما «ادمین مربوطه» را نام می‌خواهد ولی بک‌اند فقط `actor_id`
- * عددی می‌دهد (همان مشکل جدول سفارش و تیکت)، پس شناسه با # نشان
- * داده می‌شود.
+ * فیگما «ادمین مربوطه» را نام می‌خواهد ولی بک‌اند نام نمی‌دهد، پس
+ * شناسه نشان داده می‌شود.
+ *
+ * ⚠️ `actor_public_id` (UUID) ترجیح دارد بر `actor_id` عددی: بک‌اند
+ * تأیید کرده که شناسه‌ی عددی فقط برای ادمین است و در بقیه‌ی مسیرها
+ * public_id می‌آید. کوتاه‌شده نمایش می‌دهیم چون UUID کامل ستون را
+ * می‌شکند.
  *
  * `action` رشته‌ی خام بک‌اند است (مثل `user.delete`) و ترجمه‌ی
  * فارسی ندارد؛ هرچه آمد همان نمایش داده می‌شود.
  */
+const shortId = (uuid) => (uuid ? `#${String(uuid).slice(0, 8)}` : null)
+
 function toItem(log) {
     const { date, time } = formatJalaliDateTime(log.created_at)
 
     return {
         id: log.id,
         action: log.action || '—',
-        admin: log.actor_id != null ? `#${log.actor_id}` : '—',
+        admin:
+            shortId(log.actor_public_id) ??
+            (log.actor_id != null ? `#${log.actor_id}` : '—'),
         ip: log.ip_address || '—',
         time: date ? `${date} ${time}` : '—',
         /* برای فیلتر و نمایش جزئیات */
