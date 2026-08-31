@@ -13,6 +13,7 @@ import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
 import BankAccountBox from '../components/BankAccountBox/BankAccountBox'
 import PaymentList from '../components/PaymentList/PaymentList'
+import OrderInvoices from '../components/OrderInvoices/OrderInvoices'
 import { useOrderPayment, toPaymentPayload } from '../hooks/useOrderPayment'
 import { usePaymentUpload } from '../hooks/usePaymentUpload'
 import { ACCEPT_ATTR } from '../../../services/fileService'
@@ -231,6 +232,10 @@ export default function OrderPaymentPage() {
                                     payableRial={payableRial}
                                     remainingRial={remainingRial}
                                 />
+
+                                {/* فاکتور فقط بعد از تأیید پرداخت صادر
+                                    می‌شود، پس اگر نبود چیزی رندر نمی‌شود. */}
+                                <OrderInvoices orderId={order?.id} />
 
                                 {!isFullyPaid && <BankAccountBox />}
 

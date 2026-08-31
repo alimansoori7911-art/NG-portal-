@@ -1,4 +1,4 @@
-import { BadgeCheck, ShieldAlert, UserRound } from 'lucide-react'
+import { BadgeCheck, Pencil, ShieldAlert, UserRound } from 'lucide-react'
 import { getDisplayName, getIdentifier } from '../../../../../store/authStore'
 import { formatJalaliDateTime } from '../../../../../utils/datetime'
 import styles from './ProfileCard.module.css'
@@ -38,14 +38,15 @@ function TextRow({ label, value }) {
 /**
  * نمایش اطلاعات پروفایل — خروجی `GET /auth/me`.
  *
- * فقط خواندنی است چون اندپوینت ویرایش پروفایل وجود ندارد. تنها راه
+ * ✅ از اسپک ۱۵ قابل ویرایش است (`PATCH /auth/me`) — دکمه‌ی ویرایش
+ * فرم را باز می‌کند. قبلاً تنها راه
  * نوشتن، فرم تأیید هویت است (`POST /auth/contact/verify`) که وقتی
  * `is_verified` نباشد در همین صفحه نمایش داده می‌شود.
  *
  * فیلدهای تهی اصلاً رندر نمی‌شوند تا کاربری که هنوز هویتش را تکمیل
  * نکرده، فهرستی از خط تیره نبیند.
  */
-export default function ProfileCard({ user }) {
+export default function ProfileCard({ user, onEdit }) {
     const displayName = getDisplayName(user)
     const { date: birthDate } = formatJalaliDateTime(user?.birth_date)
 
@@ -80,6 +81,18 @@ export default function ProfileCard({ user }) {
                         </span>
                     )}
                 </div>
+
+                {onEdit && (
+                    <button
+                        type="button"
+                        className={styles.editBtn}
+                        onClick={onEdit}
+                        aria-label="ویرایش اطلاعات"
+                        title="ویرایش اطلاعات"
+                    >
+                        <Pencil size={16} />
+                    </button>
+                )}
             </header>
 
             <dl className={styles.list}>

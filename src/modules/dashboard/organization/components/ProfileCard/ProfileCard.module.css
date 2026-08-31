@@ -128,3 +128,25 @@
         text-align: right;
     }
 }
+
+/* دکمه‌ی ویرایش — گوشه‌ی سربرگ کارت */
+.editBtn {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid #192D4C;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-primary-ghost);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.editBtn:hover {
+    border-color: var(--color-primary-ghost);
+    color: var(--color-white);
+}

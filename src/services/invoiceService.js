@@ -52,6 +52,22 @@ export const invoiceService = {
         return api.get(`/invoice/${invoiceId}`).then(unwrap)
     },
 
+    /* GET /orders/{id}/invoices — فاکتورهای یک سفارش (اسپک ۱۵).
+
+       ⚠️ اسپک خروجی را `PublicInvoiceItemSchema` تایپ کرده که «اقلام
+       فاکتور» است (عنوان، تعداد، قیمت واحد) و `invoice_number` یا
+       `pdf_file_id` ندارد. احتمالاً باید
+       `PublicInvoiceListItemSchema` می‌بود — از بک‌اند پرسیده شد.
+
+       تا روشن شدن، هر دو شکل تحمل می‌شود: اگر رکورد شماره‌ی فاکتور
+       داشت به‌عنوان فاکتور رفتار می‌کند، وگرنه فقط قلم است. */
+    getOrderInvoices(orderId) {
+        return api.get(`/orders/${orderId}/invoices`).then((res) => {
+            const data = res.data?.data
+            return Array.isArray(data) ? data.flat() : []
+        })
+    },
+
     /* دانلود فایل به `fileService` منتقل شد چون فقط مخصوص فاکتور
        نیست و پیوست رسید هم از همان مسیر می‌آید. */
     getFileDownload: fileService.getDownload,

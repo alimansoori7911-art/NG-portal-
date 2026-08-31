@@ -55,6 +55,18 @@ export const authService = {
         return api.get("/auth/me").then(unwrap);
     },
 
+    /* PATCH /auth/me — ویرایش پروفایل توسط خود کاربر (اسپک ۱۵).
+
+       `UserProfilePatchSchema` شش فیلد دارد و همه اختیاری‌اند:
+       first_name، last_name، birth_date، company_name، position،
+       company_address.
+
+       ⚠️ شناسه‌ها (ایمیل/شماره/نام کاربری) و کد ملی اینجا نیستند —
+       آن‌ها فقط از راه تأیید هویت یا پنل ادمین عوض می‌شوند. */
+    updateProfile(payload) {
+        return api.patch("/auth/me", payload).then(unwrap);
+    },
+
     refresh() {
         return api.post("/auth/refresh").then(unwrap);
     },

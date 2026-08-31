@@ -1,0 +1,89 @@
+/* هم‌پالت با PaymentList در همین صفحه */
+
+.box {
+    margin-top: 20px;
+    padding: 16px 18px;
+    border: 1px solid #192D4C;
+    border-radius: 12px;
+    background: rgba(0, 8, 20, 0.55);
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.icon {
+    flex-shrink: 0;
+    color: var(--color-primary-ghost);
+}
+
+.error {
+    margin: 0 0 10px;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.date {
+    flex-shrink: 0;
+    color: #7AB0FF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.viewBtn {
+    flex-shrink: 0;
+    height: 30px;
+    padding: 0 14px;
+    border: 1px solid #7AB0FF;
+    border-radius: 6px;
+    background: transparent;
+    color: #7AB0FF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.viewBtn:hover:not(:disabled) {
+    background: rgba(122, 176, 255, 0.14);
+    color: #E0EDFF;
+}
+
+.viewBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

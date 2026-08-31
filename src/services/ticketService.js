@@ -83,6 +83,24 @@ export const ticketService = {
             }))
     },
 
+    /* GET /admin/tickets — تیکت‌های **همه‌ی** کاربران (اسپک ۱۵).
+
+       پارامترهایش دقیقاً مثل `/ticketing/tickets` است؛ فرقش دامنه
+       است: آن یکی فقط تیکت‌های کاربر جاری را می‌دهد.
+
+       ⚠️ هنوز فیلتر «صاحب تیکت» ندارد (`assigned_to_user_id` کارشناس
+       است)، پس جدول تیکت در پروفایل جامع کاربر همچنان بلاک است. */
+    getAdminTickets({ page = 1, limit = 10, q, department_id, status, assigned_to_user_id, is_locked, include } = {}) {
+        return api
+            .get('/admin/tickets', {
+                params: { page, limit, q, department_id, status, assigned_to_user_id, is_locked, include },
+            })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
     /* GET /ticketing/tickets/{id} — جزئیات تیکت به‌همراه messages */
     getTicket(ticketId) {
         return api.get(`/ticketing/tickets/${ticketId}`).then(unwrap)

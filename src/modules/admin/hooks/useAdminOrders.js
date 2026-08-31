@@ -2,14 +2,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { adminOrderService, statusLabel } from '../../../services/orderService'
 import { formatToman } from '../../../utils/currency'
 import { formatJalaliDateTime } from '../../../utils/datetime'
+import { fullName } from '../../../utils/name'
 import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
 
 /**
  * تبدیل OrderOutput به ردیف جدول فروش.
  *
- * ستون «خریدار» در فیگما نام کاربر است ولی خروجی سفارش فقط user_id
- * عددی دارد؛ تا اضافه شدن نام از سمت بک‌اند، شناسه نشان داده می‌شود.
- * (در BACKEND_NEEDS.md ثبت شده)
+ * ✅ ستون «خریدار» بالاخره نام واقعی است: اسپک ۱۵ فیلدهای
+ * `first_name`/`last_name` را به `OrderOutput` اضافه کرد و
+ * `user_id` را حذف کرد.
  *
  * مبلغ‌ها ریال می‌آیند و تومان نمایش داده می‌شوند.
  */
@@ -20,7 +21,7 @@ function toRow(order, i, offset) {
         id: order.id,
         index: offset + i + 1,
         orderCode: order.order_number,
-        buyer: order.user_id != null ? `#${order.user_id}` : '—',
+        buyer: fullName(order),
         amount: formatToman(order.payable_amount ?? order.quoted_amount),
         paymentStatus: statusLabel(order.status),
         plan: order.snapshot_plan_name || order.snapshot_product_name || '—',

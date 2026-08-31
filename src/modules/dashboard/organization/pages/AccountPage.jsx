@@ -5,6 +5,7 @@ import Button from '../../../../components/ui/Button/Button'
 import Alert from '../../../../components/ui/Alert/Alert'
 import ProfileCard from '../components/ProfileCard/ProfileCard'
 import IdentityForm from '../components/IdentityForm/IdentityForm'
+import ProfileEditForm from '../components/ProfileEditForm/ProfileEditForm'
 import { authService, parseValidationErrors } from '../../../../services/authService'
 import { broadcastLogout } from '../../../../services/api'
 import { useAuthStore } from '../../../../store/authStore'
@@ -42,6 +43,8 @@ export default function AccountPage() {
     const [noticeVariant, setNoticeVariant] = useState('error')
     /* بین تغییر موفق رمز و خروج خودکار — فرم قفل می‌ماند */
     const [loggingOut, setLoggingOut] = useState(false)
+    /* فرم ویرایش پروفایل باز است یا نه */
+    const [editing, setEditing] = useState(false)
 
     const setField = (key) => (e) => {
         setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -171,7 +174,24 @@ export default function AccountPage() {
                 {notice}
             </Alert>
 
-            <ProfileCard user={user} />
+            {editing ? (
+                <ProfileEditForm
+                    user={user}
+                    onCancel={() => setEditing(false)}
+                    onSaved={async () => {
+                        setEditing(false)
+                        setNoticeVariant('success')
+                        setNotice('اطلاعات پروفایل به‌روز شد')
+                        try {
+                            await refreshUser()
+                        } catch {
+                            /* نمایش با رفرش صفحه درست می‌شود */
+                        }
+                    }}
+                />
+            ) : (
+                <ProfileCard user={user} onEdit={() => setEditing(true)} />
+            )}
 
             {/* فرم تأیید هویت فقط تا وقتی نمایش داده می‌شود که هویت
                 تأیید نشده باشد — بعد از آن کاربر راهی برای ویرایش ندارد

@@ -64,7 +64,7 @@ export function useAdminTickets(nameOf, { status, q } = {}) {
             setLoading(true)
             setError(null)
             try {
-                const { items, pagination } = await ticketService.getTickets({
+                const { items, pagination } = await ticketService.getAdminTickets({
                     page,
                     limit: ROWS_PER_PAGE,
                     status,

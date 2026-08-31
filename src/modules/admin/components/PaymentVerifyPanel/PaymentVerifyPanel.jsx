@@ -1,6 +1,7 @@
 import { formatToman } from '../../../../utils/currency'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import { PAYMENT_METHODS } from '../../../../services/orderService'
+import { fullName } from '../../../../utils/name'
 import AttachmentLink from '../../../../components/ui/AttachmentLink/AttachmentLink'
 import styles from './PaymentVerifyPanel.module.css'
 
@@ -47,7 +48,8 @@ export default function PaymentVerifyPanel({ payments = [], busy, onVerify }) {
                             <span className={styles.meta}>
                                 {PAYMENT_METHODS[p.method] ?? p.method}
                                 {date && ` · ${date} ${time}`}
-                                {p.payer_name && ` · ${p.payer_name}`}
+                                {(fullName(p, '') || p.payer_name) &&
+                                    ` · ${fullName(p, '') || p.payer_name}`}
                                 {p.bank_name && ` · ${p.bank_name}`}
                             </span>
                         </div>
