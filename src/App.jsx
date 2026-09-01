@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 import ProtectedRoute from "./router/ProtectedRoute";
+import VerifiedRoute from "./router/VerifiedRoute";
 import GuestRoute from "./router/GuestRoute";
 import HomePage from "./modules/home/pages/HomePage";
 import LoginPage from "./modules/auth/pages/LoginPage";
@@ -73,14 +74,17 @@ function App() {
 
                 {/* ═══ نیازمند ورود ═══ */}
                 <Route element={<ProtectedRoute />}>
-                    {/* ثبت و پیگیری سفارش */}
-                    <Route path="/products/buy/orders" element={<OrderListPage />} />
-                    <Route path="/products/buy/new" element={<NewOrderPage />} />
-                    {/* پیش‌فاکتور و ثبت رسید — یک صفحه با دو حالت */}
-                    <Route
-                        path="/products/buy/orders/:id/payment"
-                        element={<OrderPaymentPage />}
-                    />
+                    {/* ثبت و پیگیری سفارش — نیازمند هویت تأییدشده،
+                        چون سفارش بدون نام و کد ملی معنا ندارد */}
+                    <Route element={<VerifiedRoute />}>
+                        <Route path="/products/buy/orders" element={<OrderListPage />} />
+                        <Route path="/products/buy/new" element={<NewOrderPage />} />
+                        {/* پیش‌فاکتور و ثبت رسید — یک صفحه با دو حالت */}
+                        <Route
+                            path="/products/buy/orders/:id/payment"
+                            element={<OrderPaymentPage />}
+                        />
+                    </Route>
 
                     {/* تیکتینگ Help Desk */}
                     <Route path="/helpdesk" element={<HelpdeskPage />} />

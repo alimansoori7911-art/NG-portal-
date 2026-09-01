@@ -33,6 +33,21 @@ export const useAuthStore = create((set) => ({
     setAuth({ access_token, user }) {
         tokenManager.set(access_token);
         set({ user, status: "authenticated" });
+
+        /* ⚠️ `LoginOutput.user` از نوع `UserSchema` است و فقط `roles`
+           و `created_at` دارد — نه `is_verified` و نه نام. آن‌ها فقط
+           در `GET /auth/me` (شمای `Profile`) هستند.
+
+           بدون این، گیتِ تأیید هویت فکر می‌کند کاربر تأیید نشده و
+           همه را به صفحه‌ی وریفای می‌فرستد. پس بلافاصله پروفایل
+           کامل را می‌گیریم. عمداً await نمی‌شود تا ورود کاربر معطل
+           نماند؛ گیت تا رسیدنش صبر می‌کند. */
+        authService
+            .getMe()
+            .then((profile) => set({ user: profile }))
+            .catch(() => {
+                /* اگر نشد، `initialize` در لود بعدی جبرانش می‌کند */
+            });
     },
 
     // موقع لود اپ (یک‌بار در App.jsx) صدا زده میشه:
@@ -40,6 +55,14 @@ export const useAuthStore = create((set) => ({
     // با کوکی HttpOnly یک توکن تازه می‌گیریم و کاربر رو لود می‌کنیم.
     async initialize() {
         if (initPromise) return initPromise;
+
+        /* بازدیدکننده‌ای که هرگز لاگین نکرده کوکی رفرش ندارد، پس
+           زدن `POST /auth/refresh` فقط یک ۴۰۱ بی‌فایده می‌سازد و
+           لود اول را کند می‌کند. مستقیم مهمان حسابش می‌کنیم. */
+        if (!tokenManager.hadSession()) {
+            set({ user: null, status: "guest" });
+            return Promise.resolve();
+        }
 
         initPromise = (async () => {
             try {

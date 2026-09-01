@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { KeyRound } from 'lucide-react'
 import Input from '../../../../components/ui/Input/Input'
 import Button from '../../../../components/ui/Button/Button'
@@ -45,6 +46,12 @@ export default function AccountPage() {
     const [loggingOut, setLoggingOut] = useState(false)
     /* فرم ویرایش پروفایل باز است یا نه */
     const [editing, setEditing] = useState(false)
+
+    /* اگر VerifiedRoute کاربر را به اینجا فرستاده، باید بگوییم چرا —
+       وگرنه کاربری که روی «ثبت سفارش» زده سر از این صفحه در می‌آورد
+       بدون اینکه بفهمد چه شد. */
+    const location = useLocation()
+    const needsVerification = Boolean(location.state?.needsVerification)
 
     const setField = (key) => (e) => {
         setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -173,6 +180,12 @@ export default function AccountPage() {
             <Alert variant={noticeVariant} onClose={() => setNotice('')}>
                 {notice}
             </Alert>
+
+            {needsVerification && !user?.is_verified && (
+                <Alert variant="error">
+                    برای ثبت سفارش ابتدا باید هویت خود را تکمیل و تأیید کنید.
+                </Alert>
+            )}
 
             {editing ? (
                 <ProfileEditForm

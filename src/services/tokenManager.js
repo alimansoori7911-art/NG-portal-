@@ -16,6 +16,50 @@
 let accessToken = null;
 let expiresAt = 0; // میلی‌ثانیه
 
+/*
+  نشانه‌ی «این مرورگر قبلاً لاگین کرده».
+
+  خودِ refresh-token در کوکی HttpOnly است و جاوااسکریپت نمی‌تواند
+  ببیندش، پس راهی نداریم بفهمیم کوکی هست یا نه. بدون این نشانه،
+  اپ در هر بار باز شدن یک `POST /auth/refresh` می‌زند — حتی برای
+  بازدیدکننده‌ای که اصلاً حساب ندارد. نتیجه: یک ۴۰۱ بی‌دلیل در
+  کنسول و یک رفت‌وبرگشت اضافه در هر لود صفحه.
+
+  این فقط یک راهنماست نه اعتبارسنجی؛ امنیت همچنان به کوکی HttpOnly
+  و بک‌اند وابسته است. حتی اگر کاربر دستکاری‌اش کند، بدترین اتفاق
+  یک درخواست رفرشِ ناموفق است.
+
+  localStorage استفاده می‌شود نه sessionStorage تا با بستن تب هم
+  بماند — همان‌طور که خود کوکی می‌ماند.
+*/
+const SESSION_HINT_KEY = "ng_has_session";
+
+const hadSession = {
+    get() {
+        try {
+            return localStorage.getItem(SESSION_HINT_KEY) === "1";
+        } catch {
+            /* حالت ناشناس یا مسدود بودن استوریج — محتاطانه true تا
+               کاربرِ واقعاً لاگین‌کرده از سیستم بیرون نیفتد. */
+            return true;
+        }
+    },
+    mark() {
+        try {
+            localStorage.setItem(SESSION_HINT_KEY, "1");
+        } catch {
+            /* بی‌اهمیت: فقط یک بهینه‌سازی است */
+        }
+    },
+    clear() {
+        try {
+            localStorage.removeItem(SESSION_HINT_KEY);
+        } catch {
+            /* بی‌اهمیت */
+        }
+    },
+};
+
 /** خواندن exp از payload توکن JWT بدون کتابخانه‌ی جانبی */
 function readExpiry(token) {
     try {
@@ -37,11 +81,18 @@ export const tokenManager = {
     set(token) {
         accessToken = token ?? null;
         expiresAt = token ? readExpiry(token) : 0;
+        if (token) hadSession.mark();
+    },
+
+    /** آیا این مرورگر قبلاً نشستی داشته؟ — رجوع به توضیح بالا */
+    hadSession() {
+        return hadSession.get();
     },
 
     clear() {
         accessToken = null;
         expiresAt = 0;
+        hadSession.clear();
     },
 
     /**
