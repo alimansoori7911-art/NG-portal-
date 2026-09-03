@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../../../components/layout/Header/Header'
 import OrderStepper, { ORDER_STEPS } from '../components/OrderStepper/OrderStepper'
@@ -10,6 +10,7 @@ import TagIcon from '../components/icons/TagIcon'
 import MonitorIcon from '../components/icons/MonitorIcon'
 import CheckIcon from '../components/icons/CheckIcon'
 import { orderService } from '../../../services/orderService'
+import { useAuthStore, getIdentifier } from '../../../store/authStore'
 import styles from './NewOrderPage.module.css'
 
 /* برچسب فارسی فیلدهای فرم برای ساخت متن یادداشت سفارش */
@@ -56,6 +57,24 @@ const FORM_STEP = 1
 
 export default function NewOrderPage() {
     const navigate = useNavigate()
+    const user = useAuthStore((s) => s.user)
+
+    /* فرم را از پروفایل پر می‌کنیم — کاربری که همین حالا هویتش را
+       تأیید کرده نباید نام و ایمیل و شماره‌اش را دوباره تایپ کند.
+       `useMemo` لازم است چون شیء تازه در هر رندر، `initialValues` را
+       عوض‌شده نشان می‌دهد و فرم را ریست می‌کند. */
+    const profileDefaults = useMemo(
+        () => ({
+            username: getIdentifier(user, 'username'),
+            organization: user?.company_name ?? '',
+            phone: getIdentifier(user, 'phone'),
+            email: getIdentifier(user, 'email'),
+            organizationId: user?.company_id ?? '',
+            mkId: '',
+            address: user?.company_address ?? '',
+        }),
+        [user]
+    )
 
     const [step, setStep] = useState(0)
     const [selectedPlan, setSelectedPlan] = useState(null)
@@ -120,7 +139,7 @@ export default function NewOrderPage() {
                 return (
                     <OrderFormStep
                         planName={selectedPlan?.name}
-                        initialValues={orderForm}
+                        initialValues={orderForm ?? profileDefaults}
                         onDirtyChange={setFormDirty}
                         onBack={() => setStep(0)}
                         onClose={requestClose}

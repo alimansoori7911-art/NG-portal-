@@ -343,6 +343,70 @@ const routes = [
         return t ? ok(t) : [404, fail('NOT_FOUND', 'ticket not found')]
     }],
 
+    /* ─── ادمین ─── */
+    ['GET', /^\/admin\/auth\/users$/, () =>
+        page([...db.users.values()].map((u, i) => ({
+            id: i + 1,
+            identifiers: [
+                { id: 1, type: 'username', value: u.username, status: 'active', is_verified: true, verified_at: null },
+                { id: 2, type: 'email', value: u.email, status: 'active', is_verified: false, verified_at: null },
+                { id: 3, type: 'phone', value: u.phone, status: 'active', is_verified: true, verified_at: null },
+            ],
+            is_active: true,
+            created_at: new Date().toISOString(),
+            roles: u.roles.map((r) => ({ role: { id: 1, name: r }, assigned_at: null, assigned_by: null })),
+            permissions: [],
+            kyc_profile: null,
+        }))),
+    ],
+    ['GET', /^\/admin\/auth\/(admins|permissions)$/, () => page([])],
+    ['GET', /^\/admin\/auth\/roles$/, () =>
+        page([
+            { id: 1, name: 'admin', description: 'مدیر سیستم', is_active: true, is_system: true, created_at: null, updated_at: null },
+            { id: 2, name: 'support', description: 'پشتیبانی', is_active: true, is_system: false, created_at: null, updated_at: null },
+        ]),
+    ],
+    ['POST', /^\/admin\/auth\/users\/[^/]+\/roles$/, () => ok({ message: 'assigned' })],
+    ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'updated' })],
+    ['DELETE', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'deleted' })],
+
+    ['GET', /^\/admin\/orders\/payments$/, () => page([])],
+    ['GET', /^\/admin\/orders\/$/, () => page(db.orders)],
+    ['POST', /^\/admin\/orders\/[^/]+\/(quote|status)$/, (req) => {
+        const o = db.orders.find((x) => req.path.includes(x.id))
+        if (o && req.path.endsWith('/status')) o.status = req.body.status
+        if (o && req.path.endsWith('/quote')) {
+            o.status = 'QUOTATION_ISSUED'
+            o.quoted_amount = String(req.body.quoted_amount ?? 0)
+            o.payable_amount = String(req.body.quoted_amount ?? 0)
+        }
+        return ok(o ?? {})
+    }],
+    ['POST', /^\/admin\/orders\/[^/]+\/payments\/[^/]+\/verify$/, () => ok({ message: 'verified' })],
+    ['POST', /^\/admin\/orders\/[^/]+\/tickets\/link$/, (req) => [201, ok({
+        id: uuid(), order_id: uuid(), ticket_id: req.body.ticket_id,
+        relation_type: req.body.relation_type, is_primary: req.body.is_primary,
+        linked_by_user_id: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    })],
+    ],
+
+    ['GET', /^\/admin\/tickets$/, () => page(db.tickets)],
+    ['GET', /^\/admin\/departments\/[^/]+\/members$/, () => ok([])],
+
+    ['GET', /^\/admin\/products$/, () => page([
+        { id: 1, code: 'NGC', slug: 'ng-corion', name: 'NG Corion', is_active: true, is_public: true },
+    ])],
+    ['GET', /^\/admin\/plans$/, () => page([
+        { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true, prices: [], features: [] },
+    ])],
+    ['GET', /^\/admin\/features$/, () => page([])],
+    ['GET', /^\/admin\/billing-term\/$/, () => ok([
+        { id: 1, code: 'monthly', name: 'ماهانه', duration_days: 30, is_trial: false, is_active: true },
+        { id: 2, code: 'yearly', name: 'سالانه', duration_days: 365, is_trial: false, is_active: true },
+    ])],
+    ['GET', /^\/admin\/notifications\/templates$/, () => page([])],
+    ['GET', /^\/admin\/product-categories$/, () => page([])],
+
     /* اعلان و فاکتور و لاگ */
     ['GET', /^\/notifications\/$/, () => page([])],
     ['GET', /^\/invoice\/$/, () => page(db.invoices)],
