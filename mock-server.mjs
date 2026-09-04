@@ -325,7 +325,10 @@ const routes = [
             id: uuid(), ticket_number: `TK-${db.tickets.length + 1}`,
             subject: req.body.subject, status_code: 'open',
             department_id: req.body.department_id,
-            user_id: 1, assigned_to_user_id: null,
+            /* شناسه‌ی صاحب تیکت از کاربر توکن می‌آید تا فیلتر
+               `user_id` قابل تست باشد. */
+            user_id: req.user ? [...db.users.keys()].indexOf(req.user.username) + 1 : 0,
+            assigned_to_user_id: null,
             created_at: new Date().toISOString(), messages: [],
         }
         db.tickets.push(t)
@@ -390,7 +393,16 @@ const routes = [
     })],
     ],
 
-    ['GET', /^\/admin\/tickets$/, () => page(db.tickets)],
+    ['GET', /^\/admin\/tickets$/, (req) => {
+        /* `?mockNoFilter=1` فیلتر را عمداً نادیده می‌گیرد تا حالت
+           «بک‌اند هنوز پیاده نکرده» قابل تست باشد. */
+        const uid = req.query.get('user_id')
+        const ignore = req.query.get('mockNoFilter') === '1'
+        const list = uid && !ignore
+            ? db.tickets.filter((t) => String(t.user_id) === String(uid))
+            : db.tickets
+        return page(list)
+    }],
     ['GET', /^\/admin\/departments\/[^/]+\/members$/, () => ok([])],
 
     ['GET', /^\/admin\/products$/, () => page([

@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
-import { MOCK_USER_LICENSES, MOCK_USER_TICKETS } from '../../data/mockUsers'
+import { MOCK_USER_LICENSES } from '../../data/mockUsers'
 import { useUserOrders } from '../../hooks/useUserOrders'
+import { useUserTickets } from '../../hooks/useUserTickets'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './UserProfileModal.module.css'
@@ -91,9 +92,12 @@ function SectionTitle({ children }) {
  *
  * «تاریخچه خرید» هم واقعی است — `GET /admin/orders/?user_id=`.
  *
- * TODO: دو جدول لایسنس و تیکت هنوز داده‌ی نمونه‌اند: ماژول لایسنس اصلاً
- *       وجود ندارد و `GET /ticketing/tickets` فقط `assigned_to_user_id`
- *       (کارشناس) را فیلتر می‌کند نه صاحب تیکت.
+ * «تیکت‌های کاربر» به `GET /admin/tickets?user_id=` وصل شد. اگر بک‌اند
+ * هنوز این فیلتر را پیاده نکرده باشد، به‌جای نشان دادن تیکت‌های همه‌ی
+ * کاربران پیام می‌دهد — رجوع به `useUserTickets`.
+ *
+ * TODO: جدول لایسنس هنوز داده‌ی نمونه است (فاز توسعه؛ ضمناً
+ *       لایسنس‌سرور UI خودش را دارد).
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
@@ -101,6 +105,7 @@ export default function UserProfileModal({ open, user, onClose }) {
     /* فقط وقتی مودال باز است درخواست می‌رود؛ با بسته بودن userId تهی
        می‌ماند و هوک چیزی نمی‌خواند. */
     const orders = useUserOrders(open ? user?.id : null)
+    const tickets = useUserTickets(open ? user?.id : null)
 
     useEffect(() => {
         if (!open) return
@@ -198,8 +203,15 @@ export default function UserProfileModal({ open, user, onClose }) {
                     <SectionTitle>تیکت‌های کاربر</SectionTitle>
                     <AdminTable
                         columns={TICKET_COLUMNS}
-                        rows={MOCK_USER_TICKETS}
+                        rows={tickets.rows}
                         paginate={false}
+                        emptyMessage={
+                            tickets.loading
+                                ? 'در حال دریافت تیکت‌ها…'
+                                : tickets.unfiltered
+                                  ? 'فیلتر تیکت بر اساس کاربر هنوز در بک‌اند فعال نیست'
+                                  : tickets.error || 'تیکتی برای این کاربر ثبت نشده است'
+                        }
                     />
                 </div>
             </div>

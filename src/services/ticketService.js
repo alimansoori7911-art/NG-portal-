@@ -88,12 +88,14 @@ export const ticketService = {
        پارامترهایش دقیقاً مثل `/ticketing/tickets` است؛ فرقش دامنه
        است: آن یکی فقط تیکت‌های کاربر جاری را می‌دهد.
 
-       ⚠️ هنوز فیلتر «صاحب تیکت» ندارد (`assigned_to_user_id` کارشناس
-       است)، پس جدول تیکت در پروفایل جامع کاربر همچنان بلاک است. */
-    getAdminTickets({ page = 1, limit = 10, q, department_id, status, assigned_to_user_id, is_locked, include } = {}) {
+       ⚠️ `user_id` (صاحب تیکت) با `assigned_to_user_id` (کارشناس)
+       فرق دارد. بک‌اند گفته فیلتر صاحب تیکت را زده ولی هنوز در اسپک
+       ۱۵ نیامده؛ پارامتر را می‌فرستیم چون تا وقتی پیاده نشده باشد
+       بی‌اثر است و با آمدنش خودبه‌خود کار می‌کند. */
+    getAdminTickets({ page = 1, limit = 10, q, department_id, status, user_id, assigned_to_user_id, is_locked, include } = {}) {
         return api
             .get('/admin/tickets', {
-                params: { page, limit, q, department_id, status, assigned_to_user_id, is_locked, include },
+                params: { page, limit, q, department_id, status, user_id, assigned_to_user_id, is_locked, include },
             })
             .then((res) => ({
                 items: res.data?.data ?? [],
