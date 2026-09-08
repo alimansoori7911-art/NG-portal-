@@ -4,7 +4,7 @@ import SystemAlertList from '../components/SystemAlertList/SystemAlertList'
 import ContentForm from '../components/ContentForm/ContentForm'
 import SendNotificationForm from '../components/SendNotificationForm/SendNotificationForm'
 import { useNotificationTemplates } from '../hooks/useNotificationTemplates'
-import { MOCK_SYSTEM_ALERTS, MOCK_RELEASE_NOTES } from '../data/mockSettings'
+import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SettingsPage.module.css'
 
 /* عرض ستون‌ها از tab1.svg (نوتیفیکیشن) */
@@ -95,7 +95,11 @@ export default function SettingsPage() {
 
             {/* تب اعلان‌های سیستمی فرم و جدول ندارد — فقط فهرست کارت‌ها */}
             {tab === 'alerts' ? (
-                <SystemAlertList items={MOCK_SYSTEM_ALERTS} />
+                /* اعلان‌های سیستمی از خود سیستم می‌آیند و هنوز
+                   اندپوینتی ندارند — فهرست خالی زیر پوشش. */
+                <ComingSoon note="اعلان‌های سیستمی در فاز توسعه اضافه می‌شوند.">
+                    <SystemAlertList items={[]} />
+                </ComingSoon>
             ) : creating ? (
                 isNotifications ? (
                     <SendNotificationForm
@@ -119,6 +123,20 @@ export default function SettingsPage() {
                         }}
                     />
                 )
+            ) : isReleases ? (
+                <ComingSoon note="ریلیز نوت در فاز توسعه اضافه می‌شود.">
+                    <div className={styles.toolbar}>
+                        <button type="button" className={styles.createBtn}>
+                            ساخت Release Notes
+                        </button>
+                    </div>
+                    <AdminTable
+                        columns={RELEASE_COLUMNS}
+                        rows={[]}
+                        page={1}
+                        rowsPerPage={9}
+                    />
+                </ComingSoon>
             ) : (
                 <>
                     <div className={styles.toolbar}>
@@ -133,7 +151,7 @@ export default function SettingsPage() {
 
                     <AdminTable
                         columns={isReleases ? RELEASE_COLUMNS : NOTIFICATION_COLUMNS}
-                        rows={isReleases ? MOCK_RELEASE_NOTES : templates.rows}
+                        rows={isReleases ? [] : templates.rows}
                         page={isReleases ? page : templates.page}
                         pageCount={isReleases ? undefined : templates.pageCount}
                         onPageChange={isReleases ? setPage : templates.setPage}

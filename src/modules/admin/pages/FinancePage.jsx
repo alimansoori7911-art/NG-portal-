@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
-import { MOCK_TRANSACTIONS, MOCK_INVOICES } from '../data/mockFinance'
+import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './FinancePage.module.css'
 
 /* ستون‌های تراکنش‌ها — از اسکرین‌شات فیگما (۷ ستون).
@@ -112,6 +112,7 @@ export default function FinancePage() {
                 ))}
             </div>
 
+            <ComingSoon note="تراکنش‌ها و صدور فاکتور در فاز توسعه اضافه می‌شوند.">
             {creating ? (
                 <InvoiceForm
                     fieldErrors={fieldErrors}
@@ -145,7 +146,7 @@ export default function FinancePage() {
 
                     <AdminTable
                         columns={isInvoices ? INVOICE_COLUMNS : TRANSACTION_COLUMNS}
-                        rows={isInvoices ? MOCK_INVOICES : MOCK_TRANSACTIONS}
+                        rows={[]}
                         page={page}
                         onPageChange={setPage}
                         selectedId={isInvoices ? selectedId : null}
@@ -154,6 +155,7 @@ export default function FinancePage() {
                     />
                 </>
             )}
+            </ComingSoon>
         </div>
     )
 }

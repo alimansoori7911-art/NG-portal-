@@ -7,7 +7,7 @@ import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPa
 import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
 import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
-import { MOCK_LICENSES } from '../data/mockSales'
+import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SalesPage.module.css'
 
 /* عرض ستون‌ها از tab11.svg (جدول سفارش‌ها) */
@@ -28,15 +28,6 @@ const LICENSE_COLUMNS = [
     { key: 'user', label: 'کاربر', width: '21.35%', ltr: true },
     { key: 'status', label: 'وضعیت', width: '22.78%' },
     { key: 'server', label: 'سرور متصل', width: '18.56%', ltr: true },
-]
-
-/* عملیات لایسنس — هنوز هیچ اندپوینتی ندارد.
-   TODO: رجوع به BACKEND_NEEDS.md */
-const LICENSE_ACTIONS = [
-    'فعال سازی لایسنس',
-    'غیرفعال سازی لایسنس',
-    'تمدید زمان لایسنس',
-    'فسخ لایسنس',
 ]
 
 /* وضعیت‌هایی که ادمین می‌تواند دستی به آن‌ها ببرد.
@@ -103,34 +94,6 @@ export default function SalesPage() {
     }
 
     const isLicenses = tab === 'licenses'
-
-    /* ─── نوار عملیات لایسنس (هنوز بدون اندپوینت) ─── */
-    const licenseRowActions = () => (
-        <div className={styles.rowActions}>
-            {LICENSE_ACTIONS.map((label) => (
-                <button
-                    key={label}
-                    type="button"
-                    className={styles.rowActionBtn}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {label}
-                </button>
-            ))}
-
-            <button
-                type="button"
-                className={styles.rowActionsClose}
-                onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedId(null)
-                }}
-                aria-label="بستن نوار عملیات"
-            >
-                <X size={14} strokeWidth={3} />
-            </button>
-        </div>
-    )
 
     /* ─── نوار عملیات سفارش ───
        سه کار اصلی فلو: صدور پیش‌فاکتور، تأیید رسید، تغییر وضعیت. */
@@ -312,27 +275,23 @@ export default function SalesPage() {
                     }}
                 />
             ) : isLicenses ? (
-                <>
+                /* ماژول لایسنس در فاز توسعه است و فعلاً از طریق
+                   سرور لایسنس مدیریت می‌شود. جدول خالی زیر پوشش
+                   می‌ماند تا داده‌ی جعلی به چشم مشتری نیاید. */
+                <ComingSoon note="لایسنس‌ها فعلاً از طریق سرور لایسنس مدیریت می‌شوند.">
                     <div className={styles.toolbar}>
-                        <button
-                            type="button"
-                            className={styles.createBtn}
-                            onClick={() => setCreating(true)}
-                        >
+                        <button type="button" className={styles.createBtn}>
                             ایجاد لایسنس
                         </button>
                     </div>
 
                     <AdminTable
                         columns={LICENSE_COLUMNS}
-                        rows={MOCK_LICENSES}
+                        rows={[]}
                         page={licensePage}
                         onPageChange={setLicensePage}
-                        selectedId={selectedId}
-                        onRowClick={toggleRow}
-                        renderRowActions={licenseRowActions}
                     />
-                </>
+                </ComingSoon>
             ) : (
                 <AdminTable
                     columns={ORDER_COLUMNS}

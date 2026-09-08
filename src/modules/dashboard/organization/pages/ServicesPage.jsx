@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import DataTable from '../../components/DataTable/DataTable'
-import { MOCK_SERVICES } from '../data/mockServices'
+import ComingSoon from '../../../../components/ui/ComingSoon/ComingSoon'
 
 /* عرض ستون‌ها از SVG (از راست): 226 | 242 | 285 | 267  از ۱۰۲۰ */
 const COLUMNS = [
@@ -10,17 +9,21 @@ const COLUMNS = [
     { key: 'status', label: 'وضعیت', width: '26.18%' },
 ]
 
+/**
+ * مدیریت سرویس — هنوز اندپوینتی ندارد.
+ *
+ * ⚠️ این صفحه در **هیچ‌کدام** از دو فایل فلو نیست؛ نه در `flow.dot`
+ * و نه در `portal.dot`. یعنی یا فلو ناقص است یا این صفحه اضافه —
+ * سؤالی که هنوز از کارفرما جواب نگرفته‌ایم.
+ *
+ * جدول عمداً **خالی** رندر می‌شود نه با داده‌ی نمونه: پوشش «به‌زودی»
+ * فقط تار می‌کند و متن همچنان در DOM می‌ماند، پس داده‌ی جعلی زیرش
+ * ممکن بود در دمو واقعی به نظر برسد.
+ */
 export default function ServicesPage() {
-    // TODO: صفحه‌بندی واقعی پس از اتصال به بک‌اند (meta.total / meta.per_page)
-    const [page, setPage] = useState(1)
-
     return (
-        <DataTable
-            columns={COLUMNS}
-            rows={MOCK_SERVICES}
-            page={page}
-            pageCount={2}
-            onPageChange={setPage}
-        />
+        <ComingSoon note="این بخش هنوز در دست ساخت است.">
+            <DataTable columns={COLUMNS} rows={[]} page={1} pageCount={1} />
+        </ComingSoon>
     )
 }

@@ -1,0 +1,76 @@
+/* پوشش «به‌زودی» — محتوای زیرش تار و غیرفعال می‌شود */
+
+.wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    filter: blur(5px);
+    /* اشباع کمتر تا تارشدگی «خاموش» به نظر برسد نه فقط بی‌فوکوس */
+    filter: blur(5px) saturate(0.5);
+    opacity: 0.5;
+    user-select: none;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    /* پوشش کلیک را می‌گیرد تا محتوای زیر واقعاً غیرقابل‌استفاده شود */
+    z-index: 2;
+}
+
+.badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 20px 34px;
+
+    border: 1px solid #264573;
+    border-radius: 14px;
+    /* پس‌زمینه‌ی مات لازم است: بدون آن متنِ تارِ پشت از لای برچسب
+       دیده می‌شود و خواندنش سخت می‌شود. */
+    background: rgba(13, 23, 38, 0.92);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+    text-align: center;
+}
+
+.icon {
+    color: #7AB0FF;
+}
+
+.title {
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+}
+
+.note {
+    max-width: 280px;
+    color: var(--color-primary-ghost);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 1.8;
+}
+
+@media (max-width: 1023px) {
+    .badge {
+        padding: 16px 24px;
+    }
+
+    .note {
+        max-width: 220px;
+    }
+}

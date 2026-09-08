@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { MOCK_LOGS, LOG_FILTERS } from '../data/mockLogs'
+import { LOG_FILTERS } from '../data/mockLogs'
+import ComingSoon from '../../../../components/ui/ComingSoon/ComingSoon'
 import styles from './LogsPage.module.css'
 
 /**
@@ -15,7 +16,12 @@ import styles from './LogsPage.module.css'
  * فیلترها تجمعی‌اند: هر کدام روشن/خاموش می‌شود و اگر هیچ‌کدام روشن
  * نباشد همه‌ی لاگ‌ها نمایش داده می‌شوند.
  *
- * TODO: اندپوینتی وجود ندارد. رجوع به BACKEND_NEEDS.md
+ * ⚠️ بک‌اند تأیید کرده که **لاگ برای کاربر عادی وجود ندارد** و قرار
+ * هم نیست بیاید. تا وقتی تکلیف این آیتم منو روشن شود، صفحه با پوشش
+ * «به‌زودی» و بدون داده‌ی جعلی نمایش داده می‌شود.
+ *
+ * ردیف‌ها خالی‌اند نه نمونه: پوشش فقط تار می‌کند و متن در DOM
+ * می‌ماند. `LOG_FILTERS` می‌ماند چون ساختار است نه داده.
  */
 export default function LogsPage() {
     const [active, setActive] = useState(() => new Set())
@@ -28,12 +34,10 @@ export default function LogsPage() {
             return next
         })
 
-    const rows =
-        active.size === 0
-            ? MOCK_LOGS
-            : MOCK_LOGS.filter((log) => active.has(log.level))
+    const rows = []
 
     return (
+        <ComingSoon note="لاگ کاربر در نسخه‌های بعدی اضافه می‌شود.">
         <div className={styles.page}>
             {/* در RTL اولین فرزند سمت راست می‌نشیند — مطابق فیگما */}
             <div className={styles.filterBar}>
@@ -70,5 +74,6 @@ export default function LogsPage() {
                 )}
             </div>
         </div>
+        </ComingSoon>
     )
 }

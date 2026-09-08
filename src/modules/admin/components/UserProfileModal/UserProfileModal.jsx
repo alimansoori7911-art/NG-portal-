@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
-import { MOCK_USER_LICENSES } from '../../data/mockUsers'
+import ComingSoon from '../../../../components/ui/ComingSoon/ComingSoon'
 import { useUserOrders } from '../../hooks/useUserOrders'
 import { useUserTickets } from '../../hooks/useUserTickets'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
@@ -96,8 +96,8 @@ function SectionTitle({ children }) {
  * هنوز این فیلتر را پیاده نکرده باشد، به‌جای نشان دادن تیکت‌های همه‌ی
  * کاربران پیام می‌دهد — رجوع به `useUserTickets`.
  *
- * TODO: جدول لایسنس هنوز داده‌ی نمونه است (فاز توسعه؛ ضمناً
- *       لایسنس‌سرور UI خودش را دارد).
+ * جدول لایسنس زیر پوشش «به‌زودی» است — فاز توسعه، و ضمناً
+ * لایسنس‌سرور رابط خودش را دارد.
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
@@ -193,11 +193,13 @@ export default function UserProfileModal({ open, user, onClose }) {
 
                     {/* ── لایسنس‌ها ── */}
                     <SectionTitle>لایسنس‌های فعال/منقضی</SectionTitle>
-                    <AdminTable
-                        columns={LICENSE_COLUMNS}
-                        rows={MOCK_USER_LICENSES}
-                        paginate={false}
-                    />
+                    <ComingSoon note="لایسنس‌ها فعلاً از طریق سرور لایسنس مدیریت می‌شوند.">
+                        <AdminTable
+                            columns={LICENSE_COLUMNS}
+                            rows={[]}
+                            paginate={false}
+                        />
+                    </ComingSoon>
 
                     {/* ── تیکت‌ها ── */}
                     <SectionTitle>تیکت‌های کاربر</SectionTitle>
