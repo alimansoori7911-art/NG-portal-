@@ -20,7 +20,11 @@
 import { createServer } from 'node:http'
 
 const PORT = 5000
-const ORIGIN = 'http://localhost:5173'
+/* در توسعه ممکن است Vite روی پورت دیگری بالا بیاید (مثلاً وقتی
+   ۵۱۷۳ اشغال است). چون این سرور فقط ابزار تست محلی است، هر
+   localhost پذیرفته می‌شود — با credentials نمی‌توان '*' گذاشت،
+   پس origin خودِ درخواست بازتاب داده می‌شود. */
+const isLocalOrigin = (o) => !!o && /^http:\/\/localhost:\d+$/.test(o)
 
 /* ─── داده‌ی درون‌حافظه ─── */
 const db = {
@@ -434,7 +438,8 @@ const server = createServer((req, res) => {
     const path = url.pathname
 
     /* CORS — با credentials نمی‌توان * گذاشت */
-    res.setHeader('Access-Control-Allow-Origin', ORIGIN)
+    const origin = req.headers.origin
+    res.setHeader('Access-Control-Allow-Origin', isLocalOrigin(origin) ? origin : 'http://localhost:5173')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT,DELETE,OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Upload-Token')
