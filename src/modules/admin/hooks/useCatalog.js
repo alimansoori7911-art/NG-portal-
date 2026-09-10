@@ -75,7 +75,10 @@ export function useCatalog() {
             const [planRes, featureList, termList, productList] = await Promise.all([
                 adminCatalogService.getPlans({ limit: 100 }),
                 adminCatalogService.getFeatures(),
-                adminCatalogService.getBillingTerms(),
+                /* ادمین باید غیرفعال‌ها را هم ببیند، وگرنه مدتی که
+                   خودش غیرفعال کرده ناپدید می‌شود و دیگر راهی برای
+                   برگرداندنش ندارد. */
+                adminCatalogService.getBillingTerms({ is_active: undefined }),
                 adminCatalogService.getProducts(),
             ])
 
@@ -100,6 +103,81 @@ export function useCatalog() {
     const termName = useCallback(
         (code) => terms.find((t) => t.code === code)?.name ?? '',
         [terms]
+    )
+
+    /**
+     * ساخت یا ویرایش «مدت اعتبار» (BillingTerm).
+     *
+     * تا پیش از این فقط خوانده می‌شد: فرم پلن گزینه‌هایش را از این
+     * لیست می‌گرفت ولی هیچ راهی برای **ساختن** مدت جدید نبود، پس اگر
+     * لیست خالی بود کاربر گیر می‌کرد — پلن بدون مدت اعتبار قیمت
+     * نمی‌گیرد.
+     *
+     * `duration_days` تهی یعنی بی‌نهایت (مثل `perpetual`).
+     */
+    const saveTerm = useCallback(
+        async (values, { editing } = {}) => {
+            setSaving(true)
+            setSaveError(null)
+
+            try {
+                /* رشته‌ی خالی یعنی «بی‌نهایت» و باید null برود، نه 0 */
+                const raw = String(values.duration_days ?? '').trim()
+                const duration = raw === '' ? null : Number(raw)
+
+                if (duration !== null && !Number.isInteger(duration)) {
+                    throw new Error('مدت (روز) باید عدد صحیح باشد')
+                }
+                if (duration !== null && duration < 0) {
+                    throw new Error('مدت (روز) نمی‌تواند منفی باشد')
+                }
+
+                const payload = {
+                    name: values.name?.trim(),
+                    duration_days: duration,
+                    is_trial: Boolean(values.is_trial),
+                    is_active: values.is_active !== false,
+                }
+
+                if (editing && editing !== 'new') {
+                    /* `code` کلید اتصال به `PlanPrice.term_code` است؛
+                       عوض کردنش قیمت‌های موجود را یتیم می‌کند، پس در
+                       ویرایش فرستاده نمی‌شود. */
+                    await adminCatalogService.updateBillingTerm(editing.id, payload)
+                } else {
+                    const code = values.code?.trim()
+                    if (!code) throw new Error('کد مدت اعتبار الزامی است')
+                    await adminCatalogService.createBillingTerm({ ...payload, code })
+                }
+
+                await load({ silent: true })
+                return true
+            } catch (err) {
+                setSaveError(err?.message || 'ذخیره مدت اعتبار ناموفق بود')
+                return false
+            } finally {
+                setSaving(false)
+            }
+        },
+        [load]
+    )
+
+    const deleteTerm = useCallback(
+        async (termId) => {
+            setSaving(true)
+            setSaveError(null)
+            try {
+                await adminCatalogService.deleteBillingTerm(termId)
+                await load({ silent: true })
+                return true
+            } catch (err) {
+                setSaveError(err?.message || 'حذف مدت اعتبار ناموفق بود')
+                return false
+            } finally {
+                setSaving(false)
+            }
+        },
+        [load]
     )
 
     /**
@@ -215,6 +293,8 @@ export function useCatalog() {
         termName,
         savePlan,
         deletePlan,
+        saveTerm,
+        deleteTerm,
         reload: load,
     }
 }

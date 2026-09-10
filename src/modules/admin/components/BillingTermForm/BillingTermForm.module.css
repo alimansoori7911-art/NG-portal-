@@ -1,0 +1,30 @@
+/* فقط چیزهایی که در PlanForm.module.css نیستند.
+   بقیه‌ی ظاهر (کادر، فیلد، دکمه) از همان ماژول می‌آید تا این دو فرم
+   با هم واگرا نشوند. */
+
+/* در جای یکی از فیلدهای شبکه می‌نشیند، پس همان ارتفاع را می‌گیرد
+   تا ردیف به‌هم نریزد. */
+.checks {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 63px;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    user-select: none;
+}
+
+.check input {
+    width: 18px;
+    height: 18px;
+    accent-color: #1474FF;
+    cursor: pointer;
+}

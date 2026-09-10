@@ -33,8 +33,20 @@ const db = {
     tickets: [],
     invoices: [],
     notifications: [],
+    terms: [],
     otps: new Map(), // identifier -> code
     nextOrderNum: 1001,
+    nextTermId: 3,
+}
+
+/* مدت‌های اعتبار — پنل ادمین این‌ها را می‌سازد و ویرایش می‌کند، پس
+   باید قابل تغییر باشند نه ثابت داخل مسیر. */
+function seedTerms() {
+    db.terms = [
+        { id: 1, code: 'monthly', name: 'ماهانه', duration_days: 30, is_trial: false, is_active: true, sort_order: 1 },
+        { id: 2, code: 'yearly', name: 'سالانه', duration_days: 365, is_trial: false, is_active: true, sort_order: 2 },
+    ]
+    db.nextTermId = 3
 }
 
 /* اعلان‌های نمونه — بدون این، صفحه‌ی اعلان‌ها همیشه خالی بود و
@@ -100,6 +112,7 @@ const uuid = () =>
    می‌کند و `const` قبل از تعریفش قابل دسترسی نیست. */
 seedNotifications()
 seedInvoices()
+seedTerms()
 
 /* توکن تقلبی با exp واقعی تا tokenManager درست بخواندش */
 function makeToken(sub, minutes = 7) {
@@ -584,10 +597,67 @@ const routes = [
         { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true, prices: [], features: [] },
     ])],
     ['GET', /^\/admin\/features$/, () => page([])],
-    ['GET', /^\/admin\/billing-term\/$/, () => ok([
-        { id: 1, code: 'monthly', name: 'ماهانه', duration_days: 30, is_trial: false, is_active: true },
-        { id: 2, code: 'yearly', name: 'سالانه', duration_days: 365, is_trial: false, is_active: true },
-    ])],
+    /* مدت اعتبار — CRUD کامل، چون پنل ادمین حالا می‌سازد و ویرایش
+       می‌کند. `is_active` وقتی در query بیاید فیلتر می‌کند. */
+    ['GET', /^\/admin\/billing-term\/$/, (req) => {
+        const f = req.query.get('is_active')
+        const list = f == null
+            ? db.terms
+            : db.terms.filter((t) => String(t.is_active) === f)
+        return ok(list)
+    }],
+
+    ['GET', /^\/admin\/billing-term\/[^/]+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const t = db.terms.find((x) => x.id === id)
+        return t ? ok(t) : [404, fail('NOT_FOUND', 'term not found')]
+    }],
+
+    ['POST', /^\/admin\/billing-term\/$/, (req) => {
+        const { code, name } = req.body ?? {}
+        if (!code || !name) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
+                { loc: "('body', 'code')", msg: 'code و name الزامی‌اند' },
+            ])]
+        }
+        /* کد یکتاست چون `PlanPrice.term_code` به آن ارجاع می‌دهد */
+        if (db.terms.some((t) => t.code === code)) {
+            return [409, fail('CONFLICT', 'این کد قبلاً استفاده شده است')]
+        }
+        const t = {
+            id: db.nextTermId++,
+            code,
+            name,
+            duration_days: req.body.duration_days ?? null,
+            is_trial: Boolean(req.body.is_trial),
+            is_active: req.body.is_active !== false,
+            sort_order: req.body.sort_order ?? 0,
+        }
+        db.terms.push(t)
+        console.log(`   📅 مدت اعتبار ${t.code} ساخته شد`)
+        return [201, ok(t)]
+    }],
+
+    ['PATCH', /^\/admin\/billing-term\/[^/]+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const t = db.terms.find((x) => x.id === id)
+        if (!t) return [404, fail('NOT_FOUND', 'term not found')]
+        /* `code` عوض نمی‌شود — فرانت هم نمی‌فرستد */
+        const { code, ...rest } = req.body ?? {}
+        void code
+        Object.assign(t, rest)
+        console.log(`   ✏️  مدت اعتبار ${t.code} به‌روز شد`)
+        return ok(t)
+    }],
+
+    ['DELETE', /^\/admin\/billing-term\/[^/]+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.terms.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'term not found')]
+        const [gone] = db.terms.splice(i, 1)
+        console.log(`   🗑️  مدت اعتبار ${gone.code} حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
     ['GET', /^\/admin\/notifications\/templates$/, () => page([])],
     ['GET', /^\/admin\/product-categories$/, () => page([])],
 
@@ -673,7 +743,7 @@ const server = createServer((req, res) => {
         db.users.clear(); db.orders.length = 0; db.tickets.length = 0
         /* اعلان و فاکتور دوباره seed می‌شوند نه خالی — وگرنه بعد از
            reset آن صفحه‌ها خالی می‌مانند و نمی‌شود تستشان کرد. */
-        seedNotifications(); seedInvoices()
+        seedNotifications(); seedInvoices(); seedTerms()
         db.nextOrderNum = 1001
         forcedErrors.clear()
         res.writeHead(200, { 'Content-Type': 'application/json' })

@@ -19,17 +19,33 @@
     margin: 40px 0 24px;
 }
 
+/* هم‌شکل با تب‌های «کاربران و دسترسی‌ها» تا دو صفحه‌ی ادمین یک
+   ظاهر داشته باشند. */
+.tab,
 .tabActive {
     height: 40px;
     padding: 0 20px;
     border: none;
     border-radius: 10px;
-    background: #1474FF;
-    color: var(--color-white);
     font-family: var(--font-family);
     font-size: var(--font-size-sm);
     white-space: nowrap;
     cursor: pointer;
+    transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.tab {
+    background: transparent;
+    color: #668FCC;
+}
+
+.tab:hover {
+    color: #8CABD9;
+}
+
+.tabActive {
+    background: #1474FF;
+    color: var(--color-white);
 }
 
 /* ── نوار ایجاد ── */
@@ -99,4 +115,112 @@
 .createBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* ══════════ مدت‌های اعتبار ══════════ */
+/* فهرست ساده‌ی ردیفی است نه جدول: فقط چهار ستون اطلاعات دارد و
+   ردیف‌ها روی موبایل عمودی می‌شوند. */
+
+.termList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+}
+
+.termRow {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    padding: 16px 20px;
+    border: 1px solid #192D4C;
+    border-radius: 12px;
+    background: #060B13;
+}
+
+.termInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* بدون این، نام بلند بقیه‌ی ردیف را جمع می‌کند */
+    min-width: 0;
+    flex: 1;
+}
+
+.termName {
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.termCode {
+    color: #668FCC;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.termMeta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+}
+
+.termTag,
+.termTagOff {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: var(--font-size-xs);
+}
+
+.termTag {
+    background: rgba(20, 116, 255, 0.18);
+    color: var(--color-primary-ghost);
+}
+
+.termTagOff {
+    background: rgba(255, 99, 105, 0.15);
+    color: #FF6369;
+}
+
+.termActions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.termBtn {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #264573;
+    border-radius: 8px;
+    background: transparent;
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.termBtn:hover {
+    background: rgba(71, 146, 255, 0.14);
+}
+
+/* روی موبایل ردیف عمودی می‌شود تا سه بخش جا شوند */
+@media (max-width: 768px) {
+    .termRow {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .termActions {
+        justify-content: flex-start;
+    }
 }
