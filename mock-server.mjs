@@ -46,7 +46,12 @@ const uuid = () =>
 function makeToken(sub, minutes = 7) {
     /* نقش‌ها داخل JWT گذاشته می‌شوند تا سناریویی که بک‌اند پرسیده
        (خواندن نقش از توکن) قابل تست باشد. */
-    const roles = db.users.get(sub)?.roles ?? []
+    /* `MOCK_NO_JWT_ROLES=1` نقش را از توکن برمی‌دارد ولی در
+       `/auth/me` نگه می‌دارد — برای اثبات این‌که فرانت واقعاً نقش را
+       از پروفایل می‌خواند نه از JWT. */
+    const roles = process.env.MOCK_NO_JWT_ROLES
+        ? []
+        : (db.users.get(sub)?.roles ?? [])
     const body = Buffer.from(
         JSON.stringify({ sub, roles, exp: Math.floor(Date.now() / 1000) + minutes * 60 })
     ).toString('base64url')
@@ -93,9 +98,13 @@ function makeProfile(u) {
         company_name: u.company_name ?? null,
         position: u.position ?? null,
         company_address: u.company_address ?? null,
-        /* ⚠️ عمداً `roles` ندارد — دقیقاً مثل شمای `Profile` در اسپک.
-           این همان چیزی است که باعث می‌شد نقش ادمین بعد از لاگین
-           پاک شود. */
+        /* بک‌اند گفت `/auth/me` نقش‌ها را می‌دهد و می‌خواهد همین
+           منبعِ اصلی باشد (نه JWT). پس mock هم می‌دهد.
+
+           ⚠️ شمای `Profile` در اسپک ۱۵ این فیلد را ندارد؛ در اسپک
+           بعدی باید بیاید. تا آن‌موقع فرانت اگر نبود از JWT
+           می‌خواند تا ادمین با رفرش صفحه بیرون نیفتد. */
+        roles: u.roles ?? [],
     }
 }
 
