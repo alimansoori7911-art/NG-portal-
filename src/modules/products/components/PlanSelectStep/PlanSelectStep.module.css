@@ -180,6 +180,49 @@
     border-color: #ADCFFF;
 }
 
+/* ─── حالت‌های بارگذاری / خطا / خالی ─── */
+/* روی z-index بالای .glow می‌نشیند وگرنه پشت درخشش گم می‌شود */
+
+.stateBox {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    text-align: center;
+    padding: 0 24px;
+}
+
+.stateMsg {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 2vh, 20px);
+    line-height: 1.8;
+}
+
+.retryBtn {
+    width: 211px;
+    max-width: 100%;
+    height: clamp(40px, 4.8vh, 49px);
+    border: 1px solid #8CABD9;
+    border-radius: 15.5px;
+    background: transparent;
+    color: #ADCFFF;
+    font-family: var(--font-family);
+    font-size: clamp(15px, 2vh, 20px);
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+}
+
+.retryBtn:hover {
+    background: rgba(71, 146, 255, 0.12);
+    border-color: #ADCFFF;
+}
+
 /* ─── دکمه‌های جابه‌جایی ─── */
 /* دایره‌ی ۴۰px، مرکز (1356, 609) → ۶۴ از لبه‌ی راست فریم
    مرکز کارت‌ها هم y=609.5 است، پس با آن‌ها هم‌تراز می‌ماند */

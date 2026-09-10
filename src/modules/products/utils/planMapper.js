@@ -45,6 +45,21 @@ const UNLIMITED_LABEL = 'نامحدود'
 function readRawValue(valueJson) {
     if (valueJson === null || valueJson === undefined) return null
 
+    /* نامش `value_json` است و واقعاً هم **رشته‌ی JSON** می‌آید، نه
+       مقدار خام. بدون این، «Unlimited» با گیومه نشان داده می‌شد
+       (`"Unlimited"`) و شرط unlimited پایین هم هرگز برقرار نمی‌شد
+       چون رشته‌ی واقعی `"Unlimited"` با گیومه بود.
+
+       اگر رشته JSON معتبر نبود، خودش برگردانده می‌شود تا مقدار ساده‌ی
+       بدون کوتیشن هم کار کند. */
+    if (typeof valueJson === 'string') {
+        try {
+            return readRawValue(JSON.parse(valueJson))
+        } catch {
+            return valueJson
+        }
+    }
+
     if (typeof valueJson === 'object' && !Array.isArray(valueJson)) {
         for (const key of ['value', 'limit', 'amount', 'count']) {
             if (key in valueJson) return valueJson[key]
@@ -109,6 +124,9 @@ export function mapPlan(plan) {
 
     return {
         id: plan.id,
+        /* `CreateOrder` هم `product_id` می‌خواهد و تنها جایی که در
+           دسترس است همین `PlanOutput` است، پس نگهش می‌داریم. */
+        productId: plan.product_id,
         code: plan.code,
         name: plan.name,
         subtitle: plan.description ?? '',

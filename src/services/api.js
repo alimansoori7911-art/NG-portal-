@@ -16,6 +16,22 @@ import { localizeError } from "../constants/auth.js";
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 /*
+  بدون این، اگر `.env` نباشد `baseURL` می‌شود undefined و axios همه‌ی
+  درخواست‌ها را به خود dev server می‌فرستد. جواب صفحه‌ی HTML است نه
+  JSON، و خطاها به‌شکل گمراه‌کننده‌ای ظاهر می‌شوند («Unexpected token
+  <») — انگار بک‌اند خراب است، در حالی که فقط فایل تنظیمات نیست.
+
+  `.env` در گیت نیست (هر کس آدرس خودش را دارد)، پس این حالت برای هر
+  کسی که تازه مخزن را clone می‌کند پیش می‌آید.
+*/
+if (!baseURL) {
+    throw new Error(
+        "VITE_API_BASE_URL تعریف نشده است. فایل .env را بساز: cp .env.example .env " +
+            "و بعد npm run dev را ری‌استارت کن."
+    );
+}
+
+/*
   اندپوینت‌های عمومی auth (طبق OpenAPI بلوک security ندارند).
   ۴۰۱ این‌ها یعنی «رمز یا کد اشتباه»، نه «توکن منقضی» — پس نباید
   رفرش و تکرار خودکار انجام شود.

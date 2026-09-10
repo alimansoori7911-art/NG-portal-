@@ -118,7 +118,11 @@ export default function NewOrderPage() {
                مقادیر فرم به‌صورت متن ساخت‌یافته در customer_note می‌روند تا
                داده‌ای از دست نرود. رجوع به BACKEND_NEEDS.md */
             await orderService.createOrder({
+                /* عدد است نه رشته — از `PlanOutput.id` بک‌اند می‌آید.
+                   قبلاً شناسه‌ی متنیِ پلن‌های ثابت (`'pilot'`) فرستاده
+                   می‌شد و بک‌اند ۴۲۲ می‌داد. */
                 plan_id: selectedPlan?.id,
+                product_id: selectedPlan?.productId,
                 quantity: 1,
                 customer_note: buildOrderNote(values),
             })

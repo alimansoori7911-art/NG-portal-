@@ -32,8 +32,62 @@ const db = {
     orders: [],
     tickets: [],
     invoices: [],
+    notifications: [],
     otps: new Map(), // identifier -> code
     nextOrderNum: 1001,
+}
+
+/* اعلان‌های نمونه — بدون این، صفحه‌ی اعلان‌ها همیشه خالی بود و
+   نمی‌شد فهمید کد کار می‌کند یا نه. */
+function seedNotifications() {
+    const now = Date.now()
+    db.notifications = [
+        {
+            id: 1, title: 'سفارش شما ثبت شد', type: 'order',
+            body: 'سفارش ORD-1001 با موفقیت ثبت شد و در انتظار بررسی است.',
+            read_at: null,
+            created_at: new Date(now - 5 * 60_000).toISOString(),
+        },
+        {
+            id: 2, title: 'پیش‌فاکتور صادر شد', type: 'invoice',
+            body: 'پیش‌فاکتور سفارش ORD-1001 صادر شد. برای پرداخت اقدام کنید.',
+            read_at: null,
+            created_at: new Date(now - 2 * 3600_000).toISOString(),
+        },
+        {
+            id: 3, title: 'به NG Corion خوش آمدید', type: 'system',
+            body: 'حساب شما ساخته شد. برای ثبت سفارش ابتدا هویت خود را تأیید کنید.',
+            read_at: new Date(now - 20 * 3600_000).toISOString(),
+            created_at: new Date(now - 24 * 3600_000).toISOString(),
+        },
+    ]
+}
+
+/* فاکتورهای نمونه — فیلدها همان‌هایی است که `InvoicesPage` می‌خواند:
+   `issued_at` (نه `created_at`)، `invoice_number`، `snapshot_plan_name`
+   و `pdf_file_id`. */
+function seedInvoices() {
+    const now = Date.now()
+    db.invoices = [
+        {
+            id: uuid(), invoice_number: 'INV-1001', invoice_type: 'invoice',
+            status: 'issued', snapshot_plan_name: 'Base',
+            snapshot_product_name: 'NG Corion',
+            total_amount: '480000000', currency: 'IRR',
+            issued_at: new Date(now - 3 * 86400_000).toISOString(),
+            created_at: new Date(now - 3 * 86400_000).toISOString(),
+            pdf_file_id: 'mock-pdf-1',
+        },
+        {
+            id: uuid(), invoice_number: 'INV-1002', invoice_type: 'proforma',
+            status: 'issued', snapshot_plan_name: 'Pro',
+            snapshot_product_name: 'NG Corion',
+            total_amount: '960000000', currency: 'IRR',
+            issued_at: new Date(now - 86400_000).toISOString(),
+            created_at: new Date(now - 86400_000).toISOString(),
+            pdf_file_id: 'mock-pdf-2',
+        },
+    ]
 }
 
 /* خطاهای تزریق‌شده: "POST /auth/login" -> 401 */
@@ -41,6 +95,11 @@ const forcedErrors = new Map()
 
 const uuid = () =>
     '01930000-0000-7000-8000-' + String(Date.now()).slice(-12).padStart(12, '0')
+
+/* بعد از `uuid` صدا زده می‌شوند چون `seedInvoices` از آن استفاده
+   می‌کند و `const` قبل از تعریفش قابل دسترسی نیست. */
+seedNotifications()
+seedInvoices()
 
 /* توکن تقلبی با exp واقعی تا tokenManager درست بخواندش */
 function makeToken(sub, minutes = 7) {
@@ -107,6 +166,73 @@ function makeProfile(u) {
         roles: u.roles ?? [],
     }
 }
+
+/* ─── پلن‌های نمونه ─── */
+/* شکل `PlanOutput` اسپک. شناسه‌ها **عدد**اند تا `plan_id` معتبر باشد.
+   `features` آرایه‌ای از `PlanFeature` است که هرکدام `feature` تودرتو
+   و `value_json` دارد — همان چیزی که `planMapper` می‌خواند. */
+const feature = (id, code, name, value, sort) => ({
+    id,
+    feature_id: id,
+    value_json: JSON.stringify(value),
+    feature: {
+        id,
+        code,
+        name,
+        value_type: typeof value === 'number' ? 'int' : 'string',
+        is_active: true,
+        sort_order: sort,
+    },
+})
+
+const planFeatures = (assets, audit, harden) => [
+    feature(1, 'asset_management', 'Asset Management', assets, 1),
+    feature(2, 'auditing', 'Auditing', audit, 2),
+    feature(3, 'hardening', 'Hardening', harden, 3),
+]
+
+const MOCK_PLANS = [
+    {
+        id: 1, product_id: 1, code: 'pilot', name: 'Pilot',
+        description: 'مناسب برای ارزیابی اولیه محصول',
+        external_plan_code: 'NGC-LIC-PILOT-1M',
+        is_pilot: true, is_active: true, is_public: true, sort_order: 1,
+        prices: [{ id: 1, term_code: 'trial', amount: '0', currency: 'IRR', is_active: true }],
+        features: planFeatures(5, 2, 2),
+    },
+    {
+        id: 2, product_id: 1, code: 'base', name: 'Base',
+        description: 'مناسب برای کسب و کار های کوچک',
+        external_plan_code: 'NGC-LIC-base-1Y',
+        is_pilot: false, is_active: true, is_public: true, sort_order: 2,
+        prices: [{ id: 2, term_code: 'yearly', amount: '480000000', currency: 'IRR', is_active: true }],
+        features: planFeatures(15, 15, 15),
+    },
+    {
+        id: 3, product_id: 1, code: 'pro', name: 'Pro',
+        description: 'مناسب برای سازمان های متوسط و تیم های فناوری اطلاعات',
+        external_plan_code: 'NGC-LIC-PRO-1Y',
+        is_pilot: false, is_active: true, is_public: true, sort_order: 3,
+        prices: [{ id: 3, term_code: 'yearly', amount: '960000000', currency: 'IRR', is_active: true }],
+        features: planFeatures(50, 50, 50),
+    },
+    {
+        id: 4, product_id: 1, code: 'plus', name: 'Plus',
+        description: 'مناسب برای سازمان های بزرگ و مراکز داده',
+        external_plan_code: 'NGC-LIC-PLUS-1Y',
+        is_pilot: false, is_active: true, is_public: true, sort_order: 4,
+        prices: [{ id: 4, term_code: 'yearly', amount: '1920000000', currency: 'IRR', is_active: true }],
+        features: planFeatures(150, 150, 150),
+    },
+    {
+        id: 5, product_id: 1, code: 'unlimited', name: 'Unlimited',
+        description: 'مناسب برای enterprise،MSSP و محیط های چند عملیاتی',
+        external_plan_code: 'NGC-LIC-unlimited-1Y',
+        is_pilot: false, is_active: true, is_public: true, sort_order: 5,
+        prices: [{ id: 5, term_code: 'perpetual', amount: '5000000000', currency: 'IRR', is_active: true }],
+        features: planFeatures('Unlimited', 'Unlimited', 'Unlimited'),
+    },
+]
 
 /* ─── مسیرها ─── */
 const routes = [
@@ -248,7 +374,15 @@ const routes = [
     ])],
 
     ['GET', /^\/products\/(features|categories)$/, () => page([])],
-    ['GET', /^\/products\/[^/]+\/plans$/, () => page([])],
+
+    /* پلن‌های یک محصول.
+       شناسه‌ها عمداً **عدد**اند، چون `plan_id` در `CreateOrder` عدد
+       است. قبلاً فرانت شناسه‌ی متنی (`'pilot'`) می‌فرستاد و ۴۲۲
+       می‌گرفت؛ با خالی بودن این مسیر آن باگ دیده نمی‌شد.
+
+       اسپک اینجا «آرایه‌ای از آرایه‌ها» می‌دهد و `usePlans` هر دو
+       حالت را تخت می‌کند، پس همان شکل تودرتو را می‌سازیم. */
+    ['GET', /^\/products\/[^/]+\/plans$/, () => page([MOCK_PLANS])],
     ['GET', /^\/products\/[^/]+$/, () => ok({
         id: 1, slug: 'ng-corion', name: 'NG Corion', description: '—',
     })],
@@ -261,14 +395,34 @@ const routes = [
             /* ⚠️ همان قاعده‌ای که فرانت باید جلوترش را بگیرد */
             return [403, fail('FORBIDDEN', 'identity not verified')]
         }
+
+        /* ⚠️ `plan_id` عدد است. بک‌اند واقعی برای رشته ۴۲۲ می‌دهد
+           (pydantic int_parsing) و فرانت مدت‌ها شناسه‌ی متنی
+           می‌فرستاد بدون اینکه اینجا معلوم شود. همان خطا را
+           بازتولید می‌کنیم تا اگر برگشت، تست بگیردش. */
+        const rawPlan = req.body.plan_id
+        if (rawPlan !== undefined && rawPlan !== null) {
+            const n = Number(rawPlan)
+            if (!Number.isInteger(n)) {
+                return [422, fail('VALIDATION_ERROR', 'Input validation failed', [{
+                    type: 'int_parsing',
+                    loc: "('plan_id',)",
+                    msg: 'Input should be a valid integer, unable to parse string as an integer',
+                    input: rawPlan,
+                }])]
+            }
+        }
+
+        const plan = MOCK_PLANS.find((p) => p.id === Number(rawPlan))
         const o = {
             id: uuid(),
             order_number: `ORD-${db.nextOrderNum++}`,
             order_type: 'purchase',
             status: 'REQUESTED',
             first_name: u.first_name, last_name: u.last_name,
-            product_id: 1, plan_id: req.body.plan_id ?? 1,
-            snapshot_product_name: 'NG Corion', snapshot_plan_name: 'پایه',
+            product_id: 1, plan_id: plan?.id ?? 1,
+            snapshot_product_name: 'NG Corion',
+            snapshot_plan_name: plan?.name ?? 'پایه',
             quoted_amount: null, payable_amount: null,
             customer_note: req.body.customer_note ?? null,
             created_at: new Date().toISOString(),
@@ -438,7 +592,58 @@ const routes = [
     ['GET', /^\/admin\/product-categories$/, () => page([])],
 
     /* اعلان و فاکتور و لاگ */
-    ['GET', /^\/notifications\/$/, () => page([])],
+
+    /* `read_only=true` فقط نخوانده‌ها را می‌دهد — فرانت با همین و
+       `limit=1` تعداد نخوانده‌ها را از `pagination.total` می‌گیرد،
+       پس `total` باید تعدادِ **فیلترشده** باشد نه کل. */
+    ['GET', /^\/notifications\/$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+
+        const unreadOnly = req.query.get('read_only') === 'true'
+        const p = Number(req.query.get('page')) || 1
+        const limit = Number(req.query.get('limit')) || 10
+
+        const all = unreadOnly
+            ? db.notifications.filter((n) => !n.read_at)
+            : db.notifications
+
+        const slice = all.slice((p - 1) * limit, p * limit)
+        return ok(slice, {
+            pagination: {
+                page: p,
+                limit,
+                total: all.length,
+                total_pages: Math.max(1, Math.ceil(all.length / limit)),
+                has_previous: p > 1,
+                has_next: p * limit < all.length,
+            },
+        })
+    }],
+
+    /* ⚠️ قبل از الگوی `/{id}/read` بیاید، وگرنه «bulk» به‌عنوان
+       شناسه خوانده می‌شود و ۴۰۴ می‌گیرد. */
+    ['PATCH', /^\/notifications\/bulk\/read$/, (req) => {
+        const ids = req.body?.notification_ids ?? []
+        for (const id of ids) {
+            const n = db.notifications.find((x) => x.id === Number(id))
+            if (n) n.read_at = new Date().toISOString()
+        }
+        return ok({ message: 'read', count: ids.length })
+    }],
+
+    ['PATCH', /^\/notifications\/[^/]+\/read$/, (req) => {
+        const id = Number(req.path.split('/')[2])
+        const n = db.notifications.find((x) => x.id === id)
+        if (!n) return [404, fail('NOT_FOUND', 'notification not found')]
+        n.read_at = new Date().toISOString()
+        return ok({ message: 'read' })
+    }],
+
+    ['DELETE', /^\/notifications\/[^/]+$/, (req) => {
+        const id = Number(req.path.split('/')[2])
+        db.notifications = db.notifications.filter((x) => x.id !== id)
+        return ok({ message: 'deleted' })
+    }],
     ['GET', /^\/invoice\/$/, () => page(db.invoices)],
     ['GET', /^\/audit\/$/, () => page([])],
 
@@ -466,6 +671,10 @@ const server = createServer((req, res) => {
     /* ابزارهای کنترل mock */
     if (path === '/__mock/reset') {
         db.users.clear(); db.orders.length = 0; db.tickets.length = 0
+        /* اعلان و فاکتور دوباره seed می‌شوند نه خالی — وگرنه بعد از
+           reset آن صفحه‌ها خالی می‌مانند و نمی‌شود تستشان کرد. */
+        seedNotifications(); seedInvoices()
+        db.nextOrderNum = 1001
         forcedErrors.clear()
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ message: 'reset' }))

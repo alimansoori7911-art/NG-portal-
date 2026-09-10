@@ -24,9 +24,27 @@
     border-radius: 31px;
     overflow: hidden;
     background: transparent;
+    /* ستون فلکس تا `.scroll` ارتفاع کارت را پر کند؛ بدون این،
+       `flex: 1` روی فرزند بی‌اثر است و ظرف اسکرول قد نمی‌گیرد. */
+    display: flex;
+    flex-direction: column;
 }
 
 
+
+/* ظرف اسکرول جدول.
+
+   ⚠️ این کلاس فقط استایلِ اسکرول‌بار داشت ولی خودِ `overflow` را
+   تعریف نکرده بود، پس هرگز اسکرول نمی‌شد. در موبایل جدول
+   `min-width: 640px` می‌گیرد و `.card` هم `overflow: hidden` دارد،
+   یعنی ستون‌های آخر **بریده** می‌شدند و راهی برای دیدنشان نبود.
+   حالا داخل خودش اسکرول افقی می‌خورد و صفحه اسکرول نمی‌گیرد. */
+.scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
 
 .scroll::-webkit-scrollbar {
     width: 8px;

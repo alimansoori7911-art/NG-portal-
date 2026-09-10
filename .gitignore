@@ -25,3 +25,10 @@ dist-ssr
 
 # Claude Code local permission state (machine-specific)
 .claude/settings.local.json
+
+# تنظیمات محلی — آدرس بک‌اند هر کس با دیگری فرق دارد.
+# `.env` قبلاً در گیت بود و IP و فلگ‌های یک نفر روی همه اعمال می‌شد.
+# الگو در `.env.example` است که در گیت می‌ماند.
+.env
+.env.local
+.env.*.local
