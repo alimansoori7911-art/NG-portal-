@@ -6,8 +6,12 @@
 /* اندازه‌ی حلقه مطابق فیگما بزرگ‌تر شد (280 → 390px) */
 .logoContainer {
     position: relative;
-    width: 390px;
-    height: 390px;
+    /* عرض ثابت + `flex-shrink: 0` روی گوشی سرریز می‌ساخت: حلقه‌ی
+       ۳۹۰px از عرض صفحه بزرگ‌تر است. `min()` آن را به عرض در دسترس
+       محدود می‌کند و مربع بودنش با `aspect-ratio` حفظ می‌شود. */
+    width: min(390px, 82vw);
+    aspect-ratio: 1;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -150,7 +154,8 @@
 
 /* اندازه‌ی لوگوی داخل حلقه، هم‌نسبت با حلقه‌ی بزرگ‌تر */
 .logo {
-    width: 360px;
+    /* مثل حلقه محدود می‌شود تا روی گوشی از صفحه بیرون نزند */
+    width: min(360px, 74vw);
     height: auto;
     position: relative;
     z-index: 1;
@@ -201,12 +206,13 @@
 
 @media (max-width: 900px) {
     .logoContainer {
-        width: 300px;
-        height: 300px;
+        /* `height` عمداً `auto` می‌ماند تا `aspect-ratio` مربع نگهش
+           دارد؛ گذاشتن ارتفاع ثابت دوباره آن را می‌شکند. */
+        width: min(300px, 82vw);
     }
 
     .logo {
-        width: 270px;
+        width: min(270px, 74vw);
     }
 }
 

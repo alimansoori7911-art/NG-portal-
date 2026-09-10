@@ -1,7 +1,10 @@
+/* اندازه و فاصله سیال‌اند: ۴۰px و فاصله‌ی ۹۶px مقادیر فیگما برای
+   دسکتاپ‌اند، ولی روی گوشی عنوان بیش از حد بزرگ می‌شد و آن فاصله
+   بیشترِ صفحه را می‌خورد — کاربر باید برای دیدن فرم اسکرول می‌کرد. */
 .title {
-    margin: 0 0 96px;
+    margin: 0 0 clamp(32px, 9vh, 96px);
     color: var(--color-primary-lighter);
-    font-size: 40px;
+    font-size: clamp(24px, 6vw, 40px);
     font-weight: 700;
     text-align: center;
 }
