@@ -44,8 +44,11 @@ const uuid = () =>
 
 /* توکن تقلبی با exp واقعی تا tokenManager درست بخواندش */
 function makeToken(sub, minutes = 7) {
+    /* نقش‌ها داخل JWT گذاشته می‌شوند تا سناریویی که بک‌اند پرسیده
+       (خواندن نقش از توکن) قابل تست باشد. */
+    const roles = db.users.get(sub)?.roles ?? []
     const body = Buffer.from(
-        JSON.stringify({ sub, exp: Math.floor(Date.now() / 1000) + minutes * 60 })
+        JSON.stringify({ sub, roles, exp: Math.floor(Date.now() / 1000) + minutes * 60 })
     ).toString('base64url')
     return `mock.${body}.sig`
 }
@@ -90,7 +93,9 @@ function makeProfile(u) {
         company_name: u.company_name ?? null,
         position: u.position ?? null,
         company_address: u.company_address ?? null,
-        roles: u.roles,
+        /* ⚠️ عمداً `roles` ندارد — دقیقاً مثل شمای `Profile` در اسپک.
+           این همان چیزی است که باعث می‌شد نقش ادمین بعد از لاگین
+           پاک شود. */
     }
 }
 
@@ -458,6 +463,17 @@ const server = createServer((req, res) => {
         console.log('🔄 داده پاک شد')
         return
     }
+    /* ابزار تست: کاربر را ادمین کن — /__mock/promote/<username> */
+    const pr = path.match(/^\/__mock\/promote\/([^/]+)$/)
+    if (pr) {
+        const u = db.users.get(pr[1])
+        if (u) u.roles = ['admin']
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ promoted: pr[1], roles: u?.roles ?? null }))
+        console.log(`   👑 ${pr[1]} ادمین شد`)
+        return
+    }
+
     const fx = path.match(/^\/__mock\/fail(\/.+)\/(\d{3})$/)
     if (fx) {
         forcedErrors.set(fx[1], Number(fx[2]))

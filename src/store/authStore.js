@@ -41,10 +41,18 @@ export const useAuthStore = create((set) => ({
            بدون این، گیتِ تأیید هویت فکر می‌کند کاربر تأیید نشده و
            همه را به صفحه‌ی وریفای می‌فرستد. پس بلافاصله پروفایل
            کامل را می‌گیریم. عمداً await نمی‌شود تا ورود کاربر معطل
-           نماند؛ گیت تا رسیدنش صبر می‌کند. */
+           نماند؛ گیت تا رسیدنش صبر می‌کند.
+
+           ⚠️ **ادغام** می‌شود نه جایگزینی: `Profile` فیلد `roles`
+           ندارد، پس جایگزینیِ کامل نقش ادمین را پاک می‌کرد و ادمین
+           بعد از لاگین به پنل راه نداشت. اگر روزی `/auth/me` هم
+           `roles` برگرداند، مقدار تازه برنده می‌شود چون بعد از
+           spread می‌آید. */
         authService
             .getMe()
-            .then((profile) => set({ user: profile }))
+            .then((profile) =>
+                set((s) => ({ user: { ...s.user, ...profile } }))
+            )
             .catch(() => {
                 /* اگر نشد، `initialize` در لود بعدی جبرانش می‌کند */
             });
@@ -69,7 +77,19 @@ export const useAuthStore = create((set) => ({
                 const { access_token } = await authService.refresh();
                 tokenManager.set(access_token);
                 const user = await authService.getMe();
-                set({ user, status: "authenticated" });
+
+                /* ⚠️ اینجا نقش از دست می‌رود: `/auth/refresh` فقط
+                   توکن می‌دهد و `Profile` هم فیلد `roles` ندارد. پس
+                   بعد از رفرش صفحه، ادمین دیگر ادمین شناخته نمی‌شود.
+
+                   تا وقتی بک‌اند `roles` را در `/auth/me` بگذارد (یا
+                   داخل JWT)، نقش از توکن خوانده می‌شود — همان‌جایی
+                   که بک‌اند در هر درخواست خودش اعتبارسنجی‌اش می‌کند.
+                   رجوع به BACKEND_REQUESTS.md */
+                set({
+                    user: { roles: tokenManager.rolesFromToken(), ...user },
+                    status: "authenticated",
+                });
             } catch {
                 // کوکی نبود یا منقضی بود → کاربر مهمانه، اتفاق خاصی نیفتاده
                 tokenManager.clear();
@@ -85,9 +105,11 @@ export const useAuthStore = create((set) => ({
     /* تازه‌سازی اطلاعات کاربر از سرور — بعد از تأیید هویت لازم است
        تا نام و وضعیت is_verified در کل اپ (از جمله سایدبار) به‌روز شود. */
     async refreshUser() {
-        const user = await authService.getMe();
-        set({ user });
-        return user;
+        const profile = await authService.getMe();
+        /* ادغام نه جایگزینی — به همان دلیل setAuth: `Profile` فیلد
+           `roles` ندارد و جایگزینیِ کامل نقش را پاک می‌کند. */
+        set((s) => ({ user: { ...s.user, ...profile } }));
+        return profile;
     },
 
     async logout() {

@@ -60,17 +60,19 @@ const hadSession = {
     },
 };
 
-/** خواندن exp از payload توکن JWT بدون کتابخانه‌ی جانبی */
-function readExpiry(token) {
+/** باز کردن payload توکن JWT بدون کتابخانه‌ی جانبی */
+function readPayload(token) {
     try {
         const payload = token.split(".")[1];
-        const json = JSON.parse(
-            atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
-        );
-        return typeof json.exp === "number" ? json.exp * 1000 : 0;
+        return JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
     } catch {
-        return 0;
+        return null;
     }
+}
+
+function readExpiry(token) {
+    const p = readPayload(token);
+    return typeof p?.exp === "number" ? p.exp * 1000 : 0;
 }
 
 export const tokenManager = {
@@ -87,6 +89,27 @@ export const tokenManager = {
     /** آیا این مرورگر قبلاً نشستی داشته؟ — رجوع به توضیح بالا */
     hadSession() {
         return hadSession.get();
+    },
+
+    /**
+     * نقش‌های داخل توکن — اگر بک‌اند آن‌ها را در JWT گذاشته باشد.
+     *
+     * ⚠️ این فقط برای **نمایش** است، نه امنیت: مسیرها و دکمه‌های
+     * ادمین را نشان می‌دهد. اجازه‌ی واقعی را بک‌اند در هر درخواست
+     * می‌سنجد، پس دستکاری توکن سمت کلاینت چیزی به کاربر نمی‌دهد
+     * جز صفحه‌ای که همه‌ی درخواست‌هایش ۴۰۳ می‌گیرند.
+     *
+     * چند نام رایج چک می‌شود چون هنوز قطعی نشده بک‌اند کدام را
+     * می‌گذارد. اگر هیچ‌کدام نبود آرایه‌ی خالی برمی‌گردد و رفتار
+     * فعلی (نقش از پاسخ لاگین) دست‌نخورده می‌ماند.
+     */
+    rolesFromToken() {
+        const p = readPayload(accessToken);
+        const raw = p?.roles ?? p?.role ?? p?.scope ?? p?.scopes;
+        if (Array.isArray(raw)) return raw.filter((r) => typeof r === "string");
+        /* `scope` معمولاً رشته‌ی جدا شده با فاصله است */
+        if (typeof raw === "string") return raw.split(/[\s,]+/).filter(Boolean);
+        return [];
     },
 
     clear() {
