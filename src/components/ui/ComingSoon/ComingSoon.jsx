@@ -23,8 +23,13 @@ export default function ComingSoon({ children, title = 'به‌زودی…', not
     return (
         <div className={styles.wrap}>
             {/* `inert` تعامل و فوکوس کیبورد را می‌گیرد، پس کاربر
-                نمی‌تواند با Tab وارد فرمِ غیرفعال شود. */}
-            <div className={styles.content} inert="" aria-hidden="true">
+                نمی‌تواند با Tab وارد فرمِ غیرفعال شود.
+
+                ⚠️ باید `inert` بولین باشد نه `inert=""`: ری‌اکت ۱۹
+                رشته‌ی خالی را **false** می‌گیرد و در کنسول هم هشدار
+                می‌داد — یعنی پوشش عملاً جلوی کلیک و Tab را
+                نمی‌گرفت. */}
+            <div className={styles.content} inert aria-hidden="true">
                 {children}
             </div>
 

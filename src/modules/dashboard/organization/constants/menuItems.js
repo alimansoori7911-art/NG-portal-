@@ -5,13 +5,18 @@
 
    «حساب کاربری» در فیگما نیست و اضافه شده: تغییر رمز عبور در فلو
    هست (`POST /auth/password/change`) ولی صفحه‌ای برایش طراحی نشده
-   بود. طبق قاعده‌ی پروژه، فلو مرجع است. */
+   بود. طبق قاعده‌ی پروژه، فلو مرجع است.
+
+   «مدیریت LOG» با اینکه در فیگما بود حذف شد: بک‌اند تأیید کرد لاگ
+   کاربر عادی وجود ندارد و قرار هم نیست بیاید. نه در اسپک اندپوینتی
+   دارد و نه در فلو نشانی از آن هست — تنها مسیر لاگ `/audit/` است
+   که مخصوص ادمین است و در پنل ادمین وصل شده. آیتم منو ماندنی نبود
+   چون کاربر را به صفحه‌ای می‌برد که هرگز داده نخواهد داشت. */
 export const ORG_MENU_ITEMS = [
     { id: 'services', label: 'مدیریت سرویس', path: '/dashboard/services' },
     { id: 'tickets', label: 'مدیریت تیکت', path: '/dashboard/tickets' },
     { id: 'notifications', label: 'اعلان ها', path: '/dashboard/notifications' },
     { id: 'invoices', label: 'فاکتور', path: '/dashboard/invoices' },
-    { id: 'logs', label: 'مدیریت LOG', path: '/dashboard/logs' },
     { id: 'sessions', label: 'مدیریت نشست ها', path: '/dashboard/sessions' },
     { id: 'account', label: 'حساب کاربری', path: '/dashboard/account' },
 ]

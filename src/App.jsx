@@ -28,7 +28,6 @@ import SessionsPage from "./modules/dashboard/organization/pages/SessionsPage";
 import AccountPage from "./modules/dashboard/organization/pages/AccountPage";
 import NotificationsPage from "./modules/dashboard/organization/pages/NotificationsPage";
 import InvoicesPage from "./modules/dashboard/organization/pages/InvoicesPage";
-import LogsPage from "./modules/dashboard/organization/pages/LogsPage";
 /* پنل ادمین */
 import AdminRoute from "./router/AdminRoute";
 import AdminLayout from "./modules/admin/components/AdminLayout/AdminLayout";
@@ -101,9 +100,16 @@ function App() {
                         <Route path="tickets" element={<DashboardTicketsPage />} />
                         <Route path="notifications" element={<NotificationsPage />} />
                         <Route path="invoices" element={<InvoicesPage />} />
-                        <Route path="logs" element={<LogsPage />} />
                         <Route path="sessions" element={<SessionsPage />} />
                         <Route path="account" element={<AccountPage />} />
+                        {/* «مدیریت LOG» حذف شد (لاگ کاربر عادی وجود
+                            ندارد). بدون این، بوکمارک قدیمیِ
+                            /dashboard/logs یک صفحه‌ی سفید داخل
+                            قالب داشبورد نشان می‌داد. */}
+                        <Route
+                            path="logs"
+                            element={<Navigate to="/dashboard/services" replace />}
+                        />
                     </Route>
                 </Route>
 
