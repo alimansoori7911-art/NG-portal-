@@ -77,13 +77,43 @@ export const adminCatalogService = {
         return api.get(`/admin/plans/${planId}/prices`).then(unwrap)
     },
 
-    createPlanPrice(planId, { code, name, term_code, amount, currency = 'IRR', is_active = true }) {
+    /**
+     * ساخت قیمت برای یک پلن.
+     *
+     * ⚠️ `user_id` **کاربر هدف** است — یعنی کسی که این قیمت برای او
+     * ساخته می‌شود، نه ادمینی که آن را می‌سازد. قیمت‌گذاری در این
+     * سیستم می‌تواند اختصاصیِ هر کاربر باشد.
+     *
+     * یکتایی روی ترکیب `(name, code, term_code, currency, user_id)`
+     * است، پس برای دو سفارشِ همان کاربر با همان شرایط باید `code` یا
+     * `name` فرق کند.
+     *
+     * ⚠️ `discount_percentage` و `tax_percentage` **درصد**اند نه مبلغ
+     * (مثلاً ۱۰ یعنی ۱۰٪). `quoted_amount` مبلغ پایه به واحد پول است.
+     */
+    createPlanPrice(
+        planId,
+        {
+            code,
+            name,
+            term_code,
+            quoted_amount,
+            discount_percentage = 0,
+            tax_percentage = 0,
+            user_id,
+            currency = 'IRR',
+            is_active = true,
+        }
+    ) {
         return api
             .post(`/admin/plans/${planId}/prices`, {
                 code,
                 name,
                 term_code,
-                amount,
+                quoted_amount,
+                discount_percentage,
+                tax_percentage,
+                user_id,
                 currency,
                 is_active,
             })

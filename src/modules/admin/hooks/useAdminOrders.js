@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { adminOrderService, statusLabel } from '../../../services/orderService'
+import { adminCatalogService } from '../../../services/adminCatalogService'
 import { formatToman } from '../../../utils/currency'
 import { formatJalaliDateTime } from '../../../utils/datetime'
 import { fullName } from '../../../utils/name'
@@ -118,8 +119,53 @@ export function useOrderActions(onDone) {
         error,
         clearError: () => setError(null),
 
-        quote: (orderId, values) =>
-            run(() => adminOrderService.quote(orderId, values)),
+        /**
+         * صدور پیش‌فاکتور — دو درخواست پشت سر هم.
+         *
+         * بک‌اند مبلغ را در `quote` نمی‌گیرد؛ اول باید یک
+         * `plan_price` برای **کاربرِ همان سفارش** ساخته شود و بعد
+         * شناسه‌اش به سفارش بچسبد. پیش‌فاکتور خودکار صادر می‌شود.
+         */
+        quote: (order, values) =>
+            run(async () => {
+                const planId = order.plan_id
+                /* بدون این دو، ساخت قیمت ممکن نیست. خطای صریح بهتر از
+                   ۴۲۲ مبهم بک‌اند است. */
+                if (!planId) {
+                    throw new Error('این سفارش پلن مشخصی ندارد')
+                }
+
+                const userId = order.user_id ?? order.user?.id
+                if (!userId) {
+                    throw new Error(
+                        'شناسه‌ی کاربرِ سفارش در دسترس نیست؛ قیمت‌گذاری ممکن نشد'
+                    )
+                }
+
+                /* قیمت روی (name, code, term_code, currency, user_id)
+                   یکتاست. شماره‌ی سفارش در کد و نام می‌آید تا سفارش
+                   بعدیِ همان کاربر با همان شرایط تداخل نکند. */
+                const tag = order.order_number ?? order.id
+
+                const price = await adminCatalogService.createPlanPrice(planId, {
+                    code: `ORDER-${tag}`,
+                    name: `سفارش ${tag}`,
+                    term_code: values.term_code,
+                    quoted_amount: values.quoted_amount,
+                    discount_percentage: values.discount_percentage,
+                    tax_percentage: values.tax_percentage,
+                    user_id: userId,
+                })
+
+                if (!price?.id) {
+                    throw new Error('ساخت قیمت انجام شد ولی شناسه‌ای برنگشت')
+                }
+
+                await adminOrderService.quote(order.id, {
+                    plan_price_id: price.id,
+                    admin_note: values.admin_note,
+                })
+            }),
 
         verifyPayment: (orderId, paymentId, note) =>
             run(() => adminOrderService.verifyPayment(orderId, paymentId, note)),

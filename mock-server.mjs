@@ -34,9 +34,12 @@ const db = {
     invoices: [],
     notifications: [],
     terms: [],
+    planPrices: [],
     otps: new Map(), // identifier -> code
     nextOrderNum: 1001,
     nextTermId: 3,
+    nextPriceId: 1,
+    nextUserId: 1,
 }
 
 /* مدت‌های اعتبار — پنل ادمین این‌ها را می‌سازد و ویرایش می‌کند، پس
@@ -286,6 +289,9 @@ const routes = [
             return [409, fail('CONFLICT', 'username taken')]
         }
         const u = {
+            /* شناسه‌ی عددی لازم است: `plan_price.user_id` عدد می‌گیرد
+               (کاربر هدفِ قیمت‌گذاری). */
+            id: db.nextUserId++,
             username, email, password,
             phone: phone_number,
             public_id: uuid(),
@@ -433,6 +439,9 @@ const routes = [
             order_type: 'purchase',
             status: 'REQUESTED',
             first_name: u.first_name, last_name: u.last_name,
+            /* ادمین برای قیمت‌گذاری به شناسه‌ی کاربرِ سفارش نیاز دارد */
+            user_id: u.id,
+            user_full_name: [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
             product_id: 1, plan_id: plan?.id ?? 1,
             snapshot_product_name: 'NG Corion',
             snapshot_plan_name: plan?.name ?? 'پایه',
@@ -560,13 +569,73 @@ const routes = [
 
     ['GET', /^\/admin\/orders\/payments$/, () => page([])],
     ['GET', /^\/admin\/orders\/$/, () => page(db.orders)],
+    /* ساخت قیمت برای یک پلن.
+
+       یکتایی روی (name, code, term_code, currency, user_id) است —
+       عیناً همان قاعده‌ای که بک‌اند گفت. `user_id` کاربر **هدف** است
+       نه سازنده. */
+    ['POST', /^\/admin\/plans\/[^/]+\/prices$/, (req) => {
+        const planId = Number(req.path.split('/')[3])
+        const { code, name, term_code, currency = 'IRR', user_id } = req.body ?? {}
+
+        if (!term_code) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
+                { loc: "('body', 'term_code')", msg: 'term_code الزامی است' },
+            ])]
+        }
+
+        const clash = db.planPrices.find(
+            (p) =>
+                p.name === name &&
+                p.code === code &&
+                p.term_code === term_code &&
+                p.currency === currency &&
+                p.user_id === user_id
+        )
+        if (clash) {
+            return [409, fail('CONFLICT', 'قیمتی با این مشخصات از قبل هست')]
+        }
+
+        const price = {
+            id: db.nextPriceId++,
+            plan_id: planId,
+            code, name, term_code, currency,
+            quoted_amount: req.body.quoted_amount ?? 0,
+            discount_percentage: req.body.discount_percentage ?? 0,
+            tax_percentage: req.body.tax_percentage ?? 0,
+            user_id: user_id ?? null,
+            is_active: req.body.is_active !== false,
+        }
+        db.planPrices.push(price)
+        console.log(`   💰 قیمت ${price.code} برای کاربر ${user_id} ساخته شد`)
+        return [201, ok(price)]
+    }],
+
     ['POST', /^\/admin\/orders\/[^/]+\/(quote|status)$/, (req) => {
         const o = db.orders.find((x) => req.path.includes(x.id))
         if (o && req.path.endsWith('/status')) o.status = req.body.status
+
         if (o && req.path.endsWith('/quote')) {
+            /* مبلغ اینجا نمی‌آید؛ از روی `plan_price` خوانده می‌شود. */
+            const price = db.planPrices.find(
+                (p) => p.id === Number(req.body.plan_price_id)
+            )
+            if (!price) {
+                return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
+                    { loc: "('body', 'plan_price_id')", msg: 'قیمت پیدا نشد' },
+                ])]
+            }
+
+            /* همان فرمولی که فرانت پیش‌نمایش می‌دهد */
+            const base = Number(price.quoted_amount) || 0
+            const afterDiscount = base * (1 - (price.discount_percentage || 0) / 100)
+            const payable = Math.round(afterDiscount * (1 + (price.tax_percentage || 0) / 100))
+
             o.status = 'QUOTATION_ISSUED'
-            o.quoted_amount = String(req.body.quoted_amount ?? 0)
-            o.payable_amount = String(req.body.quoted_amount ?? 0)
+            o.plan_price_id = price.id
+            o.quoted_amount = String(base)
+            o.payable_amount = String(payable)
+            o.admin_note = req.body.admin_note ?? null
         }
         return ok(o ?? {})
     }],
@@ -744,7 +813,10 @@ const server = createServer((req, res) => {
         /* اعلان و فاکتور دوباره seed می‌شوند نه خالی — وگرنه بعد از
            reset آن صفحه‌ها خالی می‌مانند و نمی‌شود تستشان کرد. */
         seedNotifications(); seedInvoices(); seedTerms()
+        db.planPrices.length = 0
         db.nextOrderNum = 1001
+        db.nextPriceId = 1
+        db.nextUserId = 1
         forcedErrors.clear()
         /* کوکی هم باید منقضی شود، وگرنه مرورگر هنوز `session_id` کاربرِ
            پاک‌شده را می‌فرستد: رفرش ۲۰۰ می‌دهد ولی توکنش برای کاربری

@@ -6,6 +6,7 @@ import QuoteForm from '../components/QuoteForm/QuoteForm'
 import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPanel'
 import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
+import { useBillingTerms } from '../hooks/useBillingTerms'
 import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SalesPage.module.css'
@@ -73,6 +74,8 @@ export default function SalesPage() {
     const [fieldErrors, setFieldErrors] = useState({})
 
     const orders = useAdminOrders()
+    /* فقط وقتی فرم پیش‌فاکتور باز است بارگذاری می‌شود */
+    const billingTerms = useBillingTerms(quoting !== null)
     const actions = useOrderActions(() => {
         orders.reload()
         setStatusMenu(false)
@@ -247,10 +250,11 @@ export default function SalesPage() {
             {quoting ? (
                 <QuoteForm
                     order={quoting}
+                    termList={billingTerms.terms}
                     busy={actions.busy}
                     error={actions.error}
                     onSubmit={async (values) => {
-                        const ok = await actions.quote(quoting.id, values)
+                        const ok = await actions.quote(quoting, values)
                         if (ok) setQuoting(null)
                     }}
                     onClose={() => {

@@ -4,20 +4,34 @@ import { formatToman, rialToToman, tomanToRial } from '../../../../utils/currenc
 import styles from './QuoteForm.module.css'
 
 /**
- * صدور پیش‌فاکتور — ادمین مبلغ نهایی سفارش را تعیین می‌کند.
+ * صدور پیش‌فاکتور — دو مرحله در یک فرم.
  *
- * ورودی‌ها تومان‌اند و هنگام ارسال به ریال تبدیل می‌شوند، چون بک‌اند
- * همه‌جا ریال می‌گیرد.
+ * فلوی بک‌اند:
+ *   ۱. `POST /admin/plans/{plan_id}/prices` → ساخت `plan_price`
+ *      برای **همان کاربر** و همان پلن
+ *   ۲. `POST /admin/orders/{order_id}/quote` با `plan_price_id`
+ *   → پیش‌فاکتور خودکار صادر می‌شود
  *
- * «قابل پرداخت» همین‌جا محاسبه و نشان داده می‌شود تا ادمین قبل از
- * ثبت ببیند کاربر چه مبلغی خواهد دید — نه اینکه بعداً غافلگیر شود.
+ * ادمین این دو مرحله را نمی‌بیند؛ یک فرم پر می‌کند و هر دو پشت سر هم
+ * انجام می‌شوند.
+ *
+ * ⚠️ تخفیف و مالیات **درصد**اند نه مبلغ — بک‌اند
+ * `discount_percentage` و `tax_percentage` می‌گیرد.
  */
-export default function QuoteForm({ order, busy, error, onSubmit, onClose }) {
-    /* مقدار اولیه از snapshot سفارش می‌آید تا ادمین از صفر تایپ نکند */
+export default function QuoteForm({
+    order,
+    termList = [],
+    busy,
+    error,
+    onSubmit,
+    onClose,
+}) {
     const [form, setForm] = useState({
+        /* مقدار اولیه از snapshot سفارش تا ادمین از صفر تایپ نکند */
         quoted: String(rialToToman(order.snapshot_total_amount) ?? ''),
-        discount: '',
-        tax: '',
+        discountPct: '',
+        taxPct: '',
+        termCode: termList[0]?.code ?? '',
         note: '',
     })
 
@@ -30,21 +44,30 @@ export default function QuoteForm({ order, busy, error, onSubmit, onClose }) {
     }
 
     const quotedToman = num(form.quoted)
-    const payableToman = Math.max(
-        0,
-        quotedToman - num(form.discount) + num(form.tax)
-    )
+    const discountPct = num(form.discountPct)
+    const taxPct = num(form.taxPct)
 
-    const valid = quotedToman > 0
+    /* همان فرمولی که بک‌اند اعمال می‌کند، تا ادمین قبل از ثبت ببیند
+       کاربر چه مبلغی خواهد دید. */
+    const afterDiscount = quotedToman * (1 - discountPct / 100)
+    const payableToman = Math.max(0, Math.round(afterDiscount * (1 + taxPct / 100)))
+
+    const pctValid = (p) => p >= 0 && p <= 100
+    const valid =
+        quotedToman > 0 &&
+        pctValid(discountPct) &&
+        pctValid(taxPct) &&
+        Boolean(form.termCode)
 
     const submit = (e) => {
         e.preventDefault()
         if (!valid || busy) return
         onSubmit({
             quoted_amount: tomanToRial(form.quoted),
-            discount_amount: tomanToRial(form.discount || 0),
-            tax_amount: tomanToRial(form.tax || 0),
-            admin_note: form.note || undefined,
+            discount_percentage: discountPct,
+            tax_percentage: taxPct,
+            term_code: form.termCode,
+            admin_note: form.note || null,
         })
     }
 
@@ -77,25 +100,46 @@ export default function QuoteForm({ order, busy, error, onSubmit, onClose }) {
                     />
                 </label>
 
+                {/* مدت اعتبار بخشی از هویت قیمت است، پس اینجا لازم است */}
                 <label className={styles.field}>
-                    <span className={styles.label}>تخفیف (تومان)</span>
+                    <span className={styles.label}>مدت اعتبار *</span>
+                    <select
+                        className={styles.input}
+                        value={form.termCode}
+                        onChange={change('termCode')}
+                    >
+                        {termList.length === 0 && (
+                            <option value="">مدتی تعریف نشده</option>
+                        )}
+                        {termList.map((t) => (
+                            <option key={t.code} value={t.code}>
+                                {t.name}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <label className={styles.field}>
+                    <span className={styles.label}>تخفیف (٪)</span>
                     <input
                         className={styles.input}
                         inputMode="numeric"
-                        value={form.discount}
-                        onChange={change('discount')}
+                        value={form.discountPct}
+                        onChange={change('discountPct')}
                         dir="ltr"
+                        placeholder="0"
                     />
                 </label>
 
                 <label className={styles.field}>
-                    <span className={styles.label}>مالیات (تومان)</span>
+                    <span className={styles.label}>مالیات (٪)</span>
                     <input
                         className={styles.input}
                         inputMode="numeric"
-                        value={form.tax}
-                        onChange={change('tax')}
+                        value={form.taxPct}
+                        onChange={change('taxPct')}
                         dir="ltr"
+                        placeholder="10"
                     />
                 </label>
 
@@ -117,6 +161,13 @@ export default function QuoteForm({ order, busy, error, onSubmit, onClose }) {
                     {formatToman(tomanToRial(payableToman))}
                 </b>
             </div>
+
+            {termList.length === 0 && (
+                <p className={styles.error} role="alert">
+                    هیچ «مدت اعتبار»ی تعریف نشده است. اول از بخش محصولات
+                    و کاتالوگ یکی بسازید.
+                </p>
+            )}
 
             {error && (
                 <p className={styles.error} role="alert">

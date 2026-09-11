@@ -483,26 +483,32 @@ enumها هم مو به مو خواندند: ۱۲ وضعیت سفارش، ۷ و�
 حالا ادمین می‌تواند سفارش را ببیند، قیمت بزند، رسید را تأیید کند و
 وضعیت را عوض کند.
 
-### ❓ ابهام: `plan_base_price` در صدور پیش‌فاکتور
+### ✅ حل شد: `plan_price` در صدور پیش‌فاکتور
 
-`flow.dot` (خط ۳۵) می‌گوید:
-
-```
-Create plan_base_price (per-user pricing) & attach by id
-```
-
-یعنی ادمین باید **اول یک قیمت اختصاصی بسازد** و بعد با شناسه به سفارش
-بچسباند. ولی `AdminPriceOrder` (بدنه‌ی `quote`) چنین فیلدی ندارد:
+بک‌اند تأیید کرد فلو **دو مرحله‌ای** است و نام موجودیت هم عوض شده:
+`plan_base_price` → **`plan_price`**.
 
 ```
-quoted_amount · discount_amount · tax_amount · admin_note
+۱. POST /admin/plans/{plan_id}/prices
+   { term_code, currency, code, name, quoted_amount,
+     discount_percentage, tax_percentage, user_id }
+
+۲. POST /admin/orders/{order_id}/quote
+   { plan_price_id, admin_note }
 ```
 
-**تصمیم فعلی:** تفسیر ساده‌تر پیاده شد — ادمین مستقیم مبلغ می‌زند،
-چون این با اسپک می‌خواند. اگر واقعاً باید `plan_base_price` ساخته
-شود، فرم باید دو مرحله‌ای شود.
+نکته‌های مهم:
 
-**سؤال از بک‌اند:** کدام درست است؟
+- **`user_id` کاربرِ هدف است** نه ادمینی که قیمت را می‌سازد.
+- یکتایی روی `(name, code, term_code, currency, user_id)` است — پس
+  کد و نامِ قیمت با شماره‌ی سفارش ساخته می‌شود تا سفارش بعدیِ همان
+  کاربر تداخل نکند.
+- **تخفیف و مالیات درصدند** (`*_percentage`) نه مبلغ.
+- `POST /orders/` قیمت نمی‌گیرد؛ فقط `product_id`، `plan_id`،
+  `quantity` و `customer_note`.
+
+✅ پیاده شد: فرم پیش‌فاکتور برای ادمین همان یک فرم است ولی پشت صحنه
+هر دو درخواست را می‌زند.
 
 ### ℹ️ ستون «خریدار» شناسه نشان می‌دهد
 

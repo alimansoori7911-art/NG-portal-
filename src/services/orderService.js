@@ -76,23 +76,19 @@ export const orderService = {
     },
 
     /* POST /orders/ — ثبت سفارش خرید.
-       CreateOrder: هیچ فیلدی اجباری نیست ولی عملاً plan_id و
-       plan_base_price_id لازم‌اند تا مشخص شود چه چیزی سفارش داده شده. */
-    createOrder({
-        plan_id,
-        product_id,
-        plan_base_price_id,
-        quantity = 1,
-        customer_note,
-    }) {
+
+       ⚠️ قیمت اینجا نیست. کاربر فقط می‌گوید «چه پلنی از چه محصولی»؛
+       قیمت‌گذاری بعداً توسط ادمین انجام می‌شود (رجوع به `quote`).
+       فیلد `plan_base_price_id` قبلاً اشتباه فرستاده می‌شد — در این
+       اندپوینت وجود ندارد. */
+    createOrder({ plan_id, product_id, quantity = 1, customer_note }) {
         return api
             .post('/orders/', {
                 order_type: 'purchase',
-                plan_id,
-                product_id,
-                plan_base_price_id,
+                product_id: product_id ?? null,
+                plan_id: plan_id ?? null,
                 quantity,
-                customer_note,
+                customer_note: customer_note ?? null,
             })
             .then(unwrap)
     },
@@ -227,20 +223,21 @@ export const adminOrderService = {
             }))
     },
 
-    /* POST /admin/orders/{id}/quote — صدور پیش‌فاکتور.
-       فقط quoted_amount اجباری است؛ تخفیف و مالیات پیش‌فرض صفرند.
-
-       ⚠️ فلو می‌گوید ادمین اول یک plan_base_price اختصاصی می‌سازد و
-       بعد به سفارش می‌چسباند، ولی AdminPriceOrder چنین فیلدی ندارد
-       و فقط مبلغ می‌گیرد. تفسیر ساده‌تر (مبلغ مستقیم) پیاده شده و
-       تناقض در BACKEND_NEEDS.md ثبت شده است. */
-    quote(orderId, { quoted_amount, discount_amount = 0, tax_amount = 0, admin_note }) {
+    /**
+     * POST /admin/orders/{id}/quote — صدور پیش‌فاکتور.
+     *
+     * مبلغ **اینجا** فرستاده نمی‌شود: ادمین اول با
+     * `POST /admin/plans/{plan_id}/prices` یک `plan_price` برای همان
+     * کاربر و پلن می‌سازد، و اینجا فقط شناسه‌اش را می‌چسباند. خودِ
+     * پیش‌فاکتور را بک‌اند به‌صورت خودکار صادر می‌کند.
+     *
+     * (نام قدیمی این موجودیت `plan_base_price` بود.)
+     */
+    quote(orderId, { plan_price_id, admin_note }) {
         return api
             .post(`/admin/orders/${orderId}/quote`, {
-                quoted_amount: String(quoted_amount),
-                discount_amount: String(discount_amount),
-                tax_amount: String(tax_amount),
-                admin_note,
+                plan_price_id,
+                admin_note: admin_note ?? null,
             })
             .then(unwrap)
     },
