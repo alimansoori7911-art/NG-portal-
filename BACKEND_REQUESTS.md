@@ -150,21 +150,22 @@
 ✅ نکته‌ی `public_id` را اعمال کردیم: لاگ ممیزی حالا
 `actor_public_id` را ترجیح می‌دهد.
 
-⚠️ ولی **دو مورد هنوز فقط شناسه‌ی عددی دارند** و `public_id` ندارند:
+وضعیت دقیق بر اساس **اسپک فعلی سرور**:
 
-| اسکیما | الان | نبود |
+| اسکیما | شناسه | نام |
 |---|---|---|
-| `OrderOutput` | `user_id` | `user_public_id` |
-| `TicketOutSchema` | `user_id`, `assigned_to_user_id` | نسخه‌ی public |
-| `AuditLogSchema` | ✅ `actor_public_id` دارد | — |
-| `PaymentRecordOutputAdmin` | ✅ `user_public_id` دارد | — |
+| `OrderOutput` | ❌ **هیچ‌کدام** — نه `user_id` نه `user_public_id` | ✅ `first_name` + `last_name` |
+| `TicketOutSchema` | ✅ `user_id` (عدد) | ❌ ندارد |
+| `PaymentRecordOutputAdmin` | ✅ `user_public_id` | ✅ `first_name` + `last_name` |
+| `AuditLogSchema` | ✅ `actor_public_id` | ❌ ندارد |
 
-⚠️ **نکته‌ی مهم‌تر:** درخواست اصلی **نام** بود نه شناسه‌ی امن‌تر.
-`public_id` هم UUID است، پس هنوز به کاربر `#0198aa11` نشان می‌دهیم
-به‌جای «علی رضایی».
+پس الگوی `PaymentRecordOutputAdmin` (هم شناسه هم نام) همان چیزی است
+که برای بقیه هم می‌خواهیم:
 
-در `PaymentRecordOutputAdmin` فیلد **`user_full_name`** گذاشتید — همان
-الگو برای `OrderOutput` و `TicketOutSchema` هم عالی است.
+- **`OrderOutput`** نام دارد ولی شناسه ندارد → قیمت‌گذاری بلاک است
+  (بالاتر توضیح داده شد)
+- **`TicketOutSchema`** شناسه دارد ولی نام ندارد → در جدول تیکت‌ها
+  به‌جای «علی رضایی» عدد نشان می‌دهیم
 
 ### آپلود مدارک بیشتر برای یک پرداخت *(مورد جدید)*
 
