@@ -746,7 +746,15 @@ const server = createServer((req, res) => {
         seedNotifications(); seedInvoices(); seedTerms()
         db.nextOrderNum = 1001
         forcedErrors.clear()
-        res.writeHead(200, { 'Content-Type': 'application/json' })
+        /* کوکی هم باید منقضی شود، وگرنه مرورگر هنوز `session_id` کاربرِ
+           پاک‌شده را می‌فرستد: رفرش ۲۰۰ می‌دهد ولی توکنش برای کاربری
+           است که دیگر وجود ندارد، و بعد `/auth/me` ۴۰۱ می‌شود —
+           حلقه‌ای که تشخیصش سخت است و شبیه باگ اپ به نظر می‌رسد. */
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Set-Cookie':
+                'session_id=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
+        })
         res.end(JSON.stringify({ message: 'reset' }))
         console.log('🔄 داده پاک شد')
         return

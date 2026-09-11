@@ -75,6 +75,14 @@ export const useAuthStore = create((set) => ({
         initPromise = (async () => {
             try {
                 const { access_token } = await authService.refresh();
+
+                /* پاسخِ بدون توکن نباید «موفق» حساب شود، وگرنه
+                   `set(undefined)` توکن را پاک می‌کند و کاربر بی‌دلیل
+                   بیرون می‌افتد. */
+                if (!access_token) {
+                    throw new Error("refresh response had no access_token");
+                }
+
                 tokenManager.set(access_token);
                 const user = await authService.getMe();
 
@@ -95,9 +103,30 @@ export const useAuthStore = create((set) => ({
                     user: { roles: tokenManager.rolesFromToken(), ...user },
                     status: "authenticated",
                 });
-            } catch {
-                // کوکی نبود یا منقضی بود → کاربر مهمانه، اتفاق خاصی نیفتاده
-                tokenManager.clear();
+            } catch (err) {
+                /*
+                  فقط ۴۰۱/۴۰۳ یعنی «کوکی رفرش باطل است» → مهمان.
+
+                  ⚠️ قبلاً هر خطایی اینجا کاربر را مهمان می‌کرد و
+                  `tokenManager.clear()` نشانه‌ی نشست را هم پاک
+                  می‌کرد. یعنی یک قطعیِ لحظه‌ای شبکه یا ۵۰۰ سرور موقع
+                  لود صفحه، کاربر را به صفحه‌ی ورود می‌فرستاد و چون
+                  نشانه پاک شده بود، دفعه‌ی بعد هم اصلاً رفرش را
+                  امتحان نمی‌کرد — کاربر دوباره رمز می‌خواست در حالی
+                  که کوکی‌اش سالم بود.
+
+                  در خطاهای گذرا نشانه دست‌نخورده می‌ماند تا لود بعدی
+                  دوباره تلاش کند.
+                */
+                const status = err?.status ?? err?.response?.status;
+                const rejectedByServer = status === 401 || status === 403;
+
+                if (rejectedByServer) {
+                    tokenManager.clear();
+                } else {
+                    /* توکنِ حافظه بی‌اعتبار است ولی نشانه می‌ماند */
+                    tokenManager.set(null);
+                }
                 set({ user: null, status: "guest" });
             }
         })().finally(() => {

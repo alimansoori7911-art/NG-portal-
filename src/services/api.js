@@ -109,7 +109,29 @@ async function refreshAccessToken() {
         refreshPromise = refreshClient
             .post("/auth/refresh")
             .then((res) => {
-                const newToken = res.data?.data?.access_token;
+                /*
+                  پاسخ در قالب { data: { access_token } } است، ولی
+                  بعضی پاسخ‌ها یک لایه بالاتر می‌گذارندش. هر دو خوانده
+                  می‌شود تا شکلِ متفاوت باعث خروج کاربر نشود.
+                */
+                const newToken =
+                    res.data?.data?.access_token ?? res.data?.access_token;
+
+                /*
+                  ⚠️ حیاتی: بدون این بررسی، پاسخِ ۲۰۰ که توکن ندارد
+                  باعث `tokenManager.set(undefined)` می‌شد — یعنی توکن
+                  **پاک** می‌شد بی‌آنکه خطایی رخ دهد. بعد هر درخواست
+                  ۴۰۱ می‌گرفت و چون `_retry` جلوی رفرش دوم را می‌گیرد،
+                  کاربر بی‌دلیل بیرون انداخته می‌شد و دوباره رمز
+                  می‌خواست — در حالی که رفرش‌توکن در کوکی سالم بود.
+
+                  حالا این حالت یک شکستِ صریح است تا مسیر خطا
+                  تصمیم بگیرد، نه اینکه بی‌صدا نشست را از بین ببرد.
+                */
+                if (!newToken) {
+                    throw new Error("refresh response had no access_token");
+                }
+
                 tokenManager.set(newToken);
                 broadcastToken(newToken);
                 return newToken;
@@ -166,11 +188,28 @@ api.interceptors.response.use(
             try {
                 await refreshAccessToken();
                 return api(originalRequest); // 🔁 تکرار درخواست اصلی
-            } catch {
-                // رفرش هم شکست خورد → نشست واقعاً منقضی شده
-                tokenManager.clear();
-                broadcastLogout();
-                window.dispatchEvent(new Event("auth:session-expired"));
+            } catch (refreshError) {
+                /*
+                  فقط وقتی خارج می‌کنیم که خودِ رفرش‌توکن رد شده باشد.
+
+                  قبلاً **هر** شکستی کاربر را بیرون می‌انداخت: قطعیِ
+                  لحظه‌ای شبکه، ۵۰۰ سرور، یا حتی تایم‌اوت. هیچ‌کدام
+                  نمی‌گویند کوکی باطل است، ولی کاربر دوباره رمز
+                  می‌خواست.
+
+                  با ۴۰۱/۴۰۳ یعنی سرور صریحاً رفرش‌توکن را نپذیرفته —
+                  آنجا خروج درست است. در بقیه‌ی حالت‌ها توکن دست‌نخورده
+                  می‌ماند و درخواست بعدی دوباره شانس رفرش دارد.
+                */
+                const refreshStatus = refreshError?.response?.status;
+                const rejectedByServer =
+                    refreshStatus === 401 || refreshStatus === 403;
+
+                if (rejectedByServer) {
+                    tokenManager.clear();
+                    broadcastLogout();
+                    window.dispatchEvent(new Event("auth:session-expired"));
+                }
             }
         }
 
