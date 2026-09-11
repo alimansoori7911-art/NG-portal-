@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import { formatToman, rialToToman, tomanToRial } from '../../../../utils/currency'
+import { PRICE_TERM_CODES } from '../../../../services/adminCatalogService'
 import styles from './QuoteForm.module.css'
 
 /**
@@ -26,12 +27,20 @@ export default function QuoteForm({
     onSubmit,
     onClose,
 }) {
+    /* `term_code` در `CreatePlanPrice` یک enum بسته است، ولی
+       `BillingTerm.code` متن آزاد. پس مدت‌هایی که کدشان جزو enum
+       نیست حذف می‌شوند — وگرنه ادمین گزینه‌ای می‌دید که قطعاً ۴۲۲
+       می‌گرفت. */
+    const usableTerms = termList.filter((t) =>
+        PRICE_TERM_CODES.includes(t.code)
+    )
+
     const [form, setForm] = useState({
         /* مقدار اولیه از snapshot سفارش تا ادمین از صفر تایپ نکند */
         quoted: String(rialToToman(order.snapshot_total_amount) ?? ''),
         discountPct: '',
         taxPct: '',
-        termCode: termList[0]?.code ?? '',
+        termCode: usableTerms[0]?.code ?? '',
         note: '',
     })
 
@@ -108,10 +117,10 @@ export default function QuoteForm({
                         value={form.termCode}
                         onChange={change('termCode')}
                     >
-                        {termList.length === 0 && (
+                        {usableTerms.length === 0 && (
                             <option value="">مدتی تعریف نشده</option>
                         )}
-                        {termList.map((t) => (
+                        {usableTerms.map((t) => (
                             <option key={t.code} value={t.code}>
                                 {t.name}
                             </option>
@@ -162,10 +171,11 @@ export default function QuoteForm({
                 </b>
             </div>
 
-            {termList.length === 0 && (
+            {usableTerms.length === 0 && (
                 <p className={styles.error} role="alert">
-                    هیچ «مدت اعتبار»ی تعریف نشده است. اول از بخش محصولات
-                    و کاتالوگ یکی بسازید.
+                    {termList.length === 0
+                        ? 'هیچ «مدت اعتبار»ی تعریف نشده است. اول از بخش محصولات و کاتالوگ یکی بسازید.'
+                        : 'هیچ‌کدام از مدت‌های اعتبار موجود برای قیمت‌گذاری قابل استفاده نیست. کد مدت باید یکی از monthly، yearly، perpetual یا trial باشد.'}
                 </p>
             )}
 

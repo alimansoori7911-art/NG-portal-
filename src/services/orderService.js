@@ -244,9 +244,14 @@ export const adminOrderService = {
 
     /* GET /admin/orders/payments — همه‌ی پرداخت‌های سیستم.
 
-       خروجی `PaymentRecordOutputAdmin` است که برخلاف بقیه‌ی جدول‌های
-       ادمین **نام کاربر** را هم می‌دهد (`user_full_name`)، نه فقط
-       شناسه‌ی عددی. */
+       ⚠️ خروجی **تخت نیست**: هر آیتم `PaymentRecordOutputAdmin` است
+       که یک سفارش را نشان می‌دهد و پرداخت‌هایش در آرایه‌ی تودرتوی
+       `PaymentRecords` هستند. نام کاربر هم به‌شکل `first_name` و
+       `last_name` می‌آید (نه `user_full_name`)، به‌همراه
+       `user_public_id`.
+
+       پس مصرف‌کننده باید تخت‌شان کند؛ با `fullName()` از utils/name
+       نام ساخته می‌شود. */
     getAllPayments({ page = 1, limit = 20 } = {}) {
         return api
             .get('/admin/orders/payments', { params: { page, limit } })

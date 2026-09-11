@@ -135,10 +135,21 @@ export function useOrderActions(onDone) {
                     throw new Error('این سفارش پلن مشخصی ندارد')
                 }
 
+                /* ⚠️ اینجا به بک‌اند وابسته‌ایم و فعلاً کار نمی‌کند:
+                   `CreatePlanPrice` فیلد `user_id` را **اجباری**
+                   می‌خواهد (کاربر هدفِ قیمت)، ولی `OrderOutput` در
+                   اسپک هیچ فیلد کاربری ندارد — نه `user_id` نه
+                   `user_public_id`. فقط `first_name`/`last_name` دارد
+                   که برای ساخت قیمت کافی نیست.
+
+                   پس تا وقتی بک‌اند `user_id` را به `OrderOutput`
+                   اضافه نکند، با خطای صریح متوقف می‌شویم نه با یک
+                   ۴۲۲ مبهم. رجوع به BACKEND_REQUESTS.md */
                 const userId = order.user_id ?? order.user?.id
                 if (!userId) {
                     throw new Error(
-                        'شناسه‌ی کاربرِ سفارش در دسترس نیست؛ قیمت‌گذاری ممکن نشد'
+                        'شناسه‌ی کاربرِ سفارش در پاسخ بک‌اند نیست، پس قیمت‌گذاری ممکن نشد. ' +
+                            'بک‌اند باید user_id را به OrderOutput اضافه کند.'
                     )
                 }
 
