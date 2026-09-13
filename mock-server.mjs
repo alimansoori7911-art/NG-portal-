@@ -687,6 +687,23 @@ const routes = [
     ['GET', /^\/admin\/products$/, () => page([
         { id: 1, code: 'NGC', slug: 'ng-corion', name: 'NG Corion', is_active: true, is_public: true },
     ])],
+    /* نسخه‌های محصول = ریلیز نوت‌ها در پنل ادمین.
+       فهرست سراسری ندارد، فقط زیرمجموعه‌ی محصول — عیناً مثل اسپک. */
+    ['GET', /^\/admin\/products\/[^/]+\/versions$/, () => page([
+        {
+            id: 1, product_id: 1, version: '2.4.0',
+            release_date: '2026-08-20', is_release: true,
+            changelog: 'بهبود سرعت پایش و رفع چند باگ گزارش‌شده.',
+            created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+        },
+        {
+            id: 2, product_id: 1, version: '2.5.0-rc1',
+            release_date: null, is_release: false,
+            changelog: 'نسخه‌ی آزمایشی — هنوز منتشر نشده.',
+            created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+        },
+    ])],
+
     ['GET', /^\/admin\/plans$/, () => page([
         { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true, prices: [], features: [] },
     ])],

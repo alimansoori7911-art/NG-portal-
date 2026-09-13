@@ -4,6 +4,7 @@ import SystemAlertList from '../components/SystemAlertList/SystemAlertList'
 import ContentForm from '../components/ContentForm/ContentForm'
 import SendNotificationForm from '../components/SendNotificationForm/SendNotificationForm'
 import { useNotificationTemplates } from '../hooks/useNotificationTemplates'
+import { useReleaseNotes } from '../hooks/useReleaseNotes'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SettingsPage.module.css'
 
@@ -40,11 +41,16 @@ const RELEASE_ACTIONS = [
  * ابزارها و تنظیمات سیستم — سه تب.
  *
  * تب نوتیفیکیشن به بک‌اند وصل است (قالب‌ها + ارسال).
- * TODO: اعلان‌های سیستمی و ریلیز نوت اندپوینت ندارند.
+ *
+ * تب ریلیز نوت از اسپک ۱۷ وصل شد: نسخه‌های محصول
+ * (`GET /admin/products/{id}/versions`). فقط خواندنی است چون فرم ساخت
+ * نسخه در فیگما طراحی نشده.
+ *
+ * TODO: اعلان‌های سیستمی هنوز اندپوینت ندارد — از خود سیستم می‌آید و
+ *       در اسپک هیچ مسیری برایش نیست.
  */
 export default function SettingsPage() {
     const [tab, setTab] = useState('notifications')
-    const [page, setPage] = useState(1)
     const [creating, setCreating] = useState(false)
     const [fieldErrors, setFieldErrors] = useState({})
 
@@ -52,13 +58,15 @@ export default function SettingsPage() {
 
     const switchTab = (id) => {
         setTab(id)
-        setPage(1)
         setCreating(false)
         setFieldErrors({})
     }
 
     const isNotifications = tab === 'notifications'
     const isReleases = tab === 'releases'
+
+    /* فقط وقتی تب ریلیز باز است درخواست می‌رود */
+    const releases = useReleaseNotes(isReleases)
 
     const handleSubmit = (values) => {
         /* ریلیز نوت هنوز اندپوینت ندارد؛ فقط اعتبارسنجی خالی نبودن. */
@@ -124,20 +132,28 @@ export default function SettingsPage() {
                     />
                 )
             ) : isReleases ? (
-                <ComingSoon note="ریلیز نوت در فاز توسعه اضافه می‌شود.">
-                    <div className={styles.toolbar}>
-                        <button type="button" className={styles.createBtn}>
-                            ساخت Release Notes
-                        </button>
-                    </div>
-                    <AdminTable
-                        columns={RELEASE_COLUMNS}
-                        rows={[]}
-                        page={1}
-                        rowsPerPage={9}
-                    />
-                </ComingSoon>
+                /* ریلیز نوت = نسخه‌های محصول
+                   (`GET /admin/products/{id}/versions`). پوشش «به‌زودی»
+                   برداشته شد چون داده‌ی واقعی دارد.
+
+                   ⚠️ دکمه‌ی «ساخت» نیست: `POST` نسخه وجود دارد ولی
+                   فرمش در فیگما طراحی نشده. تا آن‌موقع این صفحه فقط
+                   نمایشی است. */
+                <AdminTable
+                    columns={RELEASE_COLUMNS}
+                    rows={releases.rows}
+                    page={1}
+                    rowsPerPage={9}
+                    emptyMessage={
+                        releases.loading
+                            ? 'در حال دریافت ریلیز نوت‌ها…'
+                            : releases.error || 'نسخه‌ای ثبت نشده است'
+                    }
+                />
             ) : (
+                /* فقط تب نوتیفیکیشن به اینجا می‌رسد: ریلیز و اعلان
+                   سیستمی بالاتر برگردانده می‌شوند، پس شرط‌های
+                   `isReleases` که قبلاً اینجا بود حذف شد. */
                 <>
                     <div className={styles.toolbar}>
                         <button
@@ -145,23 +161,21 @@ export default function SettingsPage() {
                             className={styles.createBtn}
                             onClick={() => setCreating(true)}
                         >
-                            {isNotifications ? 'فرم ارسال نوتیفیکیشن' : 'ساخت Release Notes'}
+                            فرم ارسال نوتیفیکیشن
                         </button>
                     </div>
 
                     <AdminTable
-                        columns={isReleases ? RELEASE_COLUMNS : NOTIFICATION_COLUMNS}
-                        rows={isReleases ? [] : templates.rows}
-                        page={isReleases ? page : templates.page}
-                        pageCount={isReleases ? undefined : templates.pageCount}
-                        onPageChange={isReleases ? setPage : templates.setPage}
+                        columns={NOTIFICATION_COLUMNS}
+                        rows={templates.rows}
+                        page={templates.page}
+                        pageCount={templates.pageCount}
+                        onPageChange={templates.setPage}
                         rowsPerPage={9}
                         emptyMessage={
-                            isReleases
-                                ? undefined
-                                : templates.loading
-                                  ? 'در حال دریافت قالب‌ها…'
-                                  : templates.error || 'قالبی تعریف نشده است'
+                            templates.loading
+                                ? 'در حال دریافت قالب‌ها…'
+                                : templates.error || 'قالبی تعریف نشده است'
                         }
                     />
                 </>

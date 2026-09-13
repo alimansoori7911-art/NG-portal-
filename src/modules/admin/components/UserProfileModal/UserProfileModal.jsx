@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
-import ComingSoon from '../../../../components/ui/ComingSoon/ComingSoon'
 import { useUserOrders } from '../../hooks/useUserOrders'
 import { useUserTickets } from '../../hooks/useUserTickets'
+import { useLicenses } from '../../hooks/useLicenses'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './UserProfileModal.module.css'
@@ -23,13 +23,18 @@ const ORDER_COLUMNS = [
     { key: 'date', label: 'تاریخ', width: '12%', ltr: true },
 ]
 
+/* ستون‌ها از `LicenseListOutput` اسپک ۱۷، نه فیگما.
+
+   فیگما «کد لایسنس» و «سرور متصل» می‌خواست ولی در پاسخ نیستند؛ به‌جای
+   ستون همیشه‌خالی، شماره‌ی سفارش می‌آید که لایسنس را به خریدش وصل
+   می‌کند. همان ستون‌های تب لایسنس در «فروش و مشتریان». */
 const LICENSE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '12.27%' },
-    { key: 'license', label: 'کد لایسنس', width: '17.39%', ltr: true },
-    { key: 'status', label: 'وضعیت', width: '17.42%' },
-    { key: 'expiresAt', label: 'تاریخ انقضا', width: '19.48%', ltr: true },
-    { key: 'activatedAt', label: 'تاریخ فعال سازی', width: '19.34%', ltr: true },
-    { key: 'server', label: 'سرور متصل', width: '14.10%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '10%' },
+    { key: 'orderNumber', label: 'شماره سفارش', width: '22%', ltr: true },
+    { key: 'startsAt', label: 'تاریخ فعال‌سازی', width: '19%', ltr: true },
+    { key: 'expiresAt', label: 'تاریخ انقضا', width: '19%', ltr: true },
+    { key: 'limits', label: 'سقف‌ها', width: '16%' },
+    { key: 'status', label: 'وضعیت', width: '14%' },
 ]
 
 const TICKET_COLUMNS = [
@@ -96,8 +101,8 @@ function SectionTitle({ children }) {
  * هنوز این فیلتر را پیاده نکرده باشد، به‌جای نشان دادن تیکت‌های همه‌ی
  * کاربران پیام می‌دهد — رجوع به `useUserTickets`.
  *
- * جدول لایسنس زیر پوشش «به‌زودی» است — فاز توسعه، و ضمناً
- * لایسنس‌سرور رابط خودش را دارد.
+ * جدول لایسنس از اسپک ۱۷ به `GET /license/?user_id=` وصل است.
+ *
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
@@ -106,6 +111,12 @@ export default function UserProfileModal({ open, user, onClose }) {
        می‌ماند و هوک چیزی نمی‌خواند. */
     const orders = useUserOrders(open ? user?.id : null)
     const tickets = useUserTickets(open ? user?.id : null)
+    /* `enabled` لازم است: بدون آن با بسته بودن مودال `userId` تهی
+       می‌شد و لایسنس‌های **کل سیستم** گرفته می‌شد. */
+    const licenses = useLicenses({
+        userId: user?.id,
+        enabled: open && Boolean(user?.id),
+    })
 
     useEffect(() => {
         if (!open) return
@@ -191,15 +202,22 @@ export default function UserProfileModal({ open, user, onClose }) {
                         }
                     />
 
-                    {/* ── لایسنس‌ها ── */}
+                    {/* ── لایسنس‌ها ──
+                        از اسپک ۱۷ `GET /license/?user_id=` وجود دارد،
+                        پس این جدول داده‌ی واقعی دارد و پوشش «به‌زودی»
+                        برداشته شد. */}
                     <SectionTitle>لایسنس‌های فعال/منقضی</SectionTitle>
-                    <ComingSoon note="لایسنس‌ها فعلاً از طریق سرور لایسنس مدیریت می‌شوند.">
-                        <AdminTable
-                            columns={LICENSE_COLUMNS}
-                            rows={[]}
-                            paginate={false}
-                        />
-                    </ComingSoon>
+                    <AdminTable
+                        columns={LICENSE_COLUMNS}
+                        rows={licenses.rows}
+                        paginate={false}
+                        emptyMessage={
+                            licenses.loading
+                                ? 'در حال دریافت لایسنس‌ها…'
+                                : licenses.error ||
+                                  'لایسنسی برای این کاربر صادر نشده است'
+                        }
+                    />
 
                     {/* ── تیکت‌ها ── */}
                     <SectionTitle>تیکت‌های کاربر</SectionTitle>

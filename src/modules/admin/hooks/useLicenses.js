@@ -41,7 +41,13 @@ function toRow(license, index) {
  * تا اسپک ۱۶ هیچ اندپوینت لایسنسی نبود و این جدول زیر پوشش
  * «به‌زودی» خالی می‌ماند.
  */
-export function useLicenses({ userId } = {}) {
+/**
+ * @param userId  فقط لایسنس‌های همین کاربر (تهی = همه)
+ * @param enabled وقتی false است هیچ درخواستی نمی‌رود. برای مودالی که
+ *                بسته است لازم است، وگرنه با `userId` تهی **لایسنس‌های
+ *                کل سیستم** گرفته می‌شد.
+ */
+export function useLicenses({ userId, enabled = true } = {}) {
     const [rows, setRows] = useState([])
     const [page, setPage] = useState(1)
     const [pageCount, setPageCount] = useState(1)
@@ -55,6 +61,7 @@ export function useLicenses({ userId } = {}) {
        می‌شود، وگرنه `setLoading` همگام در بدنه‌ی افکت یک رندر آبشاری
        اضافه می‌سازد. */
     useEffect(() => {
+        if (!enabled) return
         let cancelled = false
 
         async function load() {
@@ -84,7 +91,7 @@ export function useLicenses({ userId } = {}) {
         return () => {
             cancelled = true
         }
-    }, [page, userId, attempt])
+    }, [page, userId, attempt, enabled])
 
     return { rows, page, pageCount, loading, error, setPage, reload }
 }
