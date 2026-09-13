@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
-import LicenseForm from '../components/LicenseForm/LicenseForm'
 import QuoteForm from '../components/QuoteForm/QuoteForm'
 import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPanel'
 import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
 import { useBillingTerms } from '../hooks/useBillingTerms'
+import { useLicenses } from '../hooks/useLicenses'
 import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
-import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SalesPage.module.css'
 
 /* عرض ستون‌ها از tab11.svg (جدول سفارش‌ها) */
@@ -22,13 +21,20 @@ const ORDER_COLUMNS = [
     { key: 'date', label: 'تاریخ', width: '11.83%', ltr: true },
 ]
 
-/* عرض ستون‌ها از tab2.svg (جدول لایسنس‌ها) */
+/* ستون‌ها بر اساس `LicenseListOutput` اسپک ۱۷، نه فیگما.
+
+   فیگما «کد لایسنس»، «کاربر» و «سرور متصل» می‌خواست ولی هیچ‌کدام در
+   پاسخ نیستند — لیست فقط `order_number`, `starts_at`, `expires_at`,
+   `limits` و `is_active` می‌دهد. ستون خالی بدتر از ستون نداشتن است،
+   پس شماره‌ی سفارش جای کد لایسنس را می‌گیرد (همان چیزی است که لایسنس
+   را به خریدارش وصل می‌کند). */
 const LICENSE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '15.04%' },
-    { key: 'licenseCode', label: 'کد لایسنس', width: '22.27%', ltr: true },
-    { key: 'user', label: 'کاربر', width: '21.35%', ltr: true },
-    { key: 'status', label: 'وضعیت', width: '22.78%' },
-    { key: 'server', label: 'سرور متصل', width: '18.56%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '10%' },
+    { key: 'orderNumber', label: 'شماره سفارش', width: '22%', ltr: true },
+    { key: 'startsAt', label: 'شروع', width: '17%', ltr: true },
+    { key: 'expiresAt', label: 'انقضا', width: '17%', ltr: true },
+    { key: 'limits', label: 'سقف‌ها', width: '20%' },
+    { key: 'status', label: 'وضعیت', width: '14%' },
 ]
 
 /* وضعیت‌هایی که ادمین می‌تواند دستی به آن‌ها ببرد.
@@ -59,9 +65,7 @@ const TABS = [
  */
 export default function SalesPage() {
     const [tab, setTab] = useState('orders')
-    const [licensePage, setLicensePage] = useState(1)
     const [selectedId, setSelectedId] = useState(null)
-    const [creating, setCreating] = useState(false)
     /* کدام سفارش در حال صدور پیش‌فاکتور است */
     const [quoting, setQuoting] = useState(null)
     /* سفارشی که نوار «اتصال تیکت»اش باز است */
@@ -69,11 +73,8 @@ export default function SalesPage() {
     /* منوی باز تغییر وضعیت */
     const [statusMenu, setStatusMenu] = useState(false)
 
-    /* در فیگما نمونه‌ی خطا روی «نام کاربری» نشان داده شده.
-       TODO: با اتصال واقعی، خطا از پاسخ ۴۲۲ بک‌اند می‌آید. */
-    const [fieldErrors, setFieldErrors] = useState({})
-
     const orders = useAdminOrders()
+    const licenses = useLicenses()
     /* فقط وقتی فرم پیش‌فاکتور باز است بارگذاری می‌شود */
     const billingTerms = useBillingTerms(quoting !== null)
     const actions = useOrderActions(() => {
@@ -83,9 +84,7 @@ export default function SalesPage() {
 
     const switchTab = (id) => {
         setTab(id)
-        setLicensePage(1)
         setSelectedId(null)
-        setCreating(false)
         setQuoting(null)
         setLinking(null)
     }
@@ -219,18 +218,6 @@ export default function SalesPage() {
         )
     }
 
-    const handleCreateLicense = (values, { withActivation }) => {
-        /* TODO: اندپوینت ساخت لایسنس وجود ندارد.
-           فعلاً فقط اعتبارسنجی ساده برای نمایش حالت خطای فیگما. */
-        if (!values.username.trim()) {
-            setFieldErrors({ username: 'این نام کاربری در سیستم موجود نمی باشد' })
-            return
-        }
-        setFieldErrors({})
-        setCreating(false)
-        void withActivation
-    }
-
     return (
         <div className={styles.page}>
             <div className={styles.tabs}>
@@ -262,40 +249,25 @@ export default function SalesPage() {
                         actions.clearError()
                     }}
                 />
-            ) : creating ? (
-                <LicenseForm
-                    fieldErrors={fieldErrors}
-                    onSubmit={handleCreateLicense}
-                    onFieldChange={(key) =>
-                        setFieldErrors((prev) => {
-                            const next = { ...prev }
-                            delete next[key]
-                            return next
-                        })
-                    }
-                    onClose={() => {
-                        setCreating(false)
-                        setFieldErrors({})
-                    }}
-                />
             ) : isLicenses ? (
-                /* ماژول لایسنس در فاز توسعه است و فعلاً از طریق
-                   سرور لایسنس مدیریت می‌شود. جدول خالی زیر پوشش
-                   می‌ماند تا داده‌ی جعلی به چشم مشتری نیاید. */
-                <ComingSoon note="لایسنس‌ها فعلاً از طریق سرور لایسنس مدیریت می‌شوند.">
-                    <div className={styles.toolbar}>
-                        <button type="button" className={styles.createBtn}>
-                            ایجاد لایسنس
-                        </button>
-                    </div>
+                /* از اسپک ۱۷ `GET /license/` وجود دارد، پس این جدول
+                   داده‌ی واقعی نشان می‌دهد و پوشش «به‌زودی» برداشته شد.
 
-                    <AdminTable
-                        columns={LICENSE_COLUMNS}
-                        rows={[]}
-                        page={licensePage}
-                        onPageChange={setLicensePage}
-                    />
-                </ComingSoon>
+                   ⚠️ دکمه‌ی «ایجاد لایسنس» نیست: لایسنس با تأیید
+                   پرداخت **خودکار** صادر می‌شود و اندپوینت ساخت دستی
+                   در اسپک وجود ندارد. */
+                <AdminTable
+                    columns={LICENSE_COLUMNS}
+                    rows={licenses.rows}
+                    page={licenses.page}
+                    pageCount={licenses.pageCount}
+                    onPageChange={licenses.setPage}
+                    emptyMessage={
+                        licenses.loading
+                            ? 'در حال دریافت لایسنس‌ها…'
+                            : licenses.error || 'لایسنسی صادر نشده است'
+                    }
+                />
             ) : (
                 <AdminTable
                     columns={ORDER_COLUMNS}

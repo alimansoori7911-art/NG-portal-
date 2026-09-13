@@ -3,7 +3,7 @@
  *
  * چرا وجود دارد: بک‌اند واقعی پشت VPN است و وقتی به آن وصل می‌شویم
  * دسترسی به بیرون قطع می‌شود، پس نمی‌توان همزمان تست کرد. این سرور
- * طبق `openapi (15).json` رفتار می‌کند و روی همین کامپیوتر اجرا
+ * طبق `openapi (17).json` رفتار می‌کند و روی همین کامپیوتر اجرا
  * می‌شود.
  *
  * اجرا:  node mock-server.mjs
@@ -34,6 +34,7 @@ const db = {
     invoices: [],
     notifications: [],
     terms: [],
+    licenses: [],
     planPrices: [],
     otps: new Map(), // identifier -> code
     nextOrderNum: 1001,
@@ -50,6 +51,29 @@ function seedTerms() {
         { id: 2, code: 'yearly', name: 'سالانه', duration_days: 365, is_trial: false, is_active: true, sort_order: 2 },
     ]
     db.nextTermId = 3
+}
+
+/* لایسنس‌های نمونه — شکل `LicenseListOutput` اسپک ۱۷ */
+function seedLicenses() {
+    const day = 86_400_000
+    const now = Date.now()
+    db.licenses = [
+        {
+            order_number: 'ORD-1001',
+            starts_at: new Date(now - 30 * day).toISOString(),
+            expires_at: new Date(now + 335 * day).toISOString(),
+            limits: { max_assets: 50, max_discoveries: 50, max_audits: 50, max_hardens: 50, max_monitors: 50 },
+            is_active: true,
+        },
+        {
+            order_number: 'ORD-1002',
+            starts_at: new Date(now - 400 * day).toISOString(),
+            expires_at: new Date(now - 35 * day).toISOString(),
+            /* تهی یعنی نامحدود — جدول باید «نامحدود» نشان دهد */
+            limits: { max_assets: null, max_discoveries: null, max_audits: null, max_hardens: null, max_monitors: null },
+            is_active: false,
+        },
+    ]
 }
 
 /* اعلان‌های نمونه — بدون این، صفحه‌ی اعلان‌ها همیشه خالی بود و
@@ -116,6 +140,7 @@ const uuid = () =>
 seedNotifications()
 seedInvoices()
 seedTerms()
+seedLicenses()
 
 /* توکن تقلبی با exp واقعی تا tokenManager درست بخواندش */
 function makeToken(sub, minutes = 7) {
@@ -173,12 +198,9 @@ function makeProfile(u) {
         company_name: u.company_name ?? null,
         position: u.position ?? null,
         company_address: u.company_address ?? null,
-        /* بک‌اند گفت `/auth/me` نقش‌ها را می‌دهد و می‌خواهد همین
-           منبعِ اصلی باشد (نه JWT). پس mock هم می‌دهد.
-
-           ⚠️ شمای `Profile` در اسپک ۱۵ این فیلد را ندارد؛ در اسپک
-           بعدی باید بیاید. تا آن‌موقع فرانت اگر نبود از JWT
-           می‌خواند تا ادمین با رفرش صفحه بیرون نیفتد. */
+        /* ✅ از اسپک ۱۷ `roles` در شمای `Profile` **اجباری** است، پس
+           `/auth/me` منبع اصلی نقش‌هاست — همان چیزی که بک‌اند خواست
+           (نه JWT). */
         roles: u.roles ?? [],
     }
 }
@@ -439,8 +461,11 @@ const routes = [
             order_type: 'purchase',
             status: 'REQUESTED',
             first_name: u.first_name, last_name: u.last_name,
-            /* ادمین برای قیمت‌گذاری به شناسه‌ی کاربرِ سفارش نیاز دارد */
-            user_id: u.id,
+            /* ⚠️ عیناً مثل اسپک ۱۷: فقط `user_public_id` (UUID) داده
+               می‌شود، **نه** `user_id` عددی. `CreatePlanPrice` عدد
+               می‌خواهد، پس قیمت‌گذاری واقعاً بلاک است و این mock همان
+               بلاک را بازتولید می‌کند تا در تست پنهان نشود. */
+            user_public_id: u.public_id,
             user_full_name: [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
             product_id: 1, plan_id: plan?.id ?? 1,
             snapshot_product_name: 'NG Corion',
@@ -786,6 +811,29 @@ const routes = [
     ['GET', /^\/invoice\/$/, () => page(db.invoices)],
     ['GET', /^\/audit\/$/, () => page([])],
 
+    /* لایسنس — اسپک ۱۷.
+
+       ⚠️ `LicenseListOutput` نه کد لایسنس دارد نه نام کاربر نه سرور
+       متصل؛ فقط همین پنج فیلد. جدول ادمین هم بر اساس همین ساخته شده.
+
+       ⚠️ نام پارامتر فیلتر در اسپک `is_acitve` است (غلط املایی در خود
+       بک‌اند) — عیناً همان پذیرفته می‌شود تا فرانت درست تست شود. */
+    ['GET', /^\/license\/$/, (req) => {
+        const activeParam = req.query.get('is_acitve')
+        const list = activeParam == null
+            ? db.licenses
+            : db.licenses.filter((l) => String(l.is_active) === activeParam)
+        return page(list)
+    }],
+
+    ['GET', /^\/license\/[^/]+$/, (req) => {
+        const num = req.path.split('/')[2]
+        const l = db.licenses.find((x) => x.order_number === num)
+        if (!l) return [404, fail('NOT_FOUND', 'license not found')]
+        /* جزئیات برخلاف لیست `plan_type` و `is_pilot_mode` هم می‌دهد */
+        return ok({ ...l, order_id: uuid(), plan_type: 'pro', is_pilot_mode: false, meta: {} })
+    }],
+
     /* لندینگ */
     ['POST', /^\/landing\/(contact|subscribe)$/, () => ok({ message: 'ثبت شد' })],
 ]
@@ -812,7 +860,7 @@ const server = createServer((req, res) => {
         db.users.clear(); db.orders.length = 0; db.tickets.length = 0
         /* اعلان و فاکتور دوباره seed می‌شوند نه خالی — وگرنه بعد از
            reset آن صفحه‌ها خالی می‌مانند و نمی‌شود تستشان کرد. */
-        seedNotifications(); seedInvoices(); seedTerms()
+        seedNotifications(); seedInvoices(); seedTerms(); seedLicenses()
         db.planPrices.length = 0
         db.nextOrderNum = 1001
         db.nextPriceId = 1
