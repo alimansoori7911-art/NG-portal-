@@ -14,13 +14,25 @@ const unwrap = (res) => res.data?.data
  */
 export const licenseService = {
     /**
-     * GET /license/ — لایسنس‌های کاربر.
+     * GET /license/ — لایسنس‌های **یک کاربر**.
+     *
+     * ⚠️ `user_id` در اسپک ۱۸ **اجباری** است و UUID می‌گیرد (همان
+     * `user_public_id`). یعنی فهرست سراسری لایسنس‌ها وجود ندارد؛ فقط
+     * می‌شود پرسید «لایسنس‌های این کاربر».
      *
      * ⚠️ نام پارامتر در بک‌اند `is_acitve` است (غلط املایی در خود
      * اسپک). عمداً همان نوشته شده، وگرنه فیلتر بی‌صدا نادیده گرفته
      * می‌شود. اگر روزی اصلاحش کردند، اینجا هم باید عوض شود.
      */
     getLicenses({ page = 1, limit = 10, user_id, isActive } = {}) {
+        if (!user_id) {
+            /* خطای صریح بهتر از ۴۲۲ مبهم است */
+            return Promise.reject({
+                status: 0,
+                message: 'برای گرفتن لایسنس‌ها شناسه‌ی کاربر لازم است',
+            })
+        }
+
         return api
             .get('/license/', {
                 params: { page, limit, user_id, is_acitve: isActive },

@@ -113,9 +113,18 @@ export default function UserProfileModal({ open, user, onClose }) {
     const tickets = useUserTickets(open ? user?.id : null)
     /* `enabled` لازم است: بدون آن با بسته بودن مودال `userId` تهی
        می‌شد و لایسنس‌های **کل سیستم** گرفته می‌شد. */
+    /* ⚠️ `GET /license/` شناسه‌ی **UUID** می‌خواهد، ولی
+       `UserResponseSchema` (خروجی فهرست کاربران ادمین) فقط `id`
+       عددی دارد و هیچ `public_id`ای نمی‌دهد.
+
+       پس تا وقتی بک‌اند `public_id` را به آن اضافه نکند، این جدول
+       نمی‌تواند داده بگیرد. با `enabled: false` درخواست بی‌فایده
+       نمی‌رود و جدول پیام روشن نشان می‌دهد.
+       رجوع به BACKEND_REQUESTS.md */
+    const licenseUserId = user?.public_id ?? user?.user_public_id
     const licenses = useLicenses({
-        userId: user?.id,
-        enabled: open && Boolean(user?.id),
+        userId: licenseUserId,
+        enabled: open && Boolean(licenseUserId),
     })
 
     useEffect(() => {
@@ -212,10 +221,12 @@ export default function UserProfileModal({ open, user, onClose }) {
                         rows={licenses.rows}
                         paginate={false}
                         emptyMessage={
-                            licenses.loading
-                                ? 'در حال دریافت لایسنس‌ها…'
-                                : licenses.error ||
-                                  'لایسنسی برای این کاربر صادر نشده است'
+                            !licenseUserId
+                                ? 'نمایش لایسنس نیازمند شناسه‌ی عمومی کاربر است که فهرست کاربران آن را نمی‌دهد.'
+                                : licenses.loading
+                                  ? 'در حال دریافت لایسنس‌ها…'
+                                  : licenses.error ||
+                                    'لایسنسی برای این کاربر صادر نشده است'
                         }
                     />
 

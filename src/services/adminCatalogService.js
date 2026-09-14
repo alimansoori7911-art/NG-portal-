@@ -3,14 +3,14 @@ import api from './api'
 const unwrap = (res) => res.data?.data
 
 /**
- * مقادیر مجاز `term_code` در `CreatePlanPrice`.
+ * مقادیر مجاز `term_code`.
  *
- * ⚠️ این یک **enum بسته** در اسپک است، در حالی که `BillingTerm.code`
- * متن آزاد (تا ۶۴ کاراکتر) است. پس ادمین می‌تواند مدت اعتباری با کد
- * دلخواه بسازد که هنگام قیمت‌گذاری ۴۲۲ بگیرد.
+ * ✅ از اسپک ۱۸ این enum در **هر دو جا** یکی است: هم
+ * `CreatePlanPrice.term_code` و هم `CreateBillingTerm.term_code`.
  *
- * فرم پیش‌فاکتور با همین لیست، گزینه‌های غیرمجاز را فیلتر می‌کند تا
- * ادمین نتواند انتخابی کند که قطعاً رد می‌شود.
+ * قبلاً `BillingTerm.code` متن آزاد بود و ادمین می‌توانست مدتی با کد
+ * دلخواه بسازد که بعداً قیمت‌گذاری ۴۲۲ بدهد. حالا فرم مدت اعتبار
+ * همین فهرست را نشان می‌دهد، پس آن حالت ممکن نیست.
  */
 export const PRICE_TERM_CODES = ['monthly', 'yearly', 'perpetual', 'trial']
 
@@ -91,6 +91,9 @@ export const adminCatalogService = {
 
     /**
      * ساخت قیمت برای یک پلن.
+     *
+     * ⚠️ `user_id` از اسپک ۱۸ **UUID** است نه عدد — همان
+     * `OrderOutput.user_public_id`.
      *
      * ⚠️ `user_id` **کاربر هدف** است — یعنی کسی که این قیمت برای او
      * ساخته می‌شود، نه ادمینی که آن را می‌سازد. قیمت‌گذاری در این
@@ -218,10 +221,24 @@ export const adminCatalogService = {
 
     /* CreateBillingTerm: code و name اجباری.
        duration_days تهی یعنی بی‌نهایت (مثل perpetual). */
+    /**
+     * ساخت مدت اعتبار.
+     *
+     * ⚠️ اسپک ۱۸ این را **شکست**: فیلد `code` به `term_code` تغییر نام
+     * داد و از متن آزاد به **enum** تبدیل شد
+     * (`monthly`|`yearly`|`perpetual`|`trial`).
+     *
+     * همین اتفاقاً آن ابهام قبلی را هم حل کرد: حالا `term_code` در
+     * مدت اعتبار و در `CreatePlanPrice` یک enum واحد است، پس دیگر
+     * نمی‌شود مدتی ساخت که قیمت‌گذاری قبولش نکند.
+     *
+     * ورودی همچنان `code` نام دارد تا فراخوان‌ها عوض نشوند؛ نگاشتش
+     * همین‌جا انجام می‌شود.
+     */
     createBillingTerm({ code, name, duration_days, is_trial = false, is_active = true, sort_order = 0 }) {
         return api
             .post('/admin/billing-term/', {
-                code,
+                term_code: code,
                 name,
                 duration_days,
                 is_trial,

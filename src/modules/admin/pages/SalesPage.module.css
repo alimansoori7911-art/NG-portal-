@@ -205,6 +205,21 @@
     text-align: center;
 }
 
+/* راهنمای تب لایسنس — چون فهرست سراسری در API نیست و ادمین باید به
+   پروفایل کاربر برود. */
+.licenseHint {
+    margin: 0;
+    padding: 32px 24px;
+    border: 1px solid #192D4C;
+    border-radius: 12px;
+    background: #060B13;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 2;
+    text-align: center;
+}
+
 /* ─── تیکت‌های وصل‌شده به سفارش ─── */
 .ticketLinks {
     display: flex;

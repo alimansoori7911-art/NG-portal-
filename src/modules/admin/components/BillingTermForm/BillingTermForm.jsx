@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 /* عمداً از استایل PlanForm استفاده می‌شود: این فرم در همان صفحه و
    کنار آن می‌نشیند و باید دقیقاً همان ظاهر فیگما را داشته باشد.
    ساختن یک ماژول تکراری فقط باعث واگرایی این دو با هم می‌شد. */
+import { PRICE_TERM_CODES } from '../../../../services/adminCatalogService'
 import styles from '../PlanForm/PlanForm.module.css'
 import own from './BillingTermForm.module.css'
 
@@ -81,20 +82,30 @@ export default function BillingTermForm({
                     />
                 </label>
 
+                {/* از اسپک ۱۸ این یک **enum** است نه متن آزاد، پس
+                    فهرست انتخابی است. قبلاً ادمین می‌توانست کدی مثل
+                    `six_months` بنویسد که بعداً قیمت‌گذاری قبولش
+                    نمی‌کرد. */}
                 <label className={styles.field}>
                     <span className={styles.fieldLabel}>
                         کد {isEditing && '(قابل تغییر نیست)'}
                     </span>
-                    <input
-                        className={styles.fieldInput}
+                    <select
+                        className={styles.fieldSelect}
                         value={form.code}
                         onChange={change('code')}
                         dir="ltr"
-                        placeholder="yearly"
                         /* در ویرایش قفل است — رجوع به توضیح بالای فایل */
                         disabled={isEditing}
                         required={!isEditing}
-                    />
+                    >
+                        <option value="">انتخاب کنید</option>
+                        {PRICE_TERM_CODES.map((c) => (
+                            <option key={c} value={c}>
+                                {c}
+                            </option>
+                        ))}
+                    </select>
                 </label>
 
                 <label className={styles.field}>

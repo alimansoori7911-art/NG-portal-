@@ -3,7 +3,7 @@
  *
  * چرا وجود دارد: بک‌اند واقعی پشت VPN است و وقتی به آن وصل می‌شویم
  * دسترسی به بیرون قطع می‌شود، پس نمی‌توان همزمان تست کرد. این سرور
- * طبق `openapi (17).json` رفتار می‌کند و روی همین کامپیوتر اجرا
+ * طبق `openapi (18).json` رفتار می‌کند و روی همین کامپیوتر اجرا
  * می‌شود.
  *
  * اجرا:  node mock-server.mjs
@@ -53,7 +53,7 @@ function seedTerms() {
     db.nextTermId = 3
 }
 
-/* لایسنس‌های نمونه — شکل `LicenseListOutput` اسپک ۱۷ */
+/* لایسنس‌های نمونه — شکل `LicenseListOutput` اسپک ۱۸ */
 function seedLicenses() {
     const day = 86_400_000
     const now = Date.now()
@@ -609,6 +609,7 @@ const routes = [
             ])]
         }
 
+        /* اسپک ۱۸: `user_id` اینجا UUID است نه عدد */
         const clash = db.planPrices.find(
             (p) =>
                 p.name === name &&
@@ -725,7 +726,9 @@ const routes = [
     }],
 
     ['POST', /^\/admin\/billing-term\/$/, (req) => {
-        const { code, name } = req.body ?? {}
+        /* اسپک ۱۸: `term_code` جای `code` را گرفت و enum شد */
+        const code = req.body?.term_code ?? req.body?.code
+        const { name } = req.body ?? {}
         if (!code || !name) {
             return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
                 { loc: "('body', 'code')", msg: 'code و name الزامی‌اند' },
@@ -836,6 +839,12 @@ const routes = [
        ⚠️ نام پارامتر فیلتر در اسپک `is_acitve` است (غلط املایی در خود
        بک‌اند) — عیناً همان پذیرفته می‌شود تا فرانت درست تست شود. */
     ['GET', /^\/license\/$/, (req) => {
+        /* اسپک ۱۸: `user_id` اجباری است و UUID می‌گیرد */
+        if (!req.query.get('user_id')) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
+                { loc: "('query', 'user_id')", msg: 'user_id الزامی است' },
+            ])]
+        }
         const activeParam = req.query.get('is_acitve')
         const list = activeParam == null
             ? db.licenses

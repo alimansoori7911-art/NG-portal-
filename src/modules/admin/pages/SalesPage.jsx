@@ -6,7 +6,6 @@ import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPa
 import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
 import { useBillingTerms } from '../hooks/useBillingTerms'
-import { useLicenses } from '../hooks/useLicenses'
 import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
 import styles from './SalesPage.module.css'
 
@@ -21,21 +20,6 @@ const ORDER_COLUMNS = [
     { key: 'date', label: 'تاریخ', width: '11.83%', ltr: true },
 ]
 
-/* ستون‌ها بر اساس `LicenseListOutput` اسپک ۱۷، نه فیگما.
-
-   فیگما «کد لایسنس»، «کاربر» و «سرور متصل» می‌خواست ولی هیچ‌کدام در
-   پاسخ نیستند — لیست فقط `order_number`, `starts_at`, `expires_at`,
-   `limits` و `is_active` می‌دهد. ستون خالی بدتر از ستون نداشتن است،
-   پس شماره‌ی سفارش جای کد لایسنس را می‌گیرد (همان چیزی است که لایسنس
-   را به خریدارش وصل می‌کند). */
-const LICENSE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '10%' },
-    { key: 'orderNumber', label: 'شماره سفارش', width: '22%', ltr: true },
-    { key: 'startsAt', label: 'شروع', width: '17%', ltr: true },
-    { key: 'expiresAt', label: 'انقضا', width: '17%', ltr: true },
-    { key: 'limits', label: 'سقف‌ها', width: '20%' },
-    { key: 'status', label: 'وضعیت', width: '14%' },
-]
 
 /* وضعیت‌هایی که ادمین می‌تواند دستی به آن‌ها ببرد.
    بقیه‌ی وضعیت‌ها خودکارند (مثل PAID_CONFIRMED که با تأیید رسید
@@ -74,7 +58,6 @@ export default function SalesPage() {
     const [statusMenu, setStatusMenu] = useState(false)
 
     const orders = useAdminOrders()
-    const licenses = useLicenses()
     /* فقط وقتی فرم پیش‌فاکتور باز است بارگذاری می‌شود */
     const billingTerms = useBillingTerms(quoting !== null)
     const actions = useOrderActions(() => {
@@ -250,24 +233,22 @@ export default function SalesPage() {
                     }}
                 />
             ) : isLicenses ? (
-                /* از اسپک ۱۷ `GET /license/` وجود دارد، پس این جدول
-                   داده‌ی واقعی نشان می‌دهد و پوشش «به‌زودی» برداشته شد.
+                /* ⚠️ فهرست سراسری لایسنس‌ها در اسپک ۱۸ وجود ندارد:
+                   `GET /license/` پارامتر `user_id` را **اجباری**
+                   می‌خواهد، پس فقط می‌شود پرسید «لایسنس‌های این
+                   کاربر». جدول خالی و بی‌توضیح گمراه‌کننده بود، پس
+                   ادمین به جای درستش راهنمایی می‌شود.
 
-                   ⚠️ دکمه‌ی «ایجاد لایسنس» نیست: لایسنس با تأیید
-                   پرداخت **خودکار** صادر می‌شود و اندپوینت ساخت دستی
-                   در اسپک وجود ندارد. */
-                <AdminTable
-                    columns={LICENSE_COLUMNS}
-                    rows={licenses.rows}
-                    page={licenses.page}
-                    pageCount={licenses.pageCount}
-                    onPageChange={licenses.setPage}
-                    emptyMessage={
-                        licenses.loading
-                            ? 'در حال دریافت لایسنس‌ها…'
-                            : licenses.error || 'لایسنسی صادر نشده است'
-                    }
-                />
+                   همان جدول با داده‌ی واقعی در «پروفایل جامع کاربر»
+                   هست (رجوع به `UserProfileModal`).
+
+                   ⚠️ دکمه‌ی «ایجاد لایسنس» هم نیست: لایسنس با تأیید
+                   پرداخت **خودکار** صادر می‌شود. */
+                <p className={styles.licenseHint}>
+                    لایسنس‌ها برای هر کاربر جداگانه نشان داده می‌شوند.
+                    از «کاربران و دسترسی‌ها» کاربر مورد نظر را باز کنید
+                    و در «پروفایل جامع کاربر» بخش لایسنس‌ها را ببینید.
+                </p>
             ) : (
                 <AdminTable
                     columns={ORDER_COLUMNS}
