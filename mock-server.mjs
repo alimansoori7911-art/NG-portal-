@@ -658,6 +658,9 @@ const routes = [
             const payable = Math.round(afterDiscount * (1 + (price.tax_percentage || 0) / 100))
 
             o.status = 'QUOTATION_ISSUED'
+            /* تایم‌لاین: صفحه‌ی پرداخت از همین می‌فهمد پیش‌فاکتور
+               صادر شده یا نه. */
+            o.quotation_issued_at = new Date().toISOString()
             o.plan_price_id = price.id
             o.quoted_amount = String(base)
             o.payable_amount = String(payable)

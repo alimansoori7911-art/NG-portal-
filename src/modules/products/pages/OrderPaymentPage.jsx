@@ -11,7 +11,6 @@ import Select from '../../../components/ui/Select/Select'
 import Textarea from '../../../components/ui/Textarea/Textarea'
 import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
-import BankAccountBox from '../components/BankAccountBox/BankAccountBox'
 import PaymentList from '../components/PaymentList/PaymentList'
 import OrderInvoices from '../components/OrderInvoices/OrderInvoices'
 import { useOrderPayment, toPaymentPayload } from '../hooks/useOrderPayment'
@@ -152,6 +151,11 @@ export default function OrderPaymentPage() {
 
     const planName = order.snapshot_plan_name || order.snapshot_product_name || ''
 
+    /* آیا پیش‌فاکتور صادر شده؟ از تایم‌لاین خود سفارش خوانده می‌شود نه
+       با یک درخواست دیگر — `quotation_issued_at` دقیقاً همین را
+       می‌گوید و در `OrderOutput` هست. */
+    const hasProforma = Boolean(order.quotation_issued_at)
+
     return (
         <div className={styles.page}>
             <Header />
@@ -237,12 +241,25 @@ export default function OrderPaymentPage() {
                                     می‌شود، پس اگر نبود چیزی رندر نمی‌شود. */}
                                 <OrderInvoices orderId={order?.id} />
 
-                                {!isFullyPaid && <BankAccountBox />}
+                                {/* ⚠️ کادر شماره‌حساب حذف شد: اطلاعات
+                                    حساب **در پیش‌فاکتور** می‌آید که
+                                    بک‌اند تولیدش می‌کند. نوشتنش در کد
+                                    فرانت یعنی هر تغییر حساب یک دیپلوی
+                                    می‌خواهد، و اگر یادمان برود پول
+                                    مشتری به حساب اشتباه می‌رود.
 
+                                    ⚠️ `OrderInvoices` وقتی فاکتوری
+                                    نباشد **چیزی رندر نمی‌کند**، پس
+                                    متن راهنما نباید بی‌قید به
+                                    پیش‌فاکتور ارجاع دهد — تا صدور
+                                    نشده، کاربر باید بداند منتظر
+                                    بماند. */}
                                 <p className={styles.hint}>
                                     {isFullyPaid
                                         ? 'مبلغ این سفارش به‌طور کامل پرداخت و تأیید شده است.'
-                                        : 'پس از واریز، رسید را ثبت کنید تا توسط پشتیبانی بررسی شود.'}
+                                        : hasProforma
+                                          ? 'اطلاعات حساب برای واریز در پیش‌فاکتور آمده است. پس از واریز، رسید را ثبت کنید تا توسط پشتیبانی بررسی شود.'
+                                          : 'پیش‌فاکتور شما در حال صدور است؛ اطلاعات حساب برای واریز در همان می‌آید.'}
                                 </p>
                             </div>
 
