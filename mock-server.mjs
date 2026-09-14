@@ -392,14 +392,40 @@ const routes = [
         return ok({ message: 'changed' })
     }],
 
+    /* نشست نمونه — `id` عددی و `session_id` یک UUID جداست. این دو
+       عمداً شکل متفاوتی دارند تا اگر فرانت اشتباهی را بفرستد معلوم
+       شود (قبلاً `session_id` فرستاده می‌شد و حذف کار نمی‌کرد). */
     ['GET', /^\/auth\/sessions$/, (req) =>
-        page(req.user ? [{
-            id: 1, session_id: uuid(), is_current: true, revoked: false,
-            ip_address: '127.0.0.1', user_agent: 'Mock/1.0',
-            session_started_at: new Date().toISOString(),
-        }] : []),
+        page(req.user ? [
+            {
+                id: 1, session_id: uuid(), is_current: true, revoked: false,
+                ip_address: '127.0.0.1', user_agent: 'Mock/1.0',
+                session_started_at: new Date().toISOString(),
+            },
+            /* نشست دوم تا دکمه‌ی «بستن» قابل تست باشد — نشست جاری
+               دکمه ندارد. */
+            {
+                id: 2, session_id: uuid(), is_current: false, revoked: false,
+                ip_address: '192.168.1.50',
+                user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Safari/604.1',
+                session_started_at: new Date(Date.now() - 3600_000).toISOString(),
+            },
+        ] : []),
     ],
-    ['DELETE', /^\/auth\/sessions(\/.*)?$/, () => ok({ message: 'revoked' })],
+
+    /* حذف همه */
+    ['DELETE', /^\/auth\/sessions$/, () => ok({ message: 'revoked all' })],
+
+    /* حذف یکی — **با `id`** نه `session_id`.
+       اگر UUID بیاید یعنی فرانت فیلد اشتباه را فرستاده، پس ۴۰۴
+       می‌دهیم تا در تست دیده شود نه اینکه بی‌صدا موفق شود. */
+    ['DELETE', /^\/auth\/sessions\/[^/]+$/, (req) => {
+        const raw = req.path.split('/')[3]
+        if (!/^\d+$/.test(raw)) {
+            return [404, fail('NOT_FOUND', 'session not found (id عددی لازم است)')]
+        }
+        return ok({ message: 'revoked' })
+    }],
 
     /* محصولات */
     ['GET', /^\/products\/$/, () => page([{

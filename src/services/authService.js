@@ -162,8 +162,11 @@ export const authService = {
             }));
     },
 
-    removeSession(sessionId) {
-        return api.delete(`/auth/sessions/${sessionId}`);
+    /* ⚠️ `id` رکورد را می‌گیرد نه `session_id`. نامش عمداً `id` است
+       چون قبلاً با نام `sessionId` اشتباهاً `session_id` پاس داده
+       می‌شد و حذف بی‌صدا کار نمی‌کرد. */
+    removeSession(id) {
+        return api.delete(`/auth/sessions/${id}`);
     },
 
     removeAllSessions() {

@@ -58,15 +58,16 @@ function DateTimeCell({ iso }) {
 
 /** تبدیل RefreshToken بک‌اند به ردیف جدول.
  *
- * ⚠️ `id` و `session_id` فرق دارند: نمایش و حذف هر دو با `session_id`
- * انجام می‌شوند، `id` فقط شناسه‌ی رکورد است. */
+ * ⚠️ `id` و `session_id` فرق دارند و **حذف با `id`** انجام می‌شود، نه
+ * `session_id`. قبلاً `session_id` فرستاده می‌شد و بستن نشست بی‌صدا
+ * کار نمی‌کرد (بک‌اند تأیید کرد). */
 function toRow(session, i, offset) {
     return {
-        id: session.session_id,
+        id: session.id,
         index: offset + i + 1,
         startedAt: <DateTimeCell iso={session.session_started_at} />,
         device: describeDevice(session.user_agent),
-        sessionId: session.session_id,
+        sessionId: session.id,
         isCurrent: Boolean(session.is_current),
     }
 }

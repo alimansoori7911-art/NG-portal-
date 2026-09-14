@@ -7,10 +7,9 @@ export const SESSIONS_PER_PAGE = 10
 /**
  * نشست‌های فعال کاربر.
  *
- * ⚠️ نکته‌ی مهم: `id` و `session_id` دو چیز متفاوت‌اند.
- * `id` شناسه‌ی خود رکورد refresh-token است ولی حذف با `session_id`
- * انجام می‌شود (`DELETE /auth/sessions/{session_id}`). اشتباه گرفتن
- * این دو یعنی حذف کار نمی‌کند.
+ * ⚠️ `id` و `session_id` دو چیز متفاوت‌اند و حذف با **`id`** انجام
+ * می‌شود (`DELETE /auth/sessions/{id}`). قبلاً `session_id` فرستاده
+ * می‌شد و بستن نشست بی‌صدا کار نمی‌کرد.
  */
 export function useSessions() {
     const [sessions, setSessions] = useState([])
@@ -46,7 +45,7 @@ export function useSessions() {
         load()
     }, [load])
 
-    /* حذف یک نشست — با session_id نه id */
+    /* حذف یک نشست — با `id` نه `session_id` */
     const removeSession = useCallback(
         async (sessionId) => {
             setWorking(true)
