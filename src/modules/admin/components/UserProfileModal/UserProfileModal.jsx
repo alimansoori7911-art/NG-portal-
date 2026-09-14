@@ -4,7 +4,6 @@ import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
 import { useUserOrders } from '../../hooks/useUserOrders'
 import { useUserTickets } from '../../hooks/useUserTickets'
-import { useLicenses } from '../../hooks/useLicenses'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './UserProfileModal.module.css'
@@ -23,19 +22,6 @@ const ORDER_COLUMNS = [
     { key: 'date', label: 'تاریخ', width: '12%', ltr: true },
 ]
 
-/* ستون‌ها از `LicenseListOutput` اسپک ۱۷، نه فیگما.
-
-   فیگما «کد لایسنس» و «سرور متصل» می‌خواست ولی در پاسخ نیستند؛ به‌جای
-   ستون همیشه‌خالی، شماره‌ی سفارش می‌آید که لایسنس را به خریدش وصل
-   می‌کند. همان ستون‌های تب لایسنس در «فروش و مشتریان». */
-const LICENSE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '10%' },
-    { key: 'orderNumber', label: 'شماره سفارش', width: '22%', ltr: true },
-    { key: 'startsAt', label: 'تاریخ فعال‌سازی', width: '19%', ltr: true },
-    { key: 'expiresAt', label: 'تاریخ انقضا', width: '19%', ltr: true },
-    { key: 'limits', label: 'سقف‌ها', width: '16%' },
-    { key: 'status', label: 'وضعیت', width: '14%' },
-]
 
 const TICKET_COLUMNS = [
     { key: 'index', label: 'ردیف', width: '19.69%' },
@@ -90,7 +76,7 @@ function SectionTitle({ children }) {
 /**
  * پروفایل جامع کاربر — مودال تمام‌صفحه با اسکرول داخلی.
  *
- * چهار بخش: اطلاعات شخصی، تاریخچه خرید، لایسنس‌ها، تیکت‌ها.
+ * سه بخش: اطلاعات شخصی، تاریخچه خرید، تیکت‌ها.
  * ضربدر بالای صفحه مودال را می‌بندد و به لیست کاربران برمی‌گردد.
  *
  * «اطلاعات شخصی» از `GET /admin/auth/users/{id}` می‌آید و واقعی است.
@@ -101,7 +87,10 @@ function SectionTitle({ children }) {
  * هنوز این فیلتر را پیاده نکرده باشد، به‌جای نشان دادن تیکت‌های همه‌ی
  * کاربران پیام می‌دهد — رجوع به `useUserTickets`.
  *
- * جدول لایسنس از اسپک ۱۷ به `GET /license/?user_id=` وصل است.
+ * ⚠️ جدول لایسنس حذف شد: `GET /license/` کاربر را از JWT می‌شناسد و
+ *    `user_id` را هم از query برداشتند، پس اینجا **لایسنس‌های خودِ
+ *    ادمین** را نشان می‌داد نه کاربرِ پروفایل. ضمناً بک‌اند گفت پنل
+ *    ادمینِ لایسنس در این سیستم نیست.
  *
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
@@ -111,22 +100,6 @@ export default function UserProfileModal({ open, user, onClose }) {
        می‌ماند و هوک چیزی نمی‌خواند. */
     const orders = useUserOrders(open ? user?.id : null)
     const tickets = useUserTickets(open ? user?.id : null)
-    /* `enabled` لازم است: بدون آن با بسته بودن مودال `userId` تهی
-       می‌شد و لایسنس‌های **کل سیستم** گرفته می‌شد. */
-    /* ⚠️ `GET /license/` شناسه‌ی **UUID** می‌خواهد، ولی
-       `UserResponseSchema` (خروجی فهرست کاربران ادمین) فقط `id`
-       عددی دارد و هیچ `public_id`ای نمی‌دهد.
-
-       پس تا وقتی بک‌اند `public_id` را به آن اضافه نکند، این جدول
-       نمی‌تواند داده بگیرد. با `enabled: false` درخواست بی‌فایده
-       نمی‌رود و جدول پیام روشن نشان می‌دهد.
-       رجوع به BACKEND_REQUESTS.md */
-    const licenseUserId = user?.public_id ?? user?.user_public_id
-    const licenses = useLicenses({
-        userId: licenseUserId,
-        enabled: open && Boolean(licenseUserId),
-    })
-
     useEffect(() => {
         if (!open) return
 
@@ -208,25 +181,6 @@ export default function UserProfileModal({ open, user, onClose }) {
                             orders.loading
                                 ? 'در حال دریافت سفارش‌ها…'
                                 : orders.error || 'سفارشی برای این کاربر ثبت نشده است'
-                        }
-                    />
-
-                    {/* ── لایسنس‌ها ──
-                        از اسپک ۱۷ `GET /license/?user_id=` وجود دارد،
-                        پس این جدول داده‌ی واقعی دارد و پوشش «به‌زودی»
-                        برداشته شد. */}
-                    <SectionTitle>لایسنس‌های فعال/منقضی</SectionTitle>
-                    <AdminTable
-                        columns={LICENSE_COLUMNS}
-                        rows={licenses.rows}
-                        paginate={false}
-                        emptyMessage={
-                            !licenseUserId
-                                ? 'نمایش لایسنس نیازمند شناسه‌ی عمومی کاربر است که فهرست کاربران آن را نمی‌دهد.'
-                                : licenses.loading
-                                  ? 'در حال دریافت لایسنس‌ها…'
-                                  : licenses.error ||
-                                    'لایسنسی برای این کاربر صادر نشده است'
                         }
                     />
 

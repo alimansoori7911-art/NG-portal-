@@ -839,13 +839,9 @@ const routes = [
        ⚠️ نام پارامتر فیلتر در اسپک `is_acitve` است (غلط املایی در خود
        بک‌اند) — عیناً همان پذیرفته می‌شود تا فرانت درست تست شود. */
     ['GET', /^\/license\/$/, (req) => {
-        /* اسپک ۱۸: `user_id` اجباری است و UUID می‌گیرد */
-        if (!req.query.get('user_id')) {
-            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
-                { loc: "('query', 'user_id')", msg: 'user_id الزامی است' },
-            ])]
-        }
-        const activeParam = req.query.get('is_acitve')
+        /* بک‌اند `user_id` را از query حذف کرد — کاربر از JWT شناخته
+           می‌شود. و `is_acitve` به `is_active` اصلاح شد. */
+        const activeParam = req.query.get('is_active')
         const list = activeParam == null
             ? db.licenses
             : db.licenses.filter((l) => String(l.is_active) === activeParam)

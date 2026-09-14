@@ -36,18 +36,22 @@ function toRow(license, index) {
 }
 
 /**
- * لایسنس‌ها برای پنل ادمین — `GET /license/` (اسپک ۱۷).
+ * لایسنس‌های **کاربر جاری** — `GET /license/`.
  *
- * تا اسپک ۱۶ هیچ اندپوینت لایسنسی نبود و این جدول زیر پوشش
- * «به‌زودی» خالی می‌ماند.
+ * ⚠️ این هوک هیچ شناسه‌ای نمی‌فرستد: بک‌اند کاربر را از JWT می‌شناسد
+ * و `user_id` را از query حذف کرد. پس نمی‌شود با آن لایسنس‌های کاربر
+ * دیگری را دید — به همین دلیل از پروفایل جامع ادمین برداشته شد.
+ *
+ * فعلاً مصرف‌کننده‌ای ندارد و برای صفحه‌ی «لایسنس‌های من» در داشبورد
+ * کاربر نگه داشته شده است.
+ *
+ * ⚠️ جایش زیر `modules/admin` مانده چون `ROWS_PER_PAGE` را از
+ * `AdminTable` می‌گیرد. وقتی صفحه‌ی کاربر ساخته شد، همراهش به
+ * `modules/dashboard` منتقل شود.
+ *
+ * @param enabled وقتی false است هیچ درخواستی نمی‌رود.
  */
-/**
- * @param userId  فقط لایسنس‌های همین کاربر (تهی = همه)
- * @param enabled وقتی false است هیچ درخواستی نمی‌رود. برای مودالی که
- *                بسته است لازم است، وگرنه با `userId` تهی **لایسنس‌های
- *                کل سیستم** گرفته می‌شد.
- */
-export function useLicenses({ userId, enabled = true } = {}) {
+export function useLicenses({ enabled = true } = {}) {
     const [rows, setRows] = useState([])
     const [page, setPage] = useState(1)
     const [pageCount, setPageCount] = useState(1)
@@ -71,7 +75,6 @@ export function useLicenses({ userId, enabled = true } = {}) {
                 const { items, pagination } = await licenseService.getLicenses({
                     page,
                     limit: ROWS_PER_PAGE,
-                    user_id: userId,
                 })
                 if (cancelled) return
 
@@ -91,7 +94,7 @@ export function useLicenses({ userId, enabled = true } = {}) {
         return () => {
             cancelled = true
         }
-    }, [page, userId, attempt, enabled])
+    }, [page, attempt, enabled])
 
     return { rows, page, pageCount, loading, error, setPage, reload }
 }
