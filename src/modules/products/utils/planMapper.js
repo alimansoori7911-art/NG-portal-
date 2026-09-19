@@ -135,7 +135,12 @@ export function mapPlan(plan) {
         features,
         price: price
             ? {
-                amount: Number(price.amount) || 0,
+                /* `PlanPriceOutput` مبلغی به نام `amount` ندارد:
+                   `quoted_amount` مبلغ پایه است و `final_amount` مبلغ
+                   بعد از تخفیف و مالیات — چیزی که کاربر می‌پردازد.
+                   قبلاً `price.amount` خوانده می‌شد که همیشه تهی بود و
+                   هر پلن «رایگان» نشان داده می‌شد. */
+                amount: Number(price.final_amount ?? price.quoted_amount) || 0,
                 currency: price.currency,
                 term: price.term_code,
             }

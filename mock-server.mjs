@@ -235,7 +235,7 @@ const MOCK_PLANS = [
         description: 'مناسب برای ارزیابی اولیه محصول',
         external_plan_code: 'NGC-LIC-PILOT-1M',
         is_pilot: true, is_active: true, is_public: true, sort_order: 1,
-        prices: [{ id: 1, term_code: 'trial', amount: '0', currency: 'IRR', is_active: true }],
+        prices: [{ id: 1, term_code: 'trial', quoted_amount: '0', final_amount: '0', currency: 'IRR', is_active: true }],
         features: planFeatures(5, 2, 2),
     },
     {
@@ -243,7 +243,7 @@ const MOCK_PLANS = [
         description: 'مناسب برای کسب و کار های کوچک',
         external_plan_code: 'NGC-LIC-base-1Y',
         is_pilot: false, is_active: true, is_public: true, sort_order: 2,
-        prices: [{ id: 2, term_code: 'yearly', amount: '480000000', currency: 'IRR', is_active: true }],
+        prices: [{ id: 2, term_code: 'yearly', quoted_amount: '480000000', final_amount: '480000000', currency: 'IRR', is_active: true }],
         features: planFeatures(15, 15, 15),
     },
     {
@@ -251,7 +251,7 @@ const MOCK_PLANS = [
         description: 'مناسب برای سازمان های متوسط و تیم های فناوری اطلاعات',
         external_plan_code: 'NGC-LIC-PRO-1Y',
         is_pilot: false, is_active: true, is_public: true, sort_order: 3,
-        prices: [{ id: 3, term_code: 'yearly', amount: '960000000', currency: 'IRR', is_active: true }],
+        prices: [{ id: 3, term_code: 'yearly', quoted_amount: '960000000', final_amount: '960000000', currency: 'IRR', is_active: true }],
         features: planFeatures(50, 50, 50),
     },
     {
@@ -259,7 +259,7 @@ const MOCK_PLANS = [
         description: 'مناسب برای سازمان های بزرگ و مراکز داده',
         external_plan_code: 'NGC-LIC-PLUS-1Y',
         is_pilot: false, is_active: true, is_public: true, sort_order: 4,
-        prices: [{ id: 4, term_code: 'yearly', amount: '1920000000', currency: 'IRR', is_active: true }],
+        prices: [{ id: 4, term_code: 'yearly', quoted_amount: '1920000000', final_amount: '1920000000', currency: 'IRR', is_active: true }],
         features: planFeatures(150, 150, 150),
     },
     {
@@ -267,7 +267,7 @@ const MOCK_PLANS = [
         description: 'مناسب برای enterprise،MSSP و محیط های چند عملیاتی',
         external_plan_code: 'NGC-LIC-unlimited-1Y',
         is_pilot: false, is_active: true, is_public: true, sort_order: 5,
-        prices: [{ id: 5, term_code: 'perpetual', amount: '5000000000', currency: 'IRR', is_active: true }],
+        prices: [{ id: 5, term_code: 'perpetual', quoted_amount: '5000000000', final_amount: '5000000000', currency: 'IRR', is_active: true }],
         features: planFeatures('Unlimited', 'Unlimited', 'Unlimited'),
     },
 ]
@@ -433,11 +433,14 @@ const routes = [
         description: 'نرم‌افزار پایش شبکه', is_active: true, is_public: true,
     }])],
 
+    /* `product_id` در `PlanOutput` اجباری است و تنها جایی است که
+       `CreateOrder` می‌تواند آن را از آن بگیرد؛ نبودنش یعنی سفارش
+       بدون محصول ثبت می‌شود. */
     ['GET', /^\/products\/plans$/, () => page([
-        { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true,
-          prices: [{ id: 1, term_code: 'monthly', amount: '50000000', currency: 'IRR' }], features: [] },
-        { id: 2, code: 'pro', name: 'حرفه‌ای', external_plan_code: 'P1', is_active: true, is_public: true,
-          prices: [{ id: 2, term_code: 'yearly', amount: '480000000', currency: 'IRR' }], features: [] },
+        { id: 1, product_id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true,
+          prices: [{ id: 1, term_code: 'monthly', quoted_amount: '50000000', final_amount: '50000000', currency: 'IRR', is_active: true }], features: [] },
+        { id: 2, product_id: 1, code: 'pro', name: 'حرفه‌ای', external_plan_code: 'P1', is_active: true, is_public: true,
+          prices: [{ id: 2, term_code: 'yearly', quoted_amount: '480000000', final_amount: '480000000', currency: 'IRR', is_active: true }], features: [] },
     ])],
 
     ['GET', /^\/products\/(features|categories)$/, () => page([])],
@@ -487,12 +490,15 @@ const routes = [
             order_type: 'purchase',
             status: 'REQUESTED',
             first_name: u.first_name, last_name: u.last_name,
-            /* ⚠️ عیناً مثل اسپک ۱۷: فقط `user_public_id` (UUID) داده
-               می‌شود، **نه** `user_id` عددی. `CreatePlanPrice` عدد
-               می‌خواهد، پس قیمت‌گذاری واقعاً بلاک است و این mock همان
-               بلاک را بازتولید می‌کند تا در تست پنهان نشود. */
+            /* `OrderOutput` فقط `user_public_id` (UUID) می‌دهد، نه
+               `user_id` عددی. از اسپک ۱۸ `CreatePlanPrice.user_id` هم
+               UUID شد، پس همین مقدار مستقیم به قیمت‌گذاری می‌رود و آن
+               بلاکِ قبلی برطرف است.
+
+               ⚠️ `user_full_name` عمداً اینجا نیست: در `OrderOutput`
+               وجود ندارد. قبلاً بود و اگر فرانت به آن تکیه می‌کرد،
+               روی بک‌اند واقعی خالی می‌شد بدون آنکه تست چیزی بگیرد. */
             user_public_id: u.public_id,
-            user_full_name: [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
             product_id: 1, plan_id: plan?.id ?? 1,
             snapshot_product_name: 'NG Corion',
             snapshot_plan_name: plan?.name ?? 'پایه',
@@ -648,13 +654,23 @@ const routes = [
             return [409, fail('CONFLICT', 'قیمتی با این مشخصات از قبل هست')]
         }
 
+        /* `final_amount` در `PlanPriceOutput` اجباری است و همان چیزی
+           است که کاربر می‌پردازد: مبلغ پایه منهای تخفیف، به‌علاوه‌ی
+           مالیات. تخفیف و مالیات **درصد**اند نه مبلغ. */
+        const base = Number(req.body.quoted_amount) || 0
+        const discount = Number(req.body.discount_percentage) || 0
+        const tax = Number(req.body.tax_percentage) || 0
+        const afterDiscount = base * (1 - discount / 100)
+        const finalAmount = Math.round(afterDiscount * (1 + tax / 100))
+
         const price = {
             id: db.nextPriceId++,
             plan_id: planId,
             code, name, term_code, currency,
             quoted_amount: req.body.quoted_amount ?? 0,
-            discount_percentage: req.body.discount_percentage ?? 0,
-            tax_percentage: req.body.tax_percentage ?? 0,
+            discount_percentage: discount,
+            tax_percentage: tax,
+            final_amount: String(finalAmount),
             user_id: user_id ?? null,
             is_active: req.body.is_active !== false,
         }
@@ -678,10 +694,11 @@ const routes = [
                 ])]
             }
 
-            /* همان فرمولی که فرانت پیش‌نمایش می‌دهد */
+            /* مبلغ پرداختی همان `final_amount`ی است که موقع ساخت قیمت
+               حساب شد — دوباره حساب نمی‌شود تا دو فرمول از هم جدا
+               نیفتند. */
             const base = Number(price.quoted_amount) || 0
-            const afterDiscount = base * (1 - (price.discount_percentage || 0) / 100)
-            const payable = Math.round(afterDiscount * (1 + (price.tax_percentage || 0) / 100))
+            const payable = Number(price.final_amount) || base
 
             o.status = 'QUOTATION_ISSUED'
             /* تایم‌لاین: صفحه‌ی پرداخت از همین می‌فهمد پیش‌فاکتور

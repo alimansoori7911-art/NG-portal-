@@ -48,18 +48,22 @@ export default function OrderFormStep({
                                           submitting = false,
                                           error = '',
                                       }) {
-    /* TODO: بعضی فیلدها باید از حساب کاربری پیش‌پر شوند.
-             تا مشخص شدن اسپک /auth/me، همه خالی می‌مانند. */
+    /* مقادیر اولیه از پروفایل (`/auth/me`) می‌آیند؛ والد آن‌ها را در
+       `initialValues` می‌دهد تا کاربر نام و ایمیل و شماره‌اش را دوباره
+       تایپ نکند. */
     const [form, setForm] = useState({ ...EMPTY_FORM, ...initialValues })
 
     const change = (key) => (e) => {
         const value = e.target.value
-        setForm((prev) => {
-            const next = { ...prev, [key]: value }
-            /* والد باید بداند چیزی وارد شده تا موقع بستن تأیید بگیرد */
-            onDirtyChange?.(Object.values(next).some((v) => v.trim() !== ''))
-            return next
-        })
+        const next = { ...form, [key]: value }
+        setForm(next)
+        /* والد باید بداند چیزی وارد شده تا موقع بستن تأیید بگیرد.
+           ⚠️ این باید **بیرون** از تابع به‌روزرسان `setForm` صدا زده
+           شود: React آن تابع را حین رندر اجرا می‌کند و صدا زدنِ
+           `setState` والد در آن لحظه، رندر را می‌شکند
+           («Cannot update a component while rendering a different one»)
+           و ثبت سفارش هیچ‌وقت جلو نمی‌رفت. */
+        onDirtyChange?.(Object.values(next).some((v) => v.trim() !== ''))
     }
 
     const isValid = REQUIRED_FIELDS.every((key) => form[key].trim() !== '')
