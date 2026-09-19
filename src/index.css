@@ -16,6 +16,48 @@ html {
     scroll-behavior: smooth;
 }
 
+/* نوار اسکرول سراسری.
+
+   بدون این، مرورگر نوار پیش‌فرضِ روشن خودش را می‌کشد که روی پس‌زمینه‌ی
+   تیره‌ی پرتال یک خط سفید تو‌ذوق‌زن است. چند کامپوننت (جدول‌ها، چت
+   تیکت) نوار خودشان را استایل کرده بودند ولی نوارِ خودِ صفحه نه.
+
+   `scrollbar-color` استاندارد است و فایرفاکس فقط همین را می‌فهمد؛
+   `::-webkit-scrollbar` برای کرومیوم و سافاری است. هر دو می‌آیند تا
+   در همه‌ی مرورگرها یک شکل باشد. */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full, 999px);
+    /* حاشیه‌ی هم‌رنگِ پس‌زمینه، دستگیره را باریک‌تر و جمع‌وجورتر
+       نشان می‌دهد بدون آنکه ناحیه‌ی کلیک کوچک شود. */
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--interactive-border, #4073BF);
+    background-clip: content-box;
+}
+
+/* گوشه‌ی تلاقی نوار افقی و عمودی — پیش‌فرضش هم روشن است */
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 body {
     font-family: var(--font-family);
     background-color: var(--color-bg-darkest);
