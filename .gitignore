@@ -32,3 +32,6 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+# نسخه‌های پشتیبانِ دستی هم همان IP محلی را دارند
+.env.bak
+.env.*.bak

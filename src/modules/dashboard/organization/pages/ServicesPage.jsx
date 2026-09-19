@@ -1,38 +1,48 @@
 import DataTable from '../../components/DataTable/DataTable'
-import ComingSoon from '../../../../components/ui/ComingSoon/ComingSoon'
+import { useLicenses } from '../hooks/useLicenses'
 
-/* عرض ستون‌ها از SVG (از راست): 226 | 242 | 285 | 267  از ۱۰۲۰ */
+/* ستون‌ها بر اساس `LicenseListOutput`.
+
+   فیگما چهار ستون داشت (ردیف/تاریخ/پلن/وضعیت) که دقیقاً ستون‌های
+   «سفارش‌های من» بود. ولی بک‌اند روشن کرد این صفحه باید بگوید کاربر
+   **کدام لایسنس** را با چه مشخصاتی دارد — پس ستون‌ها از خودِ پاسخ
+   گرفته شده‌اند نه از فیگما، وگرنه ستون بی‌داده می‌ماند. */
 const COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '22.16%' },
-    { key: 'date', label: 'تاریخ', width: '23.73%', ltr: true },
-    { key: 'plan', label: 'پلن', width: '27.94%', ltr: true },
-    { key: 'status', label: 'وضعیت', width: '26.18%' },
+    { key: 'index', label: 'ردیف', width: '8%' },
+    { key: 'orderNumber', label: 'شماره سفارش', width: '20%', ltr: true },
+    { key: 'startsAt', label: 'شروع', width: '16%', ltr: true },
+    { key: 'expiresAt', label: 'انقضا', width: '16%', ltr: true },
+    { key: 'limits', label: 'سقف‌ها', width: '26%' },
+    { key: 'status', label: 'وضعیت', width: '14%' },
 ]
 
 /**
- * مدیریت سرویس.
+ * مدیریت سرویس — لایسنس‌های فعال کاربر (`GET /license/`).
  *
- * ⚠️ **این صفحه اندپوینتِ نداشته ندارد — تکراری است.**
+ * ⚠️ «سرویس» در این پرتال یعنی **لایسنس**، نه سفارش. بک‌اند تأیید کرد
+ * که این صفحه باید بگوید کاربر کدام لایسنس را با چه داده‌ای دارد.
  *
- * چهار ستونش (ردیف/تاریخ/پلن/وضعیت) عیناً همان ستون‌های
- * `OrderListPage` است که به `GET /orders/` وصل است و کار می‌کند.
- * یعنی «سرویس» در این فیگما همان «سفارش» است، نه یک موجودیت جدا؛
- * در فلو هم (`flow.dot` و `portal.dot`) چنین چیزی نیست.
+ * (پیش از این تار بود و ستون‌هایش تکرار «سفارش‌های من» بود. تاریخچه‌ی
+ * خرید جای دیگری است: `products/buy/orders`.)
  *
- * ⚠️ و این صفحه‌ی **پیش‌فرض داشبورد** است، یعنی اولین چیزی که کاربر
- * بعد از ورود می‌بیند — که الان تار است.
- *
- * تصمیم لازم (سؤالش به کارفرما رفت):
- *   الف) این صفحه حذف و `/dashboard` به فهرست سفارش‌ها ریدایرکت شود
- *   ب) اگر «سرویس» چیزی جدا از سفارش است، تعریفش را بگیریم و
- *      اندپوینتش را از بک‌اند بخواهیم
- *
- * تا آن‌موقع پوشش می‌ماند، ولی متنش می‌گوید کاربر کجا برود.
+ * این صفحه‌ی پیش‌فرض داشبورد است، پس اولین چیزی که کاربر بعد از ورود
+ * می‌بیند همین است — و حالا داده‌ی واقعی دارد.
  */
 export default function ServicesPage() {
+    const { rows, page, pageCount, loading, error, setPage } = useLicenses()
+
     return (
-        <ComingSoon note="سفارش‌ها و سرویس‌های فعال شما در «خرید ← سفارش‌های من» فهرست شده‌اند.">
-            <DataTable columns={COLUMNS} rows={[]} page={1} pageCount={1} />
-        </ComingSoon>
+        <DataTable
+            columns={COLUMNS}
+            rows={rows}
+            page={page}
+            pageCount={pageCount}
+            onPageChange={setPage}
+            emptyMessage={
+                loading
+                    ? 'در حال دریافت لایسنس‌ها…'
+                    : error || 'هنوز لایسنسی برای شما صادر نشده است.'
+            }
+        />
     )
 }
