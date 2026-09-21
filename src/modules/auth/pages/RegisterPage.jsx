@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CardLayout from "../components/CardLayout/CardLayout";
 import OtpInput from "../components/OtpInput/OtpInput";
+import SetPasswordModal from "../components/SetPasswordModal/SetPasswordModal";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
@@ -62,6 +63,7 @@ export default function RegisterPage() {
         organization: "",
     });
     const [fieldErrors, setFieldErrors] = useState({});
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     useEffect(() => {
         if (step !== 2 || secondsLeft <= 0) return;
@@ -265,7 +267,11 @@ export default function RegisterPage() {
 
             // تأیید کد ملی — کاربر از مرحله‌ی کد لاگین است
             await submitIdentity();
-            navigate("/", { replace: true });
+
+            /* به‌جای رفتن مستقیم به خانه، مرحله‌ی «خوش‌آمد» نشان داده
+               می‌شود: نام کاربری (همان شماره) اعلام می‌شود و امکان
+               انتخاب رمز داده می‌شود. */
+            setStep(4);
         } catch (err) {
             // پس از ثبت‌نام موفق، خطاها مربوط به تأیید هویت‌اند
             if (registeredRef.current) {
@@ -446,6 +452,50 @@ export default function RegisterPage() {
                         </Button>
                     </form>
                 </CardLayout>
+            )}
+
+            {/* مرحله ۴ — خوش‌آمد.
+
+                دو چیز را روشن می‌کند که کاربر در ثبت‌نام با شماره
+                نمی‌داند: نام کاربری‌اش چیست، و اینکه می‌تواند رمز هم
+                بگذارد. هیچ‌کدام اجباری نیست؛ ورود با کد یک‌بارمصرف
+                همیشه کار می‌کند. */}
+            {step === 4 && (
+                <CardLayout showLogo onBack={null}>
+                    <h1 className={styles.title}>ثبت‌نام کامل شد</h1>
+
+                    <p className={styles.welcomeText}>
+                        از این پس با این نام کاربری وارد می‌شوید:
+                    </p>
+                    <p className={styles.usernameBox}>{phone}</p>
+                    <p className={styles.welcomeHint}>
+                        نام کاربری شما همان شماره موبایلتان است.
+                    </p>
+
+                    <div className={styles.welcomeActions}>
+                        <Button onClick={() => setShowPasswordModal(true)}>
+                            انتخاب رمز عبور
+                        </Button>
+                        <button
+                            type="button"
+                            className={styles.laterBtn}
+                            onClick={() => navigate("/", { replace: true })}
+                        >
+                            بعداً — ورود با کد پیامکی
+                        </button>
+                    </div>
+                </CardLayout>
+            )}
+
+            {showPasswordModal && (
+                <SetPasswordModal
+                    phone={phone}
+                    onClose={() => setShowPasswordModal(false)}
+                    onDone={() => {
+                        setShowPasswordModal(false);
+                        navigate("/", { replace: true });
+                    }}
+                />
             )}
         </>
     );

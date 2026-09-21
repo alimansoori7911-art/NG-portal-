@@ -37,6 +37,7 @@ const db = {
     licenses: [],
     planPrices: [],
     otps: new Map(), // identifier -> code
+    resetTokens: new Map(), // reset token -> identifier (یک‌بارمصرف)
     nextOrderNum: 1001,
     nextTermId: 3,
     nextPriceId: 1,
@@ -328,9 +329,44 @@ const routes = [
         return ok({ message: 'verified', claim_token: 'mock-claim-token' })
     }],
 
-    ['POST', /^\/auth\/otp\/reset-password\/verify$/, () =>
-        ok({ message: 'verified', claim_token: 'mock-claim-token' }),
-    ],
+    ['POST', /^\/auth\/otp\/reset-password\/verify$/, (req) => {
+        const id = req.body.phone_number || req.body.email || req.body.username
+        if (req.body.otp !== db.otps.get(id) && req.body.otp !== '111111') {
+            return [400, fail('BAD_REQUEST', 'invalid otp')]
+        }
+        /* توکن به شناسه گره می‌خورد تا `/auth/password/reset` بداند رمزِ
+           کدام کاربر را عوض کند. */
+        const token = `reset-${id}`
+        db.resetTokens.set(token, id)
+        return ok({ message: 'verified', claim_token: token })
+    }],
+
+    /* تعیین/بازیابی رمز — بدون رمز قبلی.
+
+       مسیری که کاربرِ ثبت‌نام‌کرده با شماره از آن رمز می‌گذارد؛
+       `/auth/password/change` به‌درد نمی‌خورد چون `old_password`
+       اجباری دارد و چنین کاربری رمزی ندارد. */
+    ['POST', /^\/auth\/password\/reset$/, (req) => {
+        const { reset_token, new_password } = req.body
+        const id = db.resetTokens.get(reset_token)
+        if (!id) {
+            return [401, fail('UNAUTHORIZED', 'invalid or used reset token')]
+        }
+        if (!new_password || String(new_password).length < 8) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
+                { loc: "('body', 'new_password')", msg: 'رمز حداقل ۸ کاراکتر' },
+            ])]
+        }
+
+        const u = [...db.users.values()].find(
+            (x) => x.phone === id || x.email === id || x.username === id
+        )
+        if (u) u.password = new_password
+        /* توکن یک‌بارمصرف است */
+        db.resetTokens.delete(reset_token)
+        console.log(`   🔑 رمز ${id} تنظیم شد`)
+        return ok({ message: 'password updated' })
+    }],
 
     /* ثبت‌نام */
     ['POST', /^\/auth\/register$/, (req) => {
