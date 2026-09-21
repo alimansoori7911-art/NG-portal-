@@ -162,8 +162,19 @@ api.interceptors.request.use(async (config) => {
         }
     }
 
+    /*
+      ⚠️ به مسیرهای عمومیِ auth توکن چسبانده نمی‌شود.
+
+      مهم‌ترینش `/auth/refresh` است: هویت آن درخواست **فقط** از روی
+      کوکی HttpOnly تشخیص داده می‌شود. اگر access token را هم بفرستیم،
+      بک‌اند همان را به‌جای رفرش‌توکن می‌بیند و رفرش شکست می‌خورد —
+      دقیقاً باگی که گزارش شد.
+
+      `isPublicAuthRoute` قبلاً فقط جلوی رفرشِ پیش‌دستانه را می‌گرفت،
+      نه خودِ هدر را.
+    */
     const token = tokenManager.get();
-    if (token && !config.headers.Authorization) {
+    if (token && !config.headers.Authorization && !isPublicAuthRoute(config.url)) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
