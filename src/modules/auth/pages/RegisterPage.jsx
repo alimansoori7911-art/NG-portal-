@@ -140,11 +140,24 @@ export default function RegisterPage() {
         setOtpError("");
         setLoading(true);
         try {
-            await authService.verifyOtp({
+            /* ⚠️ پاسخ این درخواست دور ریخته نمی‌شود.
+
+               `OTPVerifyOutput` می‌تواند `access_token` بدهد؛ یعنی با
+               تأیید کد، کاربر **همین‌جا** احراز هویت شده است. قبلاً
+               نادیده گرفته می‌شد و مرحله‌ی بعد دوباره حساب می‌ساخت. */
+            const result = await authService.verifyOtp({
                 action: "register",
                 otp,
                 phone_number: toEnglishDigits(phone).trim(),
             });
+
+            const data = result?.data ?? result;
+            if (data?.access_token) {
+                setAuth({ access_token: data.access_token, user: data.user });
+                /* حساب از قبل ساخته شده؛ مرحله‌ی بعد نباید register بزند. */
+                registeredRef.current = true;
+            }
+
             setVerifiedAt(Date.now());
             setStep(3);
         } catch (err) {
@@ -370,6 +383,19 @@ export default function RegisterPage() {
                                 onChange={setField("first_name")}
                                 error={fieldErrors.first_name}
                             />
+                            {/* نام خانوادگی عمداً **قبل از** ایمیل است.
+
+                                گرید دو ستونه است و Tab ترتیب DOM را دنبال
+                                می‌کند، نه ترتیب دیداری. با جای قبلی، از «نام»
+                                به «ایمیل» می‌پرید و نام خانوادگی از قلم
+                                می‌افتاد. حالا نام ← نام خانوادگی. */}
+                            <Input
+                                label="* نام خانوادگی"
+                                persian
+                                value={form.last_name}
+                                onChange={setField("last_name")}
+                                error={fieldErrors.last_name}
+                            />
                             <Input
                                 label="* ایمیل"
                                 type="email"
@@ -377,13 +403,6 @@ export default function RegisterPage() {
                                 onChange={setField("email")}
                                 error={fieldErrors.email}
                                 autoComplete="email"
-                            />
-                            <Input
-                                label="* نام خانوادگی"
-                                persian
-                                value={form.last_name}
-                                onChange={setField("last_name")}
-                                error={fieldErrors.last_name}
                             />
                             <Input
                                 label="* رمز عبور"
