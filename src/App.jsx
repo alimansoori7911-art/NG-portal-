@@ -11,6 +11,9 @@ import ForgotPasswordPage from "./modules/auth/pages/ForgotPasswordPage";
 import AboutPage from "./modules/about/pages/AboutPage";
 import ContactPage from "./modules/contact/pages/ContactPage";
 import TermsPage from "./modules/terms/pages/TermsPage";
+/* «خدمات» عمومی، در برابر «مدیریت سرویس» داشبورد که لایسنس‌های کاربر
+   را نشان می‌دهد و اسمش هم ServicesPage است. */
+import PublicServicesPage from "./modules/services/pages/ServicesPage";
 import ProductsPage from "./modules/products/pages/ProductsPage";
 import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
@@ -63,6 +66,7 @@ function App() {
                     به‌ازای هر IP طراحی شده است. */}
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/terms" element={<TermsPage />} />
+                <Route path="/services" element={<PublicServicesPage />} />
 
                 {/* ═══ فقط کاربر واردنشده ═══ */}
                 <Route element={<GuestRoute />}>

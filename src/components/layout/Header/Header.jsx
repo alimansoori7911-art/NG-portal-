@@ -32,7 +32,7 @@ const NAV_ITEMS = [
     /* `soon` یعنی صفحه‌اش هنوز ساخته نشده. کلیک کاری نمی‌کند و
        به‌جایش برچسب «به‌زودی» زیر دکمه ظاهر می‌شود — بردن کاربر به
        صفحه‌ی سفید بدتر از نرفتن است. */
-    { label: 'خدمات', path: '/services', soon: true },
+    { label: 'خدمات', path: '/services' },
     { label: 'منابع', path: '/resources', soon: true },
     {
         label: 'شرکت',

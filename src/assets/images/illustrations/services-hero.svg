@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 460" fill="none" role="img" aria-label="هسته‌ی مرکزی NGCorion و دارایی‌های متصل به آن">
+  <!--
+    تصویر hero صفحه‌ی خدمات — مکعب مرکزی «N» با ۶ نود پیرامونی.
+
+    نودها همان دسته‌های دارایی‌اند که محصول مدیریت می‌کند (شبکه،
+    امنیت، سیستم‌عامل، وب، پایگاه داده، برنامه). خطوط منحنی اتصال را
+    نشان می‌دهند، نه سلسله‌مراتب.
+  -->
+  <defs>
+    <linearGradient id="score" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".45"/>
+      <stop offset="100%" stop-color="#0047AD" stop-opacity=".15"/>
+    </linearGradient>
+    <linearGradient id="snode" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0047AD" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#001D47" stop-opacity=".55"/>
+    </linearGradient>
+    <radialGradient id="sglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".32"/>
+      <stop offset="100%" stop-color="#1474FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ssoft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <ellipse cx="310" cy="230" rx="290" ry="215" fill="url(#sglow)"/>
+
+  <!-- خطوط اتصال: از مرکز به هر نود -->
+  <g stroke="#1474FF" stroke-width="1.25" opacity=".45" fill="none">
+    <path d="M262 206 C214 186 186 152 150 128"/>
+    <path d="M262 230 C206 230 176 230 118 230"/>
+    <path d="M262 254 C214 274 186 308 150 332"/>
+    <path d="M358 206 C406 186 434 152 470 128"/>
+    <path d="M358 230 C414 230 444 230 502 230"/>
+    <path d="M358 254 C406 274 434 308 470 332"/>
+  </g>
+
+  <!-- نودهای پیرامونی -->
+  <g>
+    <!-- بالا-راست -->
+    <g transform="translate(96,96)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85">
+        <rect x="18" y="18" width="36" height="12" rx="3" fill="none"/>
+        <line x1="26" y1="38" x2="46" y2="38"/>
+      </g>
+    </g>
+    <!-- وسط-راست -->
+    <g transform="translate(62,200)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85" fill="none">
+        <ellipse cx="36" cy="22" rx="16" ry="7"/>
+        <path d="M20 22 V38 C20 42 27 45 36 45 C45 45 52 42 52 38 V22"/>
+      </g>
+    </g>
+    <!-- پایین-راست -->
+    <g transform="translate(96,302)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85" fill="none">
+        <path d="M36 16 L50 22 V33 C50 40 43 45 36 47 C29 45 22 40 22 33 V22 Z"/>
+      </g>
+    </g>
+    <!-- بالا-چپ -->
+    <g transform="translate(452,96)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85" fill="none">
+        <circle cx="36" cy="30" r="14"/>
+        <line x1="22" y1="30" x2="50" y2="30"/>
+        <path d="M36 16 C30 22 30 38 36 44 C42 38 42 22 36 16"/>
+      </g>
+    </g>
+    <!-- وسط-چپ -->
+    <g transform="translate(486,200)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85" fill="none">
+        <rect x="20" y="18" width="32" height="24" rx="4"/>
+        <line x1="28" y1="48" x2="44" y2="48"/>
+      </g>
+    </g>
+    <!-- پایین-چپ -->
+    <g transform="translate(452,302)">
+      <rect width="72" height="60" rx="10" fill="url(#snode)" stroke="#4792FF" stroke-width="1.75"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85" fill="none">
+        <path d="M24 40 L32 30 L40 36 L50 22"/>
+        <line x1="22" y1="46" x2="52" y2="46"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- هسته‌ی مرکزی -->
+  <g filter="url(#ssoft)">
+    <rect x="254" y="174" width="112" height="112" rx="20" fill="url(#score)" stroke="#4792FF" stroke-width="2.25"/>
+    <text x="310" y="248" text-anchor="middle" font-family="system-ui, sans-serif" font-size="56" font-weight="800" fill="#ADCFFF">N</text>
+  </g>
+
+  <!-- ذرات -->
+  <g fill="#4792FF">
+    <circle cx="310" cy="62" r="2.2" opacity=".5"/>
+    <circle cx="310" cy="400" r="2.2" opacity=".45"/>
+    <circle cx="40" cy="150" r="1.8" opacity=".4"/>
+    <circle cx="580" cy="310" r="1.8" opacity=".4"/>
+  </g>
+</svg>
