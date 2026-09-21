@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import { formatToman, rialToToman, tomanToRial } from '../../../../utils/currency'
 import { PRICE_TERM_CODES } from '../../../../services/adminCatalogService'
 import styles from './QuoteForm.module.css'
+
+/* پیش‌فرض بک‌اند برای `tax_percentage` در `CreatePlanPrice` */
+const DEFAULT_TAX_PCT = 10
 
 /**
  * صدور پیش‌فاکتور — دو مرحله در یک فرم.
@@ -31,8 +34,9 @@ export default function QuoteForm({
        `BillingTerm.code` متن آزاد. پس مدت‌هایی که کدشان جزو enum
        نیست حذف می‌شوند — وگرنه ادمین گزینه‌ای می‌دید که قطعاً ۴۲۲
        می‌گرفت. */
-    const usableTerms = termList.filter((t) =>
-        PRICE_TERM_CODES.includes(t.code)
+    const usableTerms = useMemo(
+        () => termList.filter((t) => PRICE_TERM_CODES.includes(t.code)),
+        [termList]
     )
 
     const [form, setForm] = useState({
@@ -40,9 +44,20 @@ export default function QuoteForm({
         quoted: String(rialToToman(order.snapshot_total_amount) ?? ''),
         discountPct: '',
         taxPct: '',
-        termCode: usableTerms[0]?.code ?? '',
+        termCode: '',
         note: '',
     })
+
+    /* ⚠️ مدت‌ها async می‌آیند.
+
+       `useState` فقط یک‌بار در mount اجرا می‌شود و آن لحظه `termList`
+       هنوز خالی است، پس `form.termCode` همان `''` می‌ماند. مرورگر
+       گزینه‌ی اول را *نمایش* می‌داد ولی state خالی بود، یعنی `valid`
+       هیچ‌وقت true نمی‌شد و دکمه‌ی «صدور پیش‌فاکتور» قفل می‌ماند.
+
+       مقدار مؤثر محاسبه می‌شود نه همگام‌سازی با افکت: تا وقتی ادمین
+       دست نزده، همان گزینه‌ی اولی که می‌بیند ملاک است. */
+    const termCode = form.termCode || usableTerms[0]?.code || ''
 
     const change = (key) => (e) =>
         setForm((prev) => ({ ...prev, [key]: e.target.value }))
@@ -54,7 +69,16 @@ export default function QuoteForm({
 
     const quotedToman = num(form.quoted)
     const discountPct = num(form.discountPct)
-    const taxPct = num(form.taxPct)
+
+    /* ⚠️ مالیات پیش‌فرض ۱۰٪ است (`CreatePlanPrice.tax_percentage`).
+
+       فیلد خالی یعنی «همان پیش‌فرض»، نه صفر. قبلاً خالی را ۰ حساب
+       می‌کرد، پس «مبلغ قابل پرداخت» بدون مالیات نشان داده می‌شد در
+       حالی که بک‌اند ۱۰٪ اعمال می‌کرد — یعنی عددی که ادمین می‌دید با
+       چیزی که کاربر می‌پرداخت فرق داشت.
+
+       برای صفر کردن مالیات باید صریحاً «۰» نوشته شود. */
+    const taxPct = form.taxPct.trim() === '' ? DEFAULT_TAX_PCT : num(form.taxPct)
 
     /* همان فرمولی که بک‌اند اعمال می‌کند، تا ادمین قبل از ثبت ببیند
        کاربر چه مبلغی خواهد دید. */
@@ -66,7 +90,7 @@ export default function QuoteForm({
         quotedToman > 0 &&
         pctValid(discountPct) &&
         pctValid(taxPct) &&
-        Boolean(form.termCode)
+        Boolean(termCode)
 
     const submit = (e) => {
         e.preventDefault()
@@ -75,7 +99,7 @@ export default function QuoteForm({
             quoted_amount: tomanToRial(form.quoted),
             discount_percentage: discountPct,
             tax_percentage: taxPct,
-            term_code: form.termCode,
+            term_code: termCode,
             admin_note: form.note || null,
         })
     }
@@ -114,7 +138,7 @@ export default function QuoteForm({
                     <span className={styles.label}>مدت اعتبار *</span>
                     <select
                         className={styles.input}
-                        value={form.termCode}
+                        value={termCode}
                         onChange={change('termCode')}
                     >
                         {usableTerms.length === 0 && (

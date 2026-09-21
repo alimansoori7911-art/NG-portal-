@@ -98,7 +98,12 @@ export default function OrderInvoices({ orderId }) {
 
                             {date && <span className={styles.date}>{date}</span>}
 
-                            {inv.pdf_file_id && (
+                            {/* `pdf_file_id` تا وقتی بک‌اند فایل را
+                                نساخته `null` است. قبلاً در آن حالت هیچ
+                                چیزی نشان داده نمی‌شد و به‌نظر می‌رسید
+                                دکمه گم شده؛ حالا صریحاً گفته می‌شود
+                                که فایل هنوز آماده نیست. */}
+                            {inv.pdf_file_id ? (
                                 <button
                                     type="button"
                                     className={styles.viewBtn}
@@ -107,6 +112,10 @@ export default function OrderInvoices({ orderId }) {
                                 >
                                     {opening === inv.id ? '…' : 'مشاهده PDF'}
                                 </button>
+                            ) : (
+                                <span className={styles.pending}>
+                                    فایل PDF هنوز آماده نیست
+                                </span>
                             )}
                         </li>
                     )

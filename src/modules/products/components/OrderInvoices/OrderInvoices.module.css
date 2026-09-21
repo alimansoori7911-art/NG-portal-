@@ -87,3 +87,11 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* وقتی `pdf_file_id` تهی است — به‌جای دکمه‌ی غایب و بی‌توضیح */
+.pending {
+    flex-shrink: 0;
+    color: var(--text-muted-2);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
