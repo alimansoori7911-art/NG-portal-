@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 420" fill="none" role="img" aria-label="پشته‌ی مستندات NGCorion و منابع پیرامون آن">
+  <!--
+    تصویر hero صفحه‌ی منابع — پشته‌ی اسناد با «NG» و کارت‌های شناور.
+
+    هر کارت پیرامونی یک دسته‌ی منبع است (مستندات، مقالات، پایگاه دانش،
+    نسخه‌ها، آموزش، دانلود).
+  -->
+  <defs>
+    <linearGradient id="rstack" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".40"/>
+      <stop offset="100%" stop-color="#0047AD" stop-opacity=".14"/>
+    </linearGradient>
+    <linearGradient id="rcard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0047AD" stop-opacity=".32"/>
+      <stop offset="100%" stop-color="#001D47" stop-opacity=".52"/>
+    </linearGradient>
+    <radialGradient id="rglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#1474FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="rsoft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <ellipse cx="310" cy="210" rx="290" ry="196" fill="url(#rglow)"/>
+
+  <!-- خطوط اتصال از پشته به کارت‌ها -->
+  <g stroke="#1474FF" stroke-width="1.2" opacity=".4" fill="none">
+    <path d="M254 176 C214 156 190 128 160 110"/>
+    <path d="M250 214 C204 214 176 214 130 214"/>
+    <path d="M254 252 C214 272 190 300 160 318"/>
+    <path d="M366 176 C406 156 430 128 460 110"/>
+    <path d="M370 214 C416 214 444 214 490 214"/>
+    <path d="M366 252 C406 272 430 300 460 318"/>
+  </g>
+
+  <!-- کارت‌های پیرامونی -->
+  <g>
+    <g transform="translate(88,80)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".85">
+        <line x1="18" y1="20" x2="54" y2="20"/><line x1="18" y1="30" x2="46" y2="30"/><line x1="18" y1="40" x2="50" y2="40"/>
+      </g>
+    </g>
+    <g transform="translate(58,186)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85">
+        <path d="M22 18 H50 V38 H22 Z"/><line x1="36" y1="18" x2="36" y2="38"/>
+      </g>
+    </g>
+    <g transform="translate(88,290)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85">
+        <path d="M36 16 V38"/><path d="M27 30 L36 39 L45 30"/><line x1="22" y1="44" x2="50" y2="44"/>
+      </g>
+    </g>
+    <g transform="translate(460,80)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85">
+        <circle cx="36" cy="28" r="12"/><path d="M36 21 V28 L41 32"/>
+      </g>
+    </g>
+    <g transform="translate(490,186)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85">
+        <path d="M36 16 L48 22 V32 C48 38 42 42 36 44 C30 42 24 38 24 32 V22 Z"/>
+      </g>
+    </g>
+    <g transform="translate(460,290)">
+      <rect width="72" height="56" rx="9" fill="url(#rcard)" stroke="#4792FF" stroke-width="1.6"/>
+      <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" fill="none" opacity=".85">
+        <path d="M24 34 L32 24 L40 31 L50 18"/><line x1="22" y1="44" x2="52" y2="44"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- پشته‌ی مرکزی: سه لایه‌ی جابه‌جا -->
+  <g filter="url(#rsoft)">
+    <rect x="238" y="250" width="144" height="34" rx="9" fill="#001D47" fill-opacity=".7" stroke="#0047AD" stroke-width="1.5"/>
+    <rect x="248" y="220" width="124" height="34" rx="9" fill="#001D47" fill-opacity=".8" stroke="#1474FF" stroke-width="1.5"/>
+    <rect x="244" y="140" width="132" height="92" rx="12" fill="url(#rstack)" stroke="#4792FF" stroke-width="2.25"/>
+    <text x="310" y="198" text-anchor="middle" font-family="system-ui, sans-serif" font-size="42" font-weight="800" fill="#ADCFFF">NG</text>
+  </g>
+
+  <g fill="#4792FF">
+    <circle cx="310" cy="52" r="2.2" opacity=".5"/>
+    <circle cx="310" cy="368" r="2" opacity=".42"/>
+    <circle cx="36" cy="132" r="1.8" opacity=".38"/>
+    <circle cx="584" cy="286" r="1.8" opacity=".38"/>
+  </g>
+</svg>
