@@ -1,0 +1,251 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2160" viewBox="0 0 1440 2160" font-family="Vazirmatn, Tahoma, sans-serif">
+<style>.dim{font:10px monospace;fill:#FF4FA3;direction:ltr}.band{font-size:11px;fill:#FF4FA3;opacity:.9}</style>
+<rect width="1440" height="2160" fill="#020D1B"/>
+<rect x="1434" y="0" width="6" height="72" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="16" class="band" direction="rtl" text-anchor="start">Header · y=0 · h=72</text>
+<line x1="0" y1="72" x2="1440" y2="72" stroke="#08182F" stroke-width="1"/>
+<rect x="1290" y="14" width="86" height="44" rx="2" fill="none" fill-opacity="1" stroke="#9AA3B4" stroke-width="1"/>
+<text x="1296" y="27" class="dim" direction="ltr" text-anchor="start">86×44</text>
+<text x="1370" y="44" font-size="16" fill="#FFFFFF" font-weight="800" direction="rtl" text-anchor="start">NG CORION</text>
+<text x="990" y="42" font-size="15" fill="#D3DBEE" font-weight="500" direction="rtl" text-anchor="start">خانه</text>
+<text x="900" y="42" font-size="15" fill="#D3DBEE" font-weight="500" direction="rtl" text-anchor="start">محصول</text>
+<text x="810" y="42" font-size="15" fill="#D3DBEE" font-weight="500" direction="rtl" text-anchor="start">خدمات</text>
+<text x="720" y="42" font-size="15" fill="#FFFFFF" font-weight="500" direction="rtl" text-anchor="start">منابع</text>
+<rect x="668" y="70" width="56" height="2" rx="0" fill="#0A63F6" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="630" y="42" font-size="15" fill="#D3DBEE" font-weight="500" direction="rtl" text-anchor="start">درباره ما</text>
+<text x="540" y="42" font-size="15" fill="#D3DBEE" font-weight="500" direction="rtl" text-anchor="start">تماس با ما</text>
+<rect x="124" y="14" width="136" height="44" rx="6" fill="#0A63F6" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="130" y="27" class="dim" direction="ltr" text-anchor="start">136×44</text>
+<text x="192" y="42" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">درخواست دمو</text>
+<rect x="64" y="14" width="44" height="44" rx="6" fill="#03142D" fill-opacity="1" stroke="#0B1D38" stroke-width="1"/>
+<text x="70" y="27" class="dim" direction="ltr" text-anchor="start">44×44</text>
+<text x="86" y="42" font-size="20" fill="#FFFFFF" font-weight="400" direction="rtl" text-anchor="middle">≡</text>
+<rect x="1434" y="72" width="6" height="400" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="88" class="band" direction="rtl" text-anchor="start">Hero · y=72 · h=400</text>
+<text x="1376" y="124" font-size="14" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">خانه / منابع</text>
+<text x="1376" y="186" font-size="40" fill="#FFFFFF" font-weight="800" direction="rtl" text-anchor="start">مرکز منابع NGCorion</text>
+<text x="1376" y="236" font-size="18" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">به مستندات، راهنماها، مقالات، نسخه‌ها و منابع موردنیاز برای</text>
+<text x="1376" y="268" font-size="18" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">استفاده بهتر از NGCorion دسترسی داشته باشید.</text>
+<rect x="856" y="300" width="520" height="56" rx="8" fill="#011734" fill-opacity="1" stroke="#1D4ED8" stroke-width="1"/>
+<text x="862" y="313" class="dim" direction="ltr" text-anchor="start">520×56</text>
+<text x="1340" y="334" font-size="15" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">جستجو در مستندات، مقالات، راهنماها و …</text>
+<text x="1376" y="394" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">موضوعات پربحث:</text>
+<rect x="1134" y="376" width="136" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="#1D4ED8" stroke-width="1"/>
+<text x="1140" y="389" class="dim" direction="ltr" text-anchor="start">136×28</text>
+<text x="1202" y="395" font-size="12" fill="#FFFFFF" font-weight="400" direction="rtl" text-anchor="middle">نصب و راه‌اندازی</text>
+<rect x="1067" y="376" width="59" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1097" y="395" font-size="12" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">امنیت</text>
+<rect x="986" y="376" width="73" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1023" y="395" font-size="12" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">نسخه‌ها</text>
+<rect x="933" y="376" width="45" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="956" y="395" font-size="12" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">API</text>
+<rect x="817" y="376" width="108" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="871" y="395" font-size="12" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">پشتیبان‌گیری</text>
+<rect x="64" y="82" width="770" height="380" rx="4" fill="none" fill-opacity="1" stroke="#1D4ED8" stroke-width="1"/>
+<text x="70" y="95" class="dim" direction="ltr" text-anchor="start">770×380</text>
+<text x="449" y="272" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">تصویر hero (asset) — 770×380</text>
+<line x1="0" y1="472" x2="1440" y2="472" stroke="#08182F" stroke-width="1"/>
+<rect x="1434" y="472" width="6" height="568" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="488" class="band" direction="rtl" text-anchor="start">دسته‌بندی منابع · y=472 · h=568</text>
+<text x="1376" y="516" font-size="24" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">دسته‌بندی منابع</text>
+<text x="1376" y="544" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">به‌سرعت به بخش موردنظر خود دسترسی پیدا کنید.</text>
+<rect x="955" y="576" width="421" height="208" rx="8" fill="#0A2A6B" fill-opacity="1" stroke="#0A63F6" stroke-width="1.5"/>
+<text x="961" y="589" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="1145" y="604" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="1165" y="628" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">FileText</text>
+<text x="1165" y="678" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">مستندات</text>
+<text x="1165" y="708" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">راهنمای جامع استفاده، پیکربندی</text>
+<text x="1165" y="732" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">و مدیریت NGCorion.</text>
+<text x="1165" y="762" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده مستندات ←</text>
+<text x="975" y="602" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="510" y="576" width="421" height="208" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#1D4ED8" stroke-width="1"/>
+<text x="516" y="589" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="700" y="604" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="720" y="628" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">Rocket</text>
+<text x="720" y="678" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">شروع کار</text>
+<text x="720" y="708" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">راهنمای گام‌به‌گام برای شروع</text>
+<text x="720" y="732" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">سریع و آسان.</text>
+<text x="720" y="762" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده راهنما ←</text>
+<text x="530" y="602" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="64" y="576" width="421" height="208" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#1D4ED8" stroke-width="1"/>
+<text x="70" y="589" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="254" y="604" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="274" y="628" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">BookOpen</text>
+<text x="274" y="678" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">پایگاه دانش</text>
+<text x="274" y="708" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">پاسخ‌ها و راهکارهای عملی</text>
+<text x="274" y="732" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">به سوالات متداول.</text>
+<text x="274" y="762" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده مقالات ←</text>
+<text x="84" y="602" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="955" y="808" width="421" height="208" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#1D4ED8" stroke-width="1"/>
+<text x="961" y="821" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="1145" y="836" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="1165" y="860" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">ShieldCheck</text>
+<text x="1165" y="910" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">امنیت و انطباق</text>
+<text x="1165" y="940" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">منابع تخصصی امنیت زیرساخت</text>
+<text x="1165" y="964" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">و استانداردهای معتبر.</text>
+<text x="1165" y="994" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده منابع ←</text>
+<text x="975" y="834" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="510" y="808" width="421" height="208" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#1D4ED8" stroke-width="1"/>
+<text x="516" y="821" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="700" y="836" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="720" y="860" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">RefreshCw</text>
+<text x="720" y="910" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">نسخه‌ها</text>
+<text x="720" y="940" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">اطلاع از جدیدترین نسخه‌ها</text>
+<text x="720" y="964" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">و تغییرات محصول.</text>
+<text x="720" y="994" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده نسخه‌ها ←</text>
+<text x="530" y="834" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="64" y="808" width="421" height="208" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#1D4ED8" stroke-width="1"/>
+<text x="70" y="821" class="dim" direction="ltr" text-anchor="start">421×208</text>
+<rect x="254" y="836" width="40" height="40" rx="6" fill="none" fill-opacity="1" stroke="#4D8DFF" stroke-width="1"/>
+<text x="274" y="860" font-size="9" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">CloudDownload</text>
+<text x="274" y="910" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">دانلودها</text>
+<text x="274" y="940" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">فایل‌ها، بروشورها و منابع قابل</text>
+<text x="274" y="964" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="middle">دانلود NGCorion.</text>
+<text x="274" y="994" font-size="14" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">مشاهده دانلودها ←</text>
+<text x="84" y="834" font-size="16" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="middle">‹</text>
+<rect x="1434" y="1040" width="6" height="312" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="1056" class="band" direction="rtl" text-anchor="start">منابع پیشنهادی · y=1040 · h=312</text>
+<text x="1376" y="1080" font-size="24" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">منابع پیشنهادی</text>
+<text x="1376" y="1106" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">مهم‌ترین و پرکاربردترین منابع برای شروع کار یا عمیق‌تر شدن در موضوعات مختلف.</text>
+<text x="64" y="1080" font-size="14" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="end">← مشاهده همه منابع پیشنهادی</text>
+<rect x="1066" y="1132" width="310" height="192" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#0B1D38" stroke-width="1"/>
+<text x="1072" y="1145" class="dim" direction="ltr" text-anchor="start">310×192</text>
+<rect x="1324" y="1152" width="32" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1316" y="1173" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">مستندات</text>
+<text x="1356" y="1218" font-size="16" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">راهنمای نصب و راه‌اندازی</text>
+<text x="1356" y="1244" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">مراحل نصب و پیکربندی اولیه NGCorion</text>
+<text x="1356" y="1304" font-size="12" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">PDF ۱۲ صفحه</text>
+<text x="1094" y="1304" font-size="18" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">⤓</text>
+<rect x="732" y="1132" width="310" height="192" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#0B1D38" stroke-width="1"/>
+<text x="738" y="1145" class="dim" direction="ltr" text-anchor="start">310×192</text>
+<rect x="990" y="1152" width="32" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="982" y="1173" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">راهنما</text>
+<text x="1022" y="1218" font-size="16" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">شروع سریع</text>
+<text x="1022" y="1244" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">از نصب تا اولین ارزیابی امنیتی</text>
+<text x="1022" y="1304" font-size="12" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">PDF ۸ صفحه</text>
+<text x="760" y="1304" font-size="18" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">⤓</text>
+<rect x="398" y="1132" width="310" height="192" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#0B1D38" stroke-width="1"/>
+<text x="404" y="1145" class="dim" direction="ltr" text-anchor="start">310×192</text>
+<rect x="656" y="1152" width="32" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="648" y="1173" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">امنیت</text>
+<text x="688" y="1218" font-size="16" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">بهترین روش‌های Hardening</text>
+<text x="688" y="1244" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">نکات کلیدی برای ایمن‌سازی دارایی‌ها</text>
+<text x="688" y="1304" font-size="12" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">PDF ۱۰ صفحه</text>
+<text x="426" y="1304" font-size="18" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">⤓</text>
+<rect x="64" y="1132" width="310" height="192" rx="8" fill="#03142D" fill-opacity="0.9" stroke="#0B1D38" stroke-width="1"/>
+<text x="70" y="1145" class="dim" direction="ltr" text-anchor="start">310×192</text>
+<rect x="322" y="1152" width="32" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="314" y="1173" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">معرفی محصول</text>
+<text x="354" y="1218" font-size="16" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">معرفی قابلیت‌های NGCorion</text>
+<text x="354" y="1244" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">نمای کلی محصول و کاربردها</text>
+<text x="354" y="1304" font-size="12" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">PDF ۱۴ صفحه</text>
+<text x="92" y="1304" font-size="18" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">⤓</text>
+<line x1="64" y1="1346" x2="1376" y2="1346" stroke="#08182F" stroke-width="1"/>
+<rect x="1434" y="1352" width="6" height="492" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="1368" class="band" direction="rtl" text-anchor="start">آخرین به‌روزرسانی‌ها / پرطرفدار / CTA · y=1352 · h=492</text>
+<rect x="1056" y="1366" width="320" height="344" rx="12" fill="#03142D" fill-opacity="1" stroke="#0B1D38" stroke-width="1"/>
+<text x="1062" y="1379" class="dim" direction="ltr" text-anchor="start">320×344</text>
+<text x="1352" y="1410" font-size="18" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">🔥 منابع پرطرفدار</text>
+<rect x="1320" y="1440" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1326" y="1453" class="dim" direction="ltr" text-anchor="start">32×28</text>
+<text x="1336" y="1459" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">01</text>
+<text x="1308" y="1459" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">راهنمای نصب و راه‌اندازی</text>
+<rect x="1320" y="1486" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1336" y="1505" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">02</text>
+<text x="1308" y="1505" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">سوالات متداول (FAQ)</text>
+<rect x="1320" y="1532" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1336" y="1551" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">03</text>
+<text x="1308" y="1551" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">مستندات API</text>
+<rect x="1320" y="1578" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1336" y="1597" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">04</text>
+<text x="1308" y="1597" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">چک‌لیست پیش‌نیازها</text>
+<rect x="1320" y="1624" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1336" y="1643" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">05</text>
+<text x="1308" y="1643" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">راهنمای Hardening</text>
+<rect x="1320" y="1670" width="32" height="28" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1336" y="1689" font-size="13" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">06</text>
+<text x="1308" y="1689" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">لیست دارایی‌های پشتیبانی‌شده</text>
+<text x="1032" y="1392" font-size="24" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">آخرین به‌روزرسانی‌ها</text>
+<text x="64" y="1392" font-size="14" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="end">← مشاهده همه</text>
+<rect x="64" y="1412" width="968" height="260" rx="8" fill="#03142D" fill-opacity="1" stroke="#0B1D38" stroke-width="1"/>
+<text x="70" y="1425" class="dim" direction="ltr" text-anchor="start">968×260</text>
+<rect x="912" y="1422" width="104" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="918" y="1435" class="dim" direction="ltr" text-anchor="start">104×32</text>
+<text x="964" y="1443" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">نسخه‌ها</text>
+<text x="896" y="1443" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">NGCorion v2.3.0 منتشر شد</text>
+<text x="580" y="1443" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">قابلیت‌های جدید، بهبودها و رفع مشکلات</text>
+<text x="220" y="1443" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">۱۴۰۵/۰۶/۱۲</text>
+<circle cx="92" cy="1438" r="6" fill="none" stroke="#9AA3B4"/>
+<line x1="80" y1="1464" x2="1016" y2="1464" stroke="#0B1D38" stroke-width="1"/>
+<rect x="912" y="1474" width="104" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="964" y="1495" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">پایگاه دانش</text>
+<text x="896" y="1495" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">رفع مشکل ارتباط با تجهیزات Cisco</text>
+<text x="580" y="1495" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">بررسی دلایل و راهکارهای رفع خطا</text>
+<text x="220" y="1495" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">۱۴۰۵/۰۶/۱۰</text>
+<circle cx="92" cy="1490" r="6" fill="none" stroke="#9AA3B4"/>
+<line x1="80" y1="1516" x2="1016" y2="1516" stroke="#0B1D38" stroke-width="1"/>
+<rect x="912" y="1526" width="104" height="32" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="964" y="1547" font-size="12" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="middle">مستندات</text>
+<text x="896" y="1547" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">راهنمای تنظیم دسترسی کاربران</text>
+<text x="580" y="1547" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">آموزش کامل مدیریت کاربران و نقش‌ها</text>
+<text x="220" y="1547" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">۱۴۰۵/۰۶/۰۸</text>
+<circle cx="92" cy="1542" r="6" fill="none" stroke="#9AA3B4"/>
+<line x1="80" y1="1568" x2="1016" y2="1568" stroke="#0B1D38" stroke-width="1"/>
+<rect x="912" y="1578" width="104" height="32" rx="6" fill="#363D45" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="964" y="1599" font-size="12" fill="#FFFFFF" font-weight="400" direction="rtl" text-anchor="middle">امنیت</text>
+<text x="896" y="1599" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">استفاده از CIS Benchmarks در NGCorion</text>
+<text x="580" y="1599" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">راهنمای استفاده از Baselineهای امنیتی</text>
+<text x="220" y="1599" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">۱۴۰۵/۰۶/۰۵</text>
+<circle cx="92" cy="1594" r="6" fill="none" stroke="#9AA3B4"/>
+<line x1="80" y1="1620" x2="1016" y2="1620" stroke="#0B1D38" stroke-width="1"/>
+<rect x="912" y="1630" width="104" height="32" rx="6" fill="#363D45" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="964" y="1651" font-size="12" fill="#FFFFFF" font-weight="400" direction="rtl" text-anchor="middle">دانلودها</text>
+<text x="896" y="1651" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">چک‌لیست پیش‌نیازهای استقرار</text>
+<text x="580" y="1651" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">بررسی الزامات سخت‌افزاری و نرم‌افزاری</text>
+<text x="220" y="1651" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">۱۴۰۵/۰۶/۰۱</text>
+<circle cx="92" cy="1646" r="6" fill="none" stroke="#9AA3B4"/>
+<rect x="64" y="1696" width="968" height="132" rx="12" fill="#031A40" fill-opacity="1" stroke="#1D4ED8" stroke-width="1"/>
+<text x="70" y="1709" class="dim" direction="ltr" text-anchor="start">968×132</text>
+<rect x="124" y="1707" width="110" height="110" rx="55" fill="none" fill-opacity="1" stroke="#1D4ED8" stroke-width="1"/>
+<text x="130" y="1720" class="dim" direction="ltr" text-anchor="start">110×110</text>
+<text x="179" y="1770" font-size="28" fill="#4D8DFF" font-weight="700" direction="rtl" text-anchor="middle">؟</text>
+<text x="1000" y="1744" font-size="20" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">پاسخ سؤال خود را پیدا نکردید؟</text>
+<text x="1000" y="1774" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">اگر در منابع موجود به پاسخ خود</text>
+<text x="1000" y="1796" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">نرسیدید، با تیم ما در ارتباط باشید.</text>
+<rect x="488" y="1740" width="172" height="44" rx="6" fill="#0A63F6" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="494" y="1753" class="dim" direction="ltr" text-anchor="start">172×44</text>
+<text x="574" y="1767" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">ارسال درخواست پشتیبانی</text>
+<rect x="336" y="1740" width="136" height="44" rx="6" fill="none" fill-opacity="1" stroke="#3A4557" stroke-width="1"/>
+<text x="342" y="1753" class="dim" direction="ltr" text-anchor="start">136×44</text>
+<text x="404" y="1767" font-size="14" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="middle">تماس با ما ←</text>
+<rect x="1434" y="1852" width="6" height="308" fill="#FF4FA3" opacity=".5"/>
+<text x="1430" y="1868" class="band" direction="rtl" text-anchor="start">Footer · y=1852 · h=308</text>
+<line x1="0" y1="1852" x2="1440" y2="1852" stroke="#08182F" stroke-width="1"/>
+<rect x="1374" y="1902" width="2" height="16" rx="0" fill="#4D8DFF" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1364" y="1916" font-size="15" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">با ما در ارتباط باشید</text>
+<rect x="1340" y="1940" width="36" height="36" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1346" y="1953" class="dim" direction="ltr" text-anchor="start">36×36</text>
+<rect x="1292" y="1940" width="36" height="36" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<rect x="1244" y="1940" width="36" height="36" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<rect x="1196" y="1940" width="36" height="36" rx="6" fill="#0A1F44" fill-opacity="1" stroke="none" stroke-width="1"/>
+<text x="1000" y="1916" font-size="15" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">قوانین</text>
+<text x="1000" y="1956" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">حریم خصوصی</text>
+<text x="1000" y="1986" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">قوانین و مقررات</text>
+<text x="1000" y="2016" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">شرایط مجوز</text>
+<text x="700" y="1916" font-size="15" fill="#FFFFFF" font-weight="700" direction="rtl" text-anchor="start">دسترسی سریع</text>
+<text x="700" y="1956" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">محصول</text>
+<text x="700" y="1986" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">خدمات</text>
+<text x="700" y="2016" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">منابع</text>
+<text x="700" y="2046" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">درباره ما</text>
+<text x="700" y="2076" font-size="14" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">تماس با ما</text>
+<rect x="64" y="1896" width="108" height="56" rx="2" fill="none" fill-opacity="1" stroke="#9AA3B4" stroke-width="1"/>
+<text x="70" y="1909" class="dim" direction="ltr" text-anchor="start">108×56</text>
+<text x="118" y="1932" font-size="18" fill="#FFFFFF" font-weight="800" direction="rtl" text-anchor="middle">NG CORION</text>
+<text x="354" y="1980" font-size="14" fill="#4D8DFF" font-weight="400" direction="rtl" text-anchor="start">زیرساخت امن، آینده مطمئن</text>
+<text x="354" y="2012" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">NGCorion یک پلتفرم یکپارچه برای مدیریت،</text>
+<text x="354" y="2036" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">ارزیابی و ارتقای امنیت زیرساخت‌های فناوری</text>
+<text x="354" y="2060" font-size="14" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">اطلاعات در سازمان‌ها است.</text>
+<line x1="64" y1="2096" x2="1376" y2="2096" stroke="#08182F" stroke-width="1"/>
+<text x="1376" y="2134" font-size="13" fill="#9AA3B4" font-weight="400" direction="rtl" text-anchor="start">© ۱۴۰۵ NGCorion. تمامی حقوق محفوظ است.</text>
+<text x="300" y="2134" font-size="13" fill="#D3DBEE" font-weight="400" direction="rtl" text-anchor="start">سیاست کوکی‌ها   |   نقشه سایت</text>
+</svg>

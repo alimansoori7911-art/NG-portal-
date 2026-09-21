@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" fill="none" role="img" aria-label="سند قوانین و سپر امنیتی">
+  <!--
+    تصویر hero صفحه‌ی قوانین — سند نئونی + سپر تیک‌دار.
+
+    برداری است نه بیت‌مپ: placeholder اسپک برشِ اسکرین‌شات بود و تار
+    می‌شد. رنگ‌ها از پالت خودِ پروژه (variables.css) گرفته شده‌اند تا
+    با بقیه‌ی سایت یکی باشد، نه از پالت اسپک که آبی روشن‌تری داشت.
+  -->
+  <defs>
+    <linearGradient id="tdoc" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#0047AD" stop-opacity=".06"/>
+    </linearGradient>
+    <linearGradient id="tshield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4792FF" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#0047AD" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="tbase" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#4792FF" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#1474FF" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="tglow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1474FF" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#1474FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="tsoft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- هاله‌ی پس‌زمینه -->
+  <ellipse cx="300" cy="228" rx="250" ry="200" fill="url(#tglow)"/>
+
+  <!-- ذرات پراکنده — عمق می‌دهد بدون اینکه شلوغ کند -->
+  <g fill="#4792FF">
+    <circle cx="88" cy="96" r="2" opacity=".55"/>
+    <circle cx="520" cy="124" r="2.5" opacity=".45"/>
+    <circle cx="140" cy="330" r="2" opacity=".4"/>
+    <circle cx="498" cy="322" r="2" opacity=".5"/>
+    <circle cx="300" cy="44" r="1.8" opacity=".35"/>
+    <circle cx="64" cy="216" r="1.6" opacity=".3"/>
+    <circle cx="546" cy="230" r="1.6" opacity=".3"/>
+  </g>
+
+  <!-- صفحه‌ی پایه -->
+  <g opacity=".9">
+    <ellipse cx="300" cy="386" rx="186" ry="34" stroke="url(#tbase)" stroke-width="1.5"/>
+    <ellipse cx="300" cy="378" rx="140" ry="26" stroke="#1474FF" stroke-width="1" opacity=".35"/>
+  </g>
+
+  <!-- سند -->
+  <g filter="url(#tsoft)">
+    <rect x="196" y="78" width="208" height="272" rx="12" fill="url(#tdoc)" stroke="#4792FF" stroke-width="1.75"/>
+    <!-- گوشه‌ی تاخورده -->
+    <path d="M370 78 L404 112 L370 112 Z" fill="#0047AD" fill-opacity=".35" stroke="#4792FF" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- نوار عنوان -->
+    <rect x="224" y="112" width="96" height="12" rx="6" fill="#4792FF" fill-opacity=".55"/>
+    <!-- خطوط متن -->
+    <g stroke="#7AB0FF" stroke-width="2.5" stroke-linecap="round" opacity=".45">
+      <line x1="224" y1="152" x2="376" y2="152"/>
+      <line x1="224" y1="176" x2="376" y2="176"/>
+      <line x1="224" y1="200" x2="340" y2="200"/>
+      <line x1="224" y1="224" x2="376" y2="224"/>
+      <line x1="224" y1="248" x2="312" y2="248"/>
+      <line x1="224" y1="272" x2="360" y2="272"/>
+    </g>
+  </g>
+
+  <!-- سپر با تیک -->
+  <g filter="url(#tsoft)">
+    <path d="M392 246 L452 222 L512 246 V302 C512 340 480 366 452 378 C424 366 392 340 392 302 Z"
+          fill="url(#tshield)" stroke="#4792FF" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M426 296 L444 314 L480 276" stroke="#ADCFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- گره‌های کناری و اتصالشان به سند -->
+  <g stroke="#1474FF" stroke-width="1.25" opacity=".5">
+    <path d="M150 210 C176 210 182 228 196 236" fill="none"/>
+    <path d="M150 300 C178 300 184 288 196 282" fill="none"/>
+  </g>
+  <g fill="#0047AD" fill-opacity=".3" stroke="#4792FF" stroke-width="1.5">
+    <rect x="108" y="192" width="42" height="36" rx="7"/>
+    <rect x="108" y="282" width="42" height="36" rx="7"/>
+  </g>
+  <g stroke="#7AB0FF" stroke-width="2" stroke-linecap="round" opacity=".75">
+    <line x1="119" y1="204" x2="139" y2="204"/>
+    <line x1="119" y1="212" x2="133" y2="212"/>
+    <line x1="119" y1="294" x2="139" y2="294"/>
+    <line x1="119" y1="302" x2="133" y2="302"/>
+  </g>
+</svg>

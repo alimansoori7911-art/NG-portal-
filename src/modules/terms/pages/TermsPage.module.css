@@ -2,17 +2,189 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: var(--color-bg-darkest);
 }
 
 .main {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 90px;
+    /* هدر `fixed` است و ۹۶px ارتفاع دارد (اندازه‌گیری‌شده از خودِ
+       کامپوننت، نه عدد ۷۲ اسپک که با هدر ما نمی‌خواند). */
+    padding-top: 96px;
 }
 
-.placeholder {
-    color: rgba(255, 255, 255, 0.4);
-    font-size: var(--font-size-xl);
+.container {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding-inline: var(--spacing-xl);
+}
+
+.tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xl);
+}
+
+.tab {
+    height: 44px;
+    padding: 0 var(--spacing-lg);
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-primary-pale);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.tab:hover {
+    color: var(--color-white);
+    border-color: var(--color-primary-dark);
+}
+
+.tabActive {
+    background: var(--color-primary);
+    border-color: var(--color-primary-medium);
+    color: var(--color-white);
+    box-shadow: 0 0 16px rgba(0, 71, 173, 0.3);
+}
+
+.tab:focus-visible {
+    outline: 2px solid var(--color-primary-lighter);
+    outline-offset: 2px;
+}
+
+.layout {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-lg);
+}
+
+.sections {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.callout {
+    padding: var(--spacing-xl);
+    background: linear-gradient(
+        90deg,
+        var(--color-bg-dark) 0%,
+        var(--color-bg-darkest) 70%
+    );
+    border: 1px solid var(--color-primary-medium);
+    border-radius: var(--radius-lg);
+}
+
+.calloutTitle {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-white);
+}
+
+.calloutBody {
+    margin-top: var(--spacing-sm);
+    font-size: var(--font-size-md);
+    line-height: 2;
+    color: var(--color-primary-pale);
+    text-align: justify;
+}
+
+.cta {
+    margin-top: var(--spacing-2xl);
+}
+
+.related {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.relatedTitle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--color-white);
+}
+
+.relatedTitle svg {
+    color: var(--color-primary-light);
+}
+
+.chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.chip {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    height: 56px;
+    padding: 0 var(--spacing-lg);
+    background: var(--color-bg-dark);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    text-align: start;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.chip svg {
+    color: var(--color-primary-light);
+    flex-shrink: 0;
+}
+
+.chip:not(.chipSoon):hover {
+    border-color: var(--color-primary-medium);
+}
+
+.chip:focus-visible {
+    outline: 2px solid var(--color-primary-lighter);
+    outline-offset: 2px;
+}
+
+/* مقصدی ندارد — کلیک‌ناپذیر، ولی هنوز خوانا */
+.chipSoon {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.soon {
+    margin-inline-start: auto;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted-2);
+}
+
+@media (max-width: 1024px) {
+    .layout {
+        /* فهرست مطالب زیر متن می‌رود؛ ترتیب DOM آن را بعد از متن
+           گذاشته، پس برای موبایل بالا می‌آید تا اول دیده شود. */
+        flex-direction: column-reverse;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-inline: var(--spacing-md);
+    }
+
+    .tabs {
+        margin-top: var(--spacing-lg);
+    }
+
+    .tab {
+        flex: 1;
+        padding: 0 var(--spacing-sm);
+    }
 }

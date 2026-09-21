@@ -1,0 +1,137 @@
+.card {
+    display: flex;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    background: linear-gradient(
+        180deg,
+        var(--color-bg-dark) 0%,
+        var(--color-bg-darkest) 100%
+    );
+    border: 1px solid var(--color-primary-dark);
+    border-radius: var(--radius-lg);
+    /* هدر ثابت ۹۶px است؛ بدون این، لینکِ فهرست عنوان کارت را زیر هدر
+       می‌برد و کاربر وسط متن فرود می‌آید. */
+    scroll-margin-top: 112px;
+}
+
+.num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    background: linear-gradient(
+        180deg,
+        var(--color-primary) 0%,
+        var(--color-primary-dark) 100%
+    );
+    border: 1px solid var(--color-primary-medium);
+    border-radius: var(--radius-md);
+    color: var(--color-white);
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    /* شماره لاتین است */
+    direction: ltr;
+    box-shadow: 0 0 16px rgba(0, 71, 173, 0.35);
+}
+
+.content {
+    flex: 1;
+    min-width: 0;
+}
+
+.title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-white);
+    line-height: 1.6;
+}
+
+.paragraph {
+    margin-top: var(--spacing-md);
+    font-size: var(--font-size-md);
+    line-height: 2.1;
+    color: var(--color-primary-pale);
+    text-align: justify;
+}
+
+.definitions {
+    margin-top: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.definition {
+    padding-inline-start: var(--spacing-md);
+    border-inline-start: 2px solid var(--color-primary-dark);
+}
+
+.term {
+    font-weight: 700;
+    color: var(--color-white);
+    font-size: var(--font-size-md);
+    line-height: 1.9;
+}
+
+.desc {
+    margin-inline-start: 0;
+    font-size: var(--font-size-md);
+    line-height: 2;
+    color: var(--color-primary-pale);
+    text-align: justify;
+}
+
+.list {
+    margin-top: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.listItem {
+    position: relative;
+    padding-inline-start: var(--spacing-lg);
+    font-size: var(--font-size-md);
+    line-height: 2;
+    color: var(--color-primary-pale);
+}
+
+/* گلوله‌ی دستی — `list-style` در `index.css` سراسری حذف شده */
+.listItem::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.85em;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-light);
+}
+
+@media (max-width: 768px) {
+    .card {
+        gap: var(--spacing-md);
+        padding: var(--spacing-lg);
+    }
+
+    .num {
+        width: 48px;
+        height: 48px;
+        font-size: var(--font-size-lg);
+    }
+
+    .title {
+        font-size: var(--font-size-lg);
+    }
+
+    .paragraph,
+    .desc,
+    .listItem {
+        font-size: var(--font-size-sm);
+        line-height: 1.9;
+        /* در عرض کم، justify فاصله‌های زشت می‌سازد */
+        text-align: start;
+    }
+}

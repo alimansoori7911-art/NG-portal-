@@ -1,0 +1,112 @@
+.box {
+    position: sticky;
+    /* ۹۶px هدر ثابت + ۱۶px نفس */
+    top: 112px;
+    width: 320px;
+    flex-shrink: 0;
+    padding: var(--spacing-md);
+    background: var(--color-bg-darkest);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    /* فهرست ۲۴ آیتمی از ارتفاع صفحه بلندتر است */
+    max-height: calc(100vh - 144px);
+    overflow-y: auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.iconBox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 1px solid var(--color-primary-dark);
+    border-radius: var(--radius-md);
+    color: var(--color-primary-light);
+}
+
+.title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-white);
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    min-height: 44px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    color: var(--color-primary-pale);
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.item:hover {
+    background: rgba(0, 71, 173, 0.18);
+    color: var(--color-white);
+}
+
+.active {
+    background: linear-gradient(
+        270deg,
+        var(--color-primary) 0%,
+        rgba(0, 71, 173, 0.15) 100%
+    );
+    color: var(--color-white);
+    box-shadow: 0 0 16px rgba(0, 71, 173, 0.25);
+}
+
+.item:focus-visible {
+    outline: 2px solid var(--color-primary-lighter);
+    outline-offset: -2px;
+}
+
+.num {
+    flex-shrink: 0;
+    width: 24px;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted-2);
+    /* شماره‌ها لاتین‌اند و در RTL باید سرجایشان بمانند */
+    direction: ltr;
+    text-align: center;
+}
+
+.active .num {
+    color: var(--color-primary-ghost);
+}
+
+.label {
+    min-width: 0;
+}
+
+@media (max-width: 1024px) {
+    .box {
+        /* در چیدمان تک‌ستونه چسبان بودن معنا ندارد */
+        position: static;
+        width: 100%;
+        max-height: none;
+    }
+
+    .list {
+        /* فهرست ۲۴ آیتمی تمام‌عرض خیلی بلند می‌شود */
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--spacing-xs);
+    }
+}
