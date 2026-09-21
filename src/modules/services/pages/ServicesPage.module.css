@@ -196,6 +196,9 @@
     font-size: var(--font-size-sm);
     line-height: 1.9;
     color: var(--text-muted-2);
+    /* توضیح‌ها یک تا سه خط‌اند و ردیف‌ها ناهم‌قد می‌شدند. دو خط جا
+       رزرو می‌شود تا لبه‌ی پایین ردیف‌ها یکدست بماند. */
+    min-height: calc(2 * 1.9em);
 }
 
 /* ── چرخه ── */
@@ -214,20 +217,27 @@
     position: relative;
 }
 
-/* خط رابط بین مراحل — فقط بین ستون‌های یک ردیف، نه بعد از آخری */
-.stage:not(:nth-child(4n))::after {
-    content: '';
-    position: absolute;
-    top: 56px;
-    /* در RTL مرحله‌ی بعدی سمت چپ است */
-    left: -8px;
-    width: calc(100% - 112px);
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        var(--color-primary-dark),
-        transparent
-    );
+/* خط رابط بین مراحل — فقط بین ستون‌های یک ردیف، نه بعد از آخری.
+
+   داخل `min-width` است چون این الگو فقط در چیدمان ۴ ستونه درست است؛
+   در عرض‌های کمتر گرید ۲ یا ۱ ستونه می‌شود و خط به هیچ‌جا اشاره
+   می‌کند. با شروط جدا (min و max) هیچ‌وقت هم‌پوشانی و جنگ وزن پیش
+   نمی‌آید. */
+@media (min-width: 1101px) {
+    .stage:not(:nth-child(4n))::after {
+        content: '';
+        position: absolute;
+        top: 56px;
+        /* در RTL مرحله‌ی بعدی سمت چپ است */
+        left: -8px;
+        width: calc(100% - 112px);
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            var(--color-primary-dark),
+            transparent
+        );
+    }
 }
 
 .stageDisc {
@@ -333,11 +343,6 @@
 @media (max-width: 1100px) {
     .lifecycle {
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    /* با دو ستون، الگوی «هر چهارم» دیگر درست نیست */
-    .stage:not(:nth-child(4n))::after {
-        display: none;
     }
 }
 
