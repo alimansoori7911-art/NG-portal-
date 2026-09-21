@@ -29,6 +29,7 @@ const FIELD_MAP = {
 export default function RegisterPage() {
     const navigate = useNavigate();
     const setAuth = useAuthStore((s) => s.setAuth);
+    const refreshUser = useAuthStore((s) => s.refreshUser);
 
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -220,6 +221,18 @@ export default function RegisterPage() {
             // شماره هنوز تأیید نشده — در این مسیر نباید رخ دهد چون OTP
             // پیش از ثبت‌نام انجام شده است.
             console.warn("[AUTH] شماره تأیید نشده است:", payload?.message);
+        }
+
+        /* پروفایل محلی را تازه می‌کنیم.
+
+           توکنِ مرحله‌ی کد فقط شماره را می‌شناسد؛ نام و نام خانوادگی
+           همین الان روی سرور ثبت شد. بدون این، هدر تا رفرش بعدی
+           شماره‌ی موبایل را به‌جای نام نشان می‌داد. */
+        try {
+            await refreshUser();
+        } catch {
+            /* اگر نشد، دفعه‌ی بعد که پروفایل خوانده شود درست می‌شود؛
+               ثبت‌نام را به‌خاطرش شکست نمی‌دهیم. */
         }
     };
 

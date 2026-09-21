@@ -10,12 +10,19 @@
     display: flex;
     justify-content: center;
     gap: 14px;
+    /* کد تأیید عدد است و چپ‌به‌راست خوانده می‌شود. بدون این، در
+       صفحه‌ی RTL خانه‌ی اول سمت راست می‌افتاد و کد وارون دیده
+       می‌شد — «۹۹۹۰۷۰» به‌جای «۰۷۰۹۹۹». */
+    direction: ltr;
 }
 
 .box {
     width: 52px;
     height: 56px;
     box-sizing: border-box;
+    /* padding صفر: با padding پیش‌فرضِ مرورگر، رقم از وسط کادر
+       بیرون می‌زد و بالا می‌نشست. */
+    padding: 0;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
@@ -23,6 +30,9 @@
     font-family: inherit;
     font-size: var(--font-size-lg, 18px);
     text-align: center;
+    /* `text-align` فقط افقی است. برای وسط‌چین عمودی، line-height
+       هم‌اندازه‌ی ارتفاعِ داخلی کادر می‌شود (۵۶ منهای دو بوردر). */
+    line-height: 54px;
     transition: border-color var(--transition-fast);
     caret-color: var(--color-action);
 }
@@ -53,5 +63,6 @@
     .box {
         width: 44px;
         height: 48px;
+        line-height: 46px;
     }
 }

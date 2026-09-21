@@ -42,7 +42,17 @@
 }
 
 .logo {
-    width: 88px;
+    /* تصویر ۲۵۱۶×۱۳۱۹ است (نشان بالا، «CORION» پایین).
+
+       قبلاً فقط `width` داشت و `display` پیش‌فرضِ inline بود: ارتفاع
+       ذاتی تصویر باقی می‌ماند، `object-fit` بی‌اثر می‌شد و نوار پایینِ
+       لوگو از کادر بیرون می‌زد. حالا هر دو بُعد مهار می‌شوند و کل
+       لوگو داخل هدر جا می‌گیرد. */
+    display: block;
+    width: auto;
+    height: 44px;
+    max-width: 160px;
+    margin: 0 auto;
     object-fit: contain;
 }
 

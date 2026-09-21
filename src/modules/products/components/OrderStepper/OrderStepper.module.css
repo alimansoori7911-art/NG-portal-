@@ -16,12 +16,13 @@
 }
 
 /* ─── ردیف قدم‌ها ─── */
-/* چیدمان LTR: «انتخاب پلن» چپ، «تحویل محصول» راست.
-   space-between با padding افقی ۸۵ — با این عدد فاصله‌ی تمام آیتم‌ها
-   ۱۶۲.۱ می‌شود که با مختصات فیگما دقیقاً می‌خواند. */
+/* چیدمان RTL: «انتخاب پلن» **راست**، «تحویل محصول» چپ.
+
+   قبلاً `direction: ltr` بود و قدم اول سمت چپ می‌افتاد؛ یعنی مراحل
+   برعکسِ جهت خواندن کاربر پیش می‌رفتند. توجیهش مختصات فیگما بود، ولی
+   فریم فیگما به‌صورت پیش‌فرض LTR است و به صفحه‌ی RTL ربطی ندارد. */
 
 .list {
-    direction: ltr;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -60,9 +61,7 @@ button.item {
     cursor: pointer;
 }
 
-/* متن فارسی داخل چیدمان LTR باید RTL بماند */
 .label {
-    direction: rtl;
     font-size: 20px;
     line-height: 1.15;
     white-space: nowrap;
@@ -106,8 +105,8 @@ button.item {
 }
 
 /* ─── خط پیشرفت ─── */
-/* در SVG: rect y=190 بدون x، یعنی از x=0 (سمت چپ) شروع می‌شود.
-   direction: ltr لازم است چون صفحه RTL است و بدون آن به راست می‌چسبد. */
+/* از **راست** پر می‌شود، هم‌جهت با قدم‌ها: قدم اول راست است، پس
+   پیشرفت هم باید از راست به چپ رشد کند. */
 
 .track {
     position: absolute;
@@ -115,7 +114,6 @@ button.item {
     right: 0;
     bottom: -2px;
     height: 4px;
-    direction: ltr;
     pointer-events: none;
 }
 

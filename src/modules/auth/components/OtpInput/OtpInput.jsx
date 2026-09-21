@@ -51,6 +51,8 @@ export default function OtpInput({ length = 5, onChange, error }) {
                 return next;
             });
         }
+        /* خانه‌ها LTR چیده شده‌اند (کد عدد است)، پس چپ = خانه‌ی قبل و
+           راست = خانه‌ی بعد — برخلاف بقیه‌ی صفحه که RTL است. */
         if (e.key === "ArrowLeft" && i > 0) focusBox(i - 1);
         if (e.key === "ArrowRight" && i < length - 1) focusBox(i + 1);
     };
