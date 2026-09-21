@@ -67,6 +67,22 @@ export default function SalesPage() {
         setStatusMenu(false)
     })
 
+    /* ⚠️ «پیش‌فاکتور» و «اتصال تیکت» نباید هم‌زمان باز باشند.
+
+       فرم پیش‌فاکتور در سطح صفحه رندر می‌شود و جای جدول را می‌گیرد،
+       ولی فرم اتصال تیکت داخل ردیف است. چون دو state مستقل بودند،
+       باز کردن یکی دیگری را نمی‌بست و نوار تیکت روی فرم پیش‌فاکتور
+       می‌افتاد. این دو تابع تضمین می‌کنند همیشه فقط یکی باز است. */
+    const openQuote = (order) => {
+        setLinking(null)
+        setQuoting(order)
+    }
+
+    const toggleLinking = (order) => {
+        setQuoting(null)
+        setLinking((v) => (v?.id === order.id ? null : order))
+    }
+
     const switchTab = (id) => {
         setTab(id)
         setSelectedId(null)
@@ -91,7 +107,7 @@ export default function SalesPage() {
                     <button
                         type="button"
                         className={styles.rowActionBtn}
-                        onClick={() => setQuoting(order)}
+                        onClick={() => openQuote(order)}
                         disabled={!QUOTABLE.has(order.status)}
                         title={
                             QUOTABLE.has(order.status)
@@ -137,7 +153,7 @@ export default function SalesPage() {
                     <button
                         type="button"
                         className={styles.rowActionBtn}
-                        onClick={() => setLinking((v) => (v ? null : order))}
+                        onClick={() => toggleLinking(order)}
                         disabled={actions.busy}
                         aria-expanded={linking?.id === order.id}
                     >
