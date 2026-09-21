@@ -287,11 +287,44 @@ const routes = [
         return ok({ message: 'sent', otp: '111111' })
     }],
 
+    /* تأیید کد.
+
+       ⚠️ با `action: 'register'` این اندپوینت **حساب را می‌سازد** و
+       `access_token` می‌دهد — یعنی ثبت‌نام با شماره همین‌جا تمام
+       می‌شود و `/auth/register` (که برای نام‌کاربری+رمز است) صدا زده
+       نمی‌شود.
+
+       قبلاً این mock فقط `claim_token` می‌داد و همین باعث شد باگِ
+       «دوبار ساختن حساب» در فرانت دیده نشود. */
     ['POST', /^\/auth\/otp\/verify$/, (req) => {
         const id = req.body.phone_number || req.body.email || req.body.username
         if (req.body.otp !== db.otps.get(id) && req.body.otp !== '111111') {
             return [400, fail('BAD_REQUEST', 'invalid otp')]
         }
+
+        if (req.body.action === 'register') {
+            /* شماره را نام کاربری موقت می‌گیریم؛ بک‌اند واقعی هم کاربر
+               را با شناسه‌ی شماره می‌سازد. */
+            let u = [...db.users.values()].find((x) => x.phone === id)
+            if (!u) {
+                u = {
+                    id: db.nextUserId++,
+                    username: id, email: null, password: null,
+                    phone: id,
+                    public_id: uuid(),
+                    is_verified: false, // هویت (کد ملی) هنوز تأیید نشده
+                    roles: [],
+                }
+                db.users.set(id, u)
+                console.log(`   ✅ حساب با شماره ساخته شد: ${id}`)
+            }
+            return ok({
+                message: 'verified',
+                access_token: makeToken(u.username),
+                user: { roles: u.roles, created_at: new Date().toISOString() },
+            })
+        }
+
         return ok({ message: 'verified', claim_token: 'mock-claim-token' })
     }],
 

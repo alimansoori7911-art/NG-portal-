@@ -19,6 +19,10 @@ const isValidNationalId = (v) => /^\d{10}$/.test(toEnglishDigits(v).trim());
 const FIELD_MAP = {
     phone_number: null,
     national_id: "national_code",
+    /* هر دو به یک ورودی می‌رسند: «نام سازمان». `company_name` چیزی است
+       که فرستاده می‌شود، ولی اگر بک‌اند روی `company_id` خطا داد هم
+       باید همان فیلد هایلایت شود. */
+    company_name: "organization",
     company_id: "organization",
 };
 
@@ -47,13 +51,13 @@ export default function RegisterPage() {
        می‌گیرد که در غیر این صورت خطای «حساب تکراری» می‌داد. */
     const registeredRef = useRef(false);
 
+    /* `username` و `password` اینجا نیستند: ثبت‌نام با شماره است و
+       اندپوینتی برای ست‌کردنشان وجود ندارد. */
     const [form, setForm] = useState({
-        username: "",
         national_code: "",
         first_name: "",
         email: "",
         last_name: "",
-        password: "",
         organization: "",
     });
     const [fieldErrors, setFieldErrors] = useState({});
@@ -184,9 +188,9 @@ export default function RegisterPage() {
 
     const validateForm = () => {
         const errors = {};
-        if (form.username.trim().length < 3) errors.username = "نام کاربری حداقل ۳ کاراکتر باشد";
+        /* نام کاربری و رمز عبور اعتبارسنجی نمی‌شوند چون در فرم نیستند —
+           ثبت‌نام با شماره است. */
         if (!isValidEmail(form.email)) errors.email = "ایمیل معتبر وارد کنید";
-        if (form.password.length < 8) errors.password = "رمز عبور حداقل ۸ کاراکتر باشد";
         if (!form.first_name.trim()) errors.first_name = "نام را وارد کنید";
         if (!form.last_name.trim()) errors.last_name = "نام خانوادگی را وارد کنید";
         if (!isValidNationalId(form.national_code))
@@ -201,7 +205,12 @@ export default function RegisterPage() {
             first_name: form.first_name.trim(),
             last_name: form.last_name.trim(),
             national_id: toEnglishDigits(form.national_code).trim(),
-            company_id: form.organization.trim() || null,
+            /* `VerifyIdentityInput` فیلد `email` دارد؛ بدون فرستادنش
+               ایمیلی که کاربر وارد کرده هیچ‌جا ذخیره نمی‌شد. */
+            email: form.email.trim() || undefined,
+            /* نام سازمان است نه شناسه‌ی ملی شرکت — `company_name` جای
+               درستش است (`company_id` برای شناسه است). */
+            company_name: form.organization.trim() || undefined,
         });
 
         // پاسخ ۲۰۲ یک لایه ApiResponse اضافه دارد
@@ -227,19 +236,21 @@ export default function RegisterPage() {
 
         setLoading(true);
         try {
-            // گام اول — فقط یک‌بار اجرا می‌شود
+            /* ⚠️ اینجا دیگر `/auth/register` صدا زده نمی‌شود.
+
+               حساب در مرحله‌ی تأیید کد ساخته می‌شود و همان‌جا
+               `access_token` می‌آید. `/auth/register` برای ثبت‌نام با
+               نام کاربری و رمز است، نه این مسیر.
+
+               اگر توکن نرسیده باشد یعنی چیزی در مرحله‌ی کد اشتباه رفته؛
+               فرستادن فرم بی‌فایده است چون `/auth/contact/verify` نیاز
+               به لاگین دارد. */
             if (!registeredRef.current) {
-                const data = await authService.register({
-                    username: form.username.trim(),
-                    email: form.email.trim(),
-                    password: form.password,
-                    phone_number: toEnglishDigits(phone).trim(),
-                });
-                setAuth(data);
-                registeredRef.current = true;
+                backToOtp(MSG.OTP_EXPIRED);
+                return;
             }
 
-            // گام دوم — تأیید کد ملی (کاربر اکنون لاگین است)
+            // تأیید کد ملی — کاربر از مرحله‌ی کد لاگین است
             await submitIdentity();
             navigate("/", { replace: true });
         } catch (err) {
@@ -360,14 +371,18 @@ export default function RegisterPage() {
                 <CardLayout wide showLogo onBack={null}>
                     <h1 className={styles.title}>ثبت اطلاعات</h1>
                     <form className={styles.wideForm} onSubmit={handleRegister} noValidate>
+                        {/* نه «نام کاربری» و نه «رمز عبور» اینجا نیست.
+
+                            ثبت‌نام با شماره انجام می‌شود: تأیید کد،
+                            خودش حساب را می‌سازد و توکن می‌دهد. ورودهای
+                            بعدی هم با شماره و کد یک‌بارمصرف است، پس
+                            کاربر رمزی لازم ندارد.
+
+                            مهم‌تر اینکه `VerifyIdentityInput` جایی برای
+                            این دو ندارد و اندپوینتی هم برای ست‌کردنشان
+                            نیست؛ پس گرفتنشان یعنی داده‌ای که هیچ‌وقت
+                            ذخیره نمی‌شود. */}
                         <div className={styles.grid}>
-                            <Input
-                                label="* نام کاربری"
-                                value={form.username}
-                                onChange={setField("username")}
-                                error={fieldErrors.username}
-                                autoComplete="username"
-                            />
                             <Input
                                 label="* کد ملی"
                                 inputMode="numeric"
@@ -403,14 +418,6 @@ export default function RegisterPage() {
                                 onChange={setField("email")}
                                 error={fieldErrors.email}
                                 autoComplete="email"
-                            />
-                            <Input
-                                label="* رمز عبور"
-                                type="password"
-                                value={form.password}
-                                onChange={setField("password")}
-                                error={fieldErrors.password}
-                                autoComplete="new-password"
                             />
                             <Input label="* شماره موبایل" value={phone} readOnly disabled />
                             <Input
