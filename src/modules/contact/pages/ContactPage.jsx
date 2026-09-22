@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Phone, Mail, Check } from 'lucide-react'
+import { Phone, Mail, Check, LifeBuoy, Briefcase } from 'lucide-react'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Input from '../../../components/ui/Input/Input'
@@ -38,8 +38,12 @@ const REQUEST_TYPES = ['درخواست دمو', 'دریافت پیش فاکتو�
 const ASSET_COUNTS = ['کمتر از 15', 'کمتر از 50', 'کمتر از 150', 'بیشتر از 150']
 
 const CONTACT_CARDS = [
-    { icon: Phone, label: 'شماره تلفن', value: '09937791943' },
-    { icon: Mail, label: 'ایمیل', value: 'info@ngcorion.com' },
+    { icon: Phone, label: 'شماره تلفن', value: '02122500058' },
+    { icon: Mail, label: 'ایمیل', value: 'Info@ngcorion.com' },
+    /* پشتیبانی روی دامنه‌ی taktacom است، نه ngcorion — عمدی است و
+       اشتباه تایپی نیست. */
+    { icon: LifeBuoy, label: 'پشتیبانی', value: 'Support@taktacom.com' },
+    { icon: Briefcase, label: 'فروش', value: 'Sales@ngcorion.com' },
     { icon: InstagramIcon, label: 'اینستاگرام', value: '@ngcorion' },
 ]
 
