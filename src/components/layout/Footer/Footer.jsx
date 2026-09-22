@@ -17,7 +17,7 @@ function Footer() {
     /* { type: 'success' | 'error', text } — زیر فیلد نمایش داده می‌شود.
        فوتر ته صفحه است، پس پیام باید کنار خود فیلد باشد نه بالای صفحه. */
     const [feedback, setFeedback] = useState(null)
-    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha()
+    const { Captcha, execute: runCaptcha } = useCaptcha()
 
     const handleSubscribe = async (e) => {
         e.preventDefault()
@@ -112,9 +112,8 @@ function Footer() {
                 <div className={styles.col}>
                     <h4 className={styles.colTitle}>عضویت در خبرنامه</h4>
                     {/* form تا کلید Enter هم فرم را ارسال کند */}
-                    <form className={styles.newsletter} onSubmit={handleSubscribe} noValidate>
-                        {/* ویجت نامرئی Turnstile */}
-                        <div ref={captchaRef} />
+                    <form className={styles.newsletterForm} onSubmit={handleSubscribe} noValidate>
+                      <div className={styles.newsletter}>
                         <input
                             type="email"
                             placeholder="آدرس ایمیل خود را وارد کنید"
@@ -139,6 +138,10 @@ function Footer() {
                                 <Send size={16} />
                             )}
                         </button>
+                      </div>
+                        {/* بیرون از کادر ایمیل: آن کادر یک ردیف افقی
+                            است و ویجت باید زیرش بنشیند، نه کنار دکمه. */}
+                        <Captcha />
                     </form>
 
                     {feedback && (

@@ -35,7 +35,7 @@ export default function RegisterPage() {
 
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
-    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
+    const { Captcha, execute: runCaptcha } = useCaptcha();
     const [apiError, setApiError] = useState("");
     const [alertVariant, setAlertVariant] = useState("error");
 
@@ -347,8 +347,8 @@ export default function RegisterPage() {
                 <CardLayout onBack={() => navigate("/")}>
                     <h1 className={styles.title}>شماره تلفن خود را وارد کنید!</h1>
                     <form className={styles.form} onSubmit={handleSendCode} noValidate>
-                        {/* ویجت نامرئی Turnstile */}
-                        <div ref={captchaRef} />
+                        {/* کپچا — استایل و جایگاهش از خود هوک می‌آید */}
+                        <Captcha />
                         <Input
                             type="tel"
                             placeholder="شماره تلفن"

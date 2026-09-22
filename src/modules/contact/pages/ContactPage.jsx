@@ -65,7 +65,7 @@ function ContactPage() {
 
     const [view, setView] = useState('form') // form | success
     const [loading, setLoading] = useState(false)
-    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha()
+    const { Captcha, execute: runCaptcha } = useCaptcha()
     const [alert, setAlert] = useState({ message: '', variant: 'error' })
 
     // این اندپوینت برای مهمان هم باز است؛ فیلدها قابل ویرایش‌اند و
@@ -182,8 +182,8 @@ function ContactPage() {
                         <>
                             <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                                {/* ویجت نامرئی Turnstile */}
-                                <div ref={captchaRef} />
+                                {/* کپچا — استایل و جایگاهش از خود هوک می‌آید */}
+                                <Captcha />
                                 <div className={styles.grid}>
                                     <Input
                                         label="* نام و نام خانوادگی"

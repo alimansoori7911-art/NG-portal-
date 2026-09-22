@@ -40,7 +40,7 @@ export default function LoginPage() {
     const [apiError, setApiError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
-    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
+    const { Captcha, execute: runCaptcha } = useCaptcha();
 
     const validate = () => {
         const errors = {};
@@ -111,8 +111,8 @@ export default function LoginPage() {
             <h1 className={styles.title}>خوش آمدید!</h1>
 
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                {/* ویجت نامرئی Turnstile — چیزی رندر نمی‌کند مگر چالش لازم شود */}
-                <div ref={captchaRef} />
+                {/* کپچا — استایل و جایگاهش از خود هوک می‌آید */}
+                <Captcha />
                 <Input
                     type="text"
                     placeholder="نام کاربری"
