@@ -1,34 +1,25 @@
 import { useState } from 'react'
-import { Home, ShoppingCart, LayoutGrid, User, Menu } from 'lucide-react'
+import { Home, ShoppingCart, LayoutGrid, LifeBuoy, User, Menu } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore, getDisplayName, hasRole } from '../../../store/authStore'
 import styles from './Header.module.css'
 
-/* دکمه‌های میان‌بر سمت راست — authOnly یعنی فقط برای کاربر لاگین‌شده */
+/* دکمه‌های میان‌بر سمت راست — authOnly یعنی فقط برای کاربر لاگین‌شده.
+
+   تیکتینگ برای همه دیده می‌شود ولی مسیرش محافظت‌شده است: مهمان به
+   ورود می‌رود و ProtectedRoute مسیر را نگه می‌دارد تا بعد از ورود
+   به همین‌جا برگردد. */
 const QUICK_LINKS = [
     { label: 'صفحه اصلی', icon: Home, path: '/' },
     { label: 'خرید', icon: ShoppingCart, path: '/products/buy' },
+    { label: 'تیکتینگ', icon: LifeBuoy, path: '/helpdesk' },
     { label: 'داشبورد', icon: LayoutGrid, path: '/dashboard', authOnly: true },
 ]
 
 const NAV_ITEMS = [
-    {
-        label: 'محصولات',
-        path: '/products',
-        items: [
-            {
-                label: 'محصول',
-                description: 'با راهکارهای امنیتی NGcorion و قابلیت‌های هر محصول آشنا شوید',
-                path: '/products',
-                highlighted: true,
-            },
-            {
-                label: 'تیکتینگ Help Desk',
-                description: 'درخواست پشتیبانی ثبت کنید و روند رسیدگی تیکت‌ها را دنبال کنید',
-                path: '/helpdesk',
-            },
-        ],
-    },
+    /* بدون زیرمنو: تیکتینگ از اینجا برداشته شد (پشتیبانی زیرمجموعه‌ی
+       محصول نیست) و تنها آیتم باقی‌مانده خودِ همین صفحه بود. */
+    { label: 'محصولات', path: '/products' },
     /* `soon: true` یعنی صفحه‌اش هنوز ساخته نشده: کلیک کاری نمی‌کند و
        برچسب «به‌زودی» ظاهر می‌شود — بردن کاربر به صفحه‌ی سفید بدتر از
        نرفتن است.
