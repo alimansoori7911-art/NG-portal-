@@ -31,6 +31,10 @@
 }
 
 .card {
+    /* بدون این، `min-width: auto`ی پیش‌فرضِ آیتم grid نمی‌گذارد کارت
+       از عرض محتوایش باریک‌تر شود؛ روی نمایشگر ۳۲۰px کارت ۳۱۹px
+       می‌ماند در حالی که ظرف ۲۷۲px است و صفحه افقی اسکرول می‌خورد. */
+    min-width: 0;
     border: none;
     border-radius: var(--radius-xl);
     min-height: 500px;
