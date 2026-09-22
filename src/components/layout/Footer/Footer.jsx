@@ -72,7 +72,7 @@ function Footer() {
                         <div className={styles.contactItem}>
                             <div className={styles.contactInfo}>
                                 <span className={styles.contactLabel}>آدرس ایمیل</span>
-                                <span className={styles.contactValue}>www.ng.com</span>
+                                <span className={styles.contactValue}>Info@ngcorion.com</span>
                             </div>
                             <div className={styles.contactIconBox}>
                                 <Mail size={18} />
@@ -81,7 +81,7 @@ function Footer() {
                         <div className={styles.contactItem}>
                             <div className={styles.contactInfo}>
                                 <span className={styles.contactLabel}>شماره تماس</span>
-                                <span className={styles.contactValue}>09141234567</span>
+                                <span className={styles.contactValue}>02122500058</span>
                             </div>
                             <div className={styles.contactIconBox}>
                                 <Phone size={18} />
