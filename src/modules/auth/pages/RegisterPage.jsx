@@ -8,7 +8,8 @@ import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
 import { useAuthStore } from "../../../store/authStore";
-import { OTP, HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
+import { OTP, HTTP, MSG, CAPTCHA_ERROR_CODE, toEnglishDigits } from "../../../constants/auth";
+import { useCaptcha } from "../../../hooks/useCaptcha";
 import styles from "./RegisterPage.module.css";
 
 const isValidPhone = (v) => /^(\+98|0)?9\d{9}$/.test(toEnglishDigits(v).trim());
@@ -34,6 +35,7 @@ export default function RegisterPage() {
 
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
     const [apiError, setApiError] = useState("");
     const [alertVariant, setAlertVariant] = useState("error");
 
@@ -81,11 +83,17 @@ export default function RegisterPage() {
         setApiError(message);
     };
 
+    /* توکن کپچا هر بار تازه گرفته می‌شود — هم برای ارسال اول و هم
+       برای «ارسال مجدد»، چون هر توکن یک‌بارمصرف است. */
     const requestCode = async () => {
-        const data = await authService.requestOtp({
-            action: "register",
-            phone_number: toEnglishDigits(phone).trim(),
-        });
+        const captchaToken = await runCaptcha();
+        const data = await authService.requestOtp(
+            {
+                action: "register",
+                phone_number: toEnglishDigits(phone).trim(),
+            },
+            { captchaToken }
+        );
         if (data?.otp) console.info("[DEV] کد تأیید:", data.otp);
     };
 
@@ -99,7 +107,11 @@ export default function RegisterPage() {
             setSecondsLeft(OTP.COOLDOWN_SECONDS);
             setStep(2);
         } catch (err) {
-            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+            if (err.message === "captcha-failed") {
+                showError("تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.");
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                showError(err.message);
+            } else if (err.status === HTTP.TOO_MANY_REQUESTS) {
                 showError(MSG.RATE_LIMIT);
             } else if (err.status === HTTP.SERVICE_UNAVAILABLE) {
                 showError(MSG.SMS_DOWN);
@@ -335,6 +347,8 @@ export default function RegisterPage() {
                 <CardLayout onBack={() => navigate("/")}>
                     <h1 className={styles.title}>شماره تلفن خود را وارد کنید!</h1>
                     <form className={styles.form} onSubmit={handleSendCode} noValidate>
+                        {/* ویجت نامرئی Turnstile */}
+                        <div ref={captchaRef} />
                         <Input
                             type="tel"
                             placeholder="شماره تلفن"

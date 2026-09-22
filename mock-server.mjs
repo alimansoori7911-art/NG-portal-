@@ -133,6 +133,17 @@ function seedInvoices() {
 /* خطاهای تزریق‌شده: "POST /auth/login" -> 401 */
 const forcedErrors = new Map()
 
+/* مسیرهای عمومیِ محافظت‌شده با کپچا — طبق سند Turnstile بک‌اند.
+   `/orders/demo` عمداً اینجا نیست: نیاز به لاگین دارد پس کپچا نمی‌خواهد. */
+const CAPTCHA_ROUTES = [
+    /^\/auth\/login$/,
+    /^\/auth\/register$/,
+    /^\/auth\/otp\/request$/,
+    /^\/auth\/password\/reset$/,
+    /^\/landing\/(contact|subscribe)$/,
+]
+let captchaRequired = false
+
 const uuid = () =>
     '01930000-0000-7000-8000-' + String(Date.now()).slice(-12).padStart(12, '0')
 
@@ -985,7 +996,7 @@ const server = createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', isLocalOrigin(origin) ? origin : 'http://localhost:5173')
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT,DELETE,OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Upload-Token')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Upload-Token,X-Captcha-Token')
 
     if (req.method === 'OPTIONS') {
         res.writeHead(204).end()
@@ -993,6 +1004,14 @@ const server = createServer((req, res) => {
     }
 
     /* ابزارهای کنترل mock */
+    if (path === '/__mock/captcha/on' || path === '/__mock/captcha/off') {
+        captchaRequired = path.endsWith('/on')
+        console.log(`   🔒 کپچا ${captchaRequired ? 'روشن' : 'خاموش'} شد`)
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ captchaRequired }))
+        return
+    }
+
     if (path === '/__mock/reset') {
         db.users.clear(); db.orders.length = 0; db.tickets.length = 0
         /* اعلان و فاکتور دوباره seed می‌شوند نه خالی — وگرنه بعد از
@@ -1062,6 +1081,32 @@ const server = createServer((req, res) => {
         }
 
         const ctx = { body, cookies, user, path, query: url.searchParams }
+
+        /* کپچا — آینه‌ی رفتار بک‌اند واقعی.
+
+           فقط مسیرهای عمومیِ POST توکن می‌خواهند؛ مسیرهای احرازهویت‌شده
+           و همه‌ی GETها نه. پیش‌فرض خاموش است چون در توسعه کلید
+           Turnstile روی localhost کار نمی‌کند؛ با
+           `/__mock/captcha/on` روشن می‌شود تا مسیر خطا تست شود.
+
+           شکل خطا عمداً همانی است که سند بک‌اند می‌گوید:
+           `{ error: "captcha_invalid" }` — یعنی رشته‌ی خام، نه شیء.
+           mock نباید نرم‌تر از اسپک باشد وگرنه باگ را پنهان می‌کند. */
+        if (
+            captchaRequired &&
+            req.method === 'POST' &&
+            CAPTCHA_ROUTES.some((re) => re.test(path)) &&
+            !req.headers['x-captcha-token']
+        ) {
+            console.log(`  ⚠ ${req.method} ${path} → 400 (captcha_invalid)`)
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(JSON.stringify({
+                success: false,
+                error: 'captcha_invalid',
+                message: 'Captcha verification failed',
+            }))
+            return
+        }
 
         /* خطای تزریق‌شده؟ */
         const forced = forcedErrors.get(path)

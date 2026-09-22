@@ -177,6 +177,16 @@ api.interceptors.request.use(async (config) => {
     if (token && !config.headers.Authorization && !isPublicAuthRoute(config.url)) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
+    /*
+      کپچا: سرویس‌ها توکن را در `config.captchaToken` می‌گذارند و
+      اینجا به هدر تبدیل می‌شود. عمداً اینجا خودکار توکن نمی‌گیریم —
+      گرفتن توکن باید از دل تعامل کاربر با فرم بیاید، نه از یک
+      interceptor که نمی‌داند کدام ویجت مال کدام فرم است.
+    */
+    if (config.captchaToken) {
+        config.headers["X-Captcha-Token"] = config.captchaToken;
+    }
     return config;
 });
 
@@ -228,8 +238,16 @@ api.interceptors.response.use(
         // بک‌اند خطاها را در قالب { data: { error: {...} }, meta } می‌فرستد.
         // بعضی پاسخ‌ها error را یک لایه بالاتر می‌گذارند، پس هر دو چک می‌شود.
         const body = error.response?.data;
-        const apiError = body?.data?.error ?? body?.error;
-        const code = apiError?.code ?? "UNKNOWN";
+        const rawError = body?.data?.error ?? body?.error;
+        /*
+          خطای کپچا شکل دیگری دارد: طبق سند Turnstile بک‌اند
+          `{ error: "captcha_invalid" }` می‌فرستد — یعنی `error` خودش
+          رشته است، نه شیئی با `code`. بقیه‌ی خطاها شیء هستند.
+        */
+        const apiError = typeof rawError === "string" ? null : rawError;
+        const code =
+            (typeof rawError === "string" ? rawError : apiError?.code) ??
+            "UNKNOWN";
 
         return Promise.reject({
             status: status ?? 0,
@@ -240,7 +258,7 @@ api.interceptors.response.use(
               دقیق‌تر خودشان را بگذارند.
             */
             message: status
-                ? localizeError(code, apiError?.message)
+                ? localizeError(code, apiError?.message ?? body?.message)
                 : "ارتباط با سرور برقرار نشد.",
             details: apiError?.details ?? null,
             // meta برای سیگنال‌هایی مثل redirect_to لازم است

@@ -8,7 +8,8 @@ import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
 import { contactService } from '../../../services/contactService'
 import { useAuthStore, getDisplayName, getIdentifier } from '../../../store/authStore'
-import { HTTP, MSG } from '../../../constants/auth'
+import { HTTP, MSG, CAPTCHA_ERROR_CODE } from '../../../constants/auth'
+import { useCaptcha } from '../../../hooks/useCaptcha'
 import styles from './ContactPage.module.css'
 
 // آیکون اینستاگرام به‌صورت SVG دستی — مستقل از نسخه‌ی نصب‌شده‌ی lucide-react
@@ -64,6 +65,7 @@ function ContactPage() {
 
     const [view, setView] = useState('form') // form | success
     const [loading, setLoading] = useState(false)
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha()
     const [alert, setAlert] = useState({ message: '', variant: 'error' })
 
     // این اندپوینت برای مهمان هم باز است؛ فیلدها قابل ویرایش‌اند و
@@ -111,20 +113,29 @@ function ContactPage() {
 
         setLoading(true)
         try {
-            await contactService.submitRequest({
-                name: contact.name.trim(),
-                email: contact.email.trim(),
-                phone_number: contact.phone.trim(),
-                message: buildMessage({
-                    requestType,
-                    assetCount,
-                    description: description.trim(),
-                }),
-            })
+            /* بعد از اعتبارسنجی، چون توکن یک‌بارمصرف است */
+            const captchaToken = await runCaptcha()
+            await contactService.submitRequest(
+                {
+                    name: contact.name.trim(),
+                    email: contact.email.trim(),
+                    phone_number: contact.phone.trim(),
+                    message: buildMessage({
+                        requestType,
+                        assetCount,
+                        description: description.trim(),
+                    }),
+                },
+                { captchaToken }
+            )
             showNotice('عملیات با موفقیت انجام شد')
             setView('success')
         } catch (err) {
-            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+            if (err.message === 'captcha-failed') {
+                showError('تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.')
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                showError(err.message)
+            } else if (err.status === HTTP.TOO_MANY_REQUESTS) {
                 showError(MSG.RATE_LIMIT)
             } else {
                 showError(err?.message || MSG.GENERIC)
@@ -171,6 +182,8 @@ function ContactPage() {
                         <>
                             <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                                {/* ویجت نامرئی Turnstile */}
+                                <div ref={captchaRef} />
                                 <div className={styles.grid}>
                                     <Input
                                         label="* نام و نام خانوادگی"

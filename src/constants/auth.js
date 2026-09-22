@@ -43,7 +43,13 @@ const ERROR_MESSAGES = {
     CONFLICT: 'این اطلاعات قبلاً ثبت شده است.',
     VALIDATION_ERROR: 'اطلاعات واردشده معتبر نیست.',
     INTERNAL_SERVER_ERROR: 'خطای سرور. لطفاً بعداً تلاش کنید.',
+    /* کپچا (Turnstile) — برخلاف بقیه، بک‌اند این را با حروف کوچک و
+       به‌صورت رشته‌ی خام در `error` می‌فرستد، نه یک شیء با `code`. */
+    captcha_invalid: 'تأیید امنیتی ناموفق بود. لطفاً دوباره تلاش کنید.',
 }
+
+/** کد خطای کپچا — فرم‌ها با این تشخیص می‌دهند که باید دوباره تلاش شود */
+export const CAPTCHA_ERROR_CODE = 'captcha_invalid'
 
 /** پیام فارسی متناظر با کد خطا؛ در نبود نگاشت، پیام خام بک‌اند */
 export function localizeError(code, fallback) {

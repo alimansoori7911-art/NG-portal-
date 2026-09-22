@@ -43,8 +43,8 @@ export function parseValidationErrors(details) {
 }
 
 export const authService = {
-    login(credentials) {
-        return api.post("/auth/login", credentials).then(unwrap);
+    login(credentials, { captchaToken } = {}) {
+        return api.post("/auth/login", credentials, { captchaToken }).then(unwrap);
     },
 
     logout() {
@@ -73,8 +73,8 @@ export const authService = {
 
     /* RegisterInput هر چهار فیلد را اجباری می‌داند:
        username، email، password، phone_number */
-    register(payload) {
-        return api.post("/auth/register", payload).then(unwrap);
+    register(payload, { captchaToken } = {}) {
+        return api.post("/auth/register", payload, { captchaToken }).then(unwrap);
     },
 
     /* action یکی از: login | verify_contact | reset_password | register
@@ -84,9 +84,13 @@ export const authService = {
        debug است و به کلاینت مربوط نیست.
        به همین دلیل به فیلد otp در پاسخ هم نباید تکیه کرد — آن هم فقط
        در حالت debug پر می‌شود. */
-    requestOtp({ action, phone_number, email, username }) {
+    requestOtp({ action, phone_number, email, username }, { captchaToken } = {}) {
         return api
-            .post("/auth/otp/request", { action, phone_number, email, username })
+            .post(
+                "/auth/otp/request",
+                { action, phone_number, email, username },
+                { captchaToken }
+            )
             .then(unwrap);
     },
 
@@ -127,12 +131,13 @@ export const authService = {
     },
 
     /* ResetPasswordInput: { reset_token, new_password } — هر دو اجباری */
-    resetPassword({ token, new_password }) {
+    resetPassword({ token, new_password }, { captchaToken } = {}) {
         return api
-            .post("/auth/password/reset", {
-                reset_token: token,
-                new_password,
-            })
+            .post(
+                "/auth/password/reset",
+                { reset_token: token, new_password },
+                { captchaToken }
+            )
             .then(unwrap);
     },
 

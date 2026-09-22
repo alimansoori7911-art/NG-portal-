@@ -7,7 +7,8 @@ import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService } from "../../../services/authService";
-import { OTP, HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
+import { OTP, HTTP, MSG, CAPTCHA_ERROR_CODE, toEnglishDigits } from "../../../constants/auth";
+import { useCaptcha } from "../../../hooks/useCaptcha";
 
 import styles from "./ForgotPasswordPage.module.css";
 
@@ -31,6 +32,7 @@ export default function ForgotPasswordPage() {
 
     const [step, setStep] = useState(1); // 1: شناسه، 2: کد، 3: رمز جدید، 4: موفقیت
     const [loading, setLoading] = useState(false);
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
     const [apiError, setApiError] = useState("");
     const [alertVariant, setAlertVariant] = useState("error");
 
@@ -63,11 +65,17 @@ export default function ForgotPasswordPage() {
         setApiError(message);
     };
 
+    /* توکن کپچا هر بار تازه گرفته می‌شود — هم برای ارسال اول و هم
+       برای «ارسال مجدد»، چون هر توکن یک‌بارمصرف است. */
     const requestCode = async () => {
-        const data = await authService.requestOtp({
-            action: "reset_password",
-            ...buildIdentifier(identifier),
-        });
+        const captchaToken = await runCaptcha();
+        const data = await authService.requestOtp(
+            {
+                action: "reset_password",
+                ...buildIdentifier(identifier),
+            },
+            { captchaToken }
+        );
         if (data?.otp) console.info("[DEV] کد تأیید:", data.otp);
     };
 
@@ -88,7 +96,11 @@ export default function ForgotPasswordPage() {
             setSecondsLeft(OTP.COOLDOWN_SECONDS);
             setStep(2);
         } catch (err) {
-            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+            if (err.message === "captcha-failed") {
+                showError("تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.");
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                showError(err.message);
+            } else if (err.status === HTTP.TOO_MANY_REQUESTS) {
                 showError(MSG.RATE_LIMIT);
             } else if (err.status === HTTP.SERVICE_UNAVAILABLE) {
                 showError(MSG.SMS_DOWN);
@@ -190,13 +202,18 @@ export default function ForgotPasswordPage() {
 
         setLoading(true);
         try {
-            await authService.resetPassword({
-                token: reset.token,
-                new_password: password,
-            });
+            const captchaToken = await runCaptcha();
+            await authService.resetPassword(
+                { token: reset.token, new_password: password },
+                { captchaToken }
+            );
             setStep(4);
         } catch (err) {
-            if (
+            if (err.message === "captcha-failed") {
+                showError("تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.");
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                showError(err.message);
+            } else if (
                 err.status === HTTP.UNAUTHORIZED ||
                 err.status === HTTP.FORBIDDEN ||
                 err.status === HTTP.CONFLICT
@@ -225,6 +242,8 @@ export default function ForgotPasswordPage() {
                         کنید تا کد بازیابی رمز عبور برای شما ارسال شود.
                     </p>
                     <form className={styles.form} onSubmit={handleSend} noValidate>
+                        {/* ویجت نامرئی Turnstile */}
+                        <div ref={captchaRef} />
                         <Input
                             type="text"
                             placeholder="ایمیل یا شماره تلفن"

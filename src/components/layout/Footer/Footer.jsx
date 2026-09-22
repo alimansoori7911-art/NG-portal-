@@ -4,7 +4,8 @@ import logo from '../../../assets/images/logo/logowhite.png'
 import { Mail, Phone, Send, LoaderCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { contactService } from '../../../services/contactService'
-import { HTTP, MSG } from '../../../constants/auth'
+import { HTTP, MSG, CAPTCHA_ERROR_CODE } from '../../../constants/auth'
+import { useCaptcha } from '../../../hooks/useCaptcha'
 
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 
@@ -16,6 +17,7 @@ function Footer() {
     /* { type: 'success' | 'error', text } — زیر فیلد نمایش داده می‌شود.
        فوتر ته صفحه است، پس پیام باید کنار خود فیلد باشد نه بالای صفحه. */
     const [feedback, setFeedback] = useState(null)
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha()
 
     const handleSubscribe = async (e) => {
         e.preventDefault()
@@ -28,11 +30,19 @@ function Footer() {
         setLoading(true)
         setFeedback(null)
         try {
-            await contactService.subscribe(email.trim())
+            const captchaToken = await runCaptcha()
+            await contactService.subscribe(email.trim(), { captchaToken })
             setFeedback({ type: 'success', text: 'عضویت شما در خبرنامه ثبت شد' })
             setEmail('')
         } catch (err) {
-            if (err.status === HTTP.TOO_MANY_REQUESTS) {
+            if (err.message === 'captcha-failed') {
+                setFeedback({
+                    type: 'error',
+                    text: 'تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.',
+                })
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                setFeedback({ type: 'error', text: err.message })
+            } else if (err.status === HTTP.TOO_MANY_REQUESTS) {
                 setFeedback({ type: 'error', text: MSG.RATE_LIMIT })
             } else if (err.status === HTTP.CONFLICT) {
                 // این ایمیل قبلاً ثبت شده — خطا نیست، اطلاع‌رسانی است
@@ -103,6 +113,8 @@ function Footer() {
                     <h4 className={styles.colTitle}>عضویت در خبرنامه</h4>
                     {/* form تا کلید Enter هم فرم را ارسال کند */}
                     <form className={styles.newsletter} onSubmit={handleSubscribe} noValidate>
+                        {/* ویجت نامرئی Turnstile */}
+                        <div ref={captchaRef} />
                         <input
                             type="email"
                             placeholder="آدرس ایمیل خود را وارد کنید"

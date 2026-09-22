@@ -7,7 +7,8 @@ import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
 import { healthService } from "../../../services/healthService";
 import { useAuthStore } from "../../../store/authStore";
-import { HTTP, MSG, toEnglishDigits } from "../../../constants/auth";
+import { HTTP, MSG, CAPTCHA_ERROR_CODE, toEnglishDigits } from "../../../constants/auth";
+import { useCaptcha } from "../../../hooks/useCaptcha";
 import styles from "./LoginPage.module.css";
 
 /* تشخیص نوع شناسه برای ارسال فیلد درست به بک‌اند.
@@ -39,6 +40,7 @@ export default function LoginPage() {
     const [apiError, setApiError] = useState("");
     const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
 
     const validate = () => {
         const errors = {};
@@ -55,11 +57,22 @@ export default function LoginPage() {
 
         setLoading(true);
         try {
-            const data = await authService.login(buildCredentials(identifier, password));
+            /* توکن کپچا بعد از اعتبارسنجی فیلدها گرفته می‌شود: توکن
+               یک‌بارمصرف است و نباید روی فرمی که ناقص است سوزانده شود. */
+            const captchaToken = await runCaptcha();
+            const data = await authService.login(
+                buildCredentials(identifier, password),
+                { captchaToken }
+            );
             setAuth(data);
             navigate(from, { replace: true });
         } catch (err) {
-            if (err.status === HTTP.UNAUTHORIZED) {
+            if (err.message === "captcha-failed") {
+                setApiError("تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.");
+            } else if (err.code === CAPTCHA_ERROR_CODE) {
+                /* توکن رد شد؛ ویجت خودش هنگام تلاش بعدی reset می‌شود. */
+                setApiError(err.message);
+            } else if (err.status === HTTP.UNAUTHORIZED) {
                 setApiError(
                     "خطا در ورود به حساب کاربری، نام کاربری و رمز عبور خود را بررسی کنید"
                 );
@@ -98,6 +111,8 @@ export default function LoginPage() {
             <h1 className={styles.title}>خوش آمدید!</h1>
 
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                {/* ویجت نامرئی Turnstile — چیزی رندر نمی‌کند مگر چالش لازم شود */}
+                <div ref={captchaRef} />
                 <Input
                     type="text"
                     placeholder="نام کاربری"
