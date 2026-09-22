@@ -294,7 +294,10 @@
     top: 100%;
     left: 0;
     right: 0;
-    background: rgba(0, 8, 20, 0.95);
+    /* کدر و بدون شفافیت: هدر `backdrop-filter` دارد و پنل درون همان
+       لایه می‌افتد، پس با پس‌زمینه‌ی نیمه‌شفاف متنِ صفحه از پشتش
+       دیده می‌شد و منو خوانا نبود. */
+    background: var(--color-bg-darkest);
     padding: var(--spacing-md) var(--spacing-xl);
     border-bottom: 1px solid rgba(71, 146, 255, 0.15);
     max-height: 80vh;
@@ -407,6 +410,30 @@
     .userMenuIcon {
         display: none;
     }
+}
+
+/* روی گوشی ردیف آیکون‌های میان‌بر پنهان می‌شود: چهار آیکون ۲۱۶px از
+   ۳۷۵px عرض را می‌گرفت و همراه دکمه‌ی حساب، هدر را پر و شلوغ می‌کرد.
+   مقصدهایشان به منوی همبرگری منتقل شده‌اند. */
+@media (max-width: 560px) {
+    .quickNav {
+        display: none;
+    }
+}
+
+/* میان‌برها داخل منوی موبایل — با یک خط جداکننده از بقیه‌ی منو */
+.mobileQuickGroup {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+}
+
+.mobileQuickGroup .mobileNavItem {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
 }
 /* ═══════════ آیتم‌های «به‌زودی» ═══════════
    دکمه‌هایی که هنوز صفحه ندارند. کلیک نمی‌کنند و با هاور یک برچسب

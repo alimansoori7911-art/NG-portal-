@@ -220,6 +220,25 @@ function Header() {
                         )}
                     </div>
                 ))}
+
+                {/* میان‌برها در منوی موبایل.
+
+                    روی موبایل ردیف آیکون‌ها پنهان می‌شود (۲۱۶px از ۳۷۵px
+                    را می‌گرفت و جایی برای بقیه نمی‌گذاشت)، پس مقصدهایش
+                    باید اینجا باشند وگرنه دسترسی به خانه، خرید، تیکتینگ
+                    و داشبورد روی موبایل از بین می‌رود. */}
+                <div className={styles.mobileQuickGroup}>
+                    {quickLinks.map(link => (
+                        <button
+                            key={link.path}
+                            className={styles.mobileNavItem}
+                            onClick={() => goTo(link.path)}
+                        >
+                            <link.icon size={18} />
+                            {link.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
         </header>
