@@ -176,11 +176,17 @@
 .menuBtn {
     display: none;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     gap: 5px;
     cursor: pointer;
     padding: var(--spacing-sm);
     background: transparent;
     border: none;
+    /* ۴۴px حداقل اندازه‌ی راحت برای لمس است؛ با padding تنها ۳۲px
+       می‌شد و زدنش روی گوشی سخت بود. */
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .menuBtn span {
