@@ -984,6 +984,25 @@ const routes = [
 
     /* لندینگ */
     ['POST', /^\/landing\/(contact|subscribe)$/, () => ok({ message: 'ثبت شد' })],
+
+    /* دانلود فایل — `POST /dl/{file_id}` لینک presigned می‌دهد.
+
+       لینک واقعی روی S3 است؛ اینجا به یک data-URL کوچک اشاره می‌کنیم
+       تا مسیر دانلود بدون وابستگی به سرویس بیرونی قابل تست باشد. */
+    ['POST', /^\/dl\/[^/]+$/, (ctx) => {
+        const fileId = ctx.path.split('/').pop()
+        const body = `فایل نمونه — ${fileId}`
+        return ok({
+            file_id: fileId,
+            filename: `${fileId}.txt`,
+            content_type: 'text/plain',
+            size_bytes: body.length,
+            download_url:
+                'data:text/plain;charset=utf-8,' + encodeURIComponent(body),
+            checksum_sha256: '0'.repeat(64),
+            expires_in: 3600,
+        })
+    }],
 ]
 
 /* ─── سرور ─── */

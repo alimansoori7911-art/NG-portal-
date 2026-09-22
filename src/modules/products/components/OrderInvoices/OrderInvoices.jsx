@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { FileText } from 'lucide-react'
 import { invoiceService } from '../../../../services/invoiceService'
+import { downloadFile } from '../../../../services/fileService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './OrderInvoices.module.css'
 
@@ -47,22 +48,17 @@ export default function OrderInvoices({ orderId }) {
         }
     }, [orderId])
 
-    /* همان الگوی صفحه‌ی فاکتورها: تب قبل از درخواست باز می‌شود تا
-       پاپ‌آپ‌بلاکر جلویش را نگیرد. */
+    /* دانلود PDF فاکتور — جزئیاتش در `downloadFile`. */
     const openPdf = async (invoice) => {
         if (!invoice.pdf_file_id || opening) return
         setOpening(invoice.id)
 
-        const tab = window.open('', '_blank', 'noopener,noreferrer')
         try {
-            const url = await invoiceService.getPdfUrl(invoice.pdf_file_id)
-            if (!url) throw new Error('لینک دانلود دریافت نشد')
-            /* assign به‌جای انتساب به href — نتیجه یکی است ولی قاعده‌ی
-               immutability لینتر انتساب را تغییر مقدار می‌بیند. */
-            if (tab) tab.location.assign(url)
-            else window.location.assign(url)
+            await downloadFile(
+                invoice.pdf_file_id,
+                `${invoice.invoice_number || 'invoice'}.pdf`
+            )
         } catch (err) {
-            tab?.close()
             setError(err?.message || 'باز کردن فاکتور ناموفق بود')
         } finally {
             setOpening(null)

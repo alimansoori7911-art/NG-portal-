@@ -130,3 +130,40 @@ export const fileService = {
             .then((result) => result?.download_url ?? null)
     },
 }
+
+/**
+ * فایل را در تب تازه باز می‌کند، **بعد** از گرفتن لینک.
+ *
+ * قبلاً اول یک تب خالی باز می‌شد و بعد آدرسش عوض می‌شد؛ کاربر یک
+ * صفحه‌ی سفیدِ about:blank می‌دید که ناگهان ریدایرکت می‌شد. بدتر
+ * اینکه با `noopener` بعضی مرورگرها `null` برمی‌گردانند و کد به
+ * `window.location.href` می‌افتاد — یعنی فایل در **همین تب** باز
+ * می‌شد و کاربر از پرتال بیرون می‌رفت.
+ *
+ * حالا لینک اول گرفته می‌شود و بعد یک `<a download>` ساخته و کلیک
+ * می‌شود: مرورگر خودش دانلود را شروع می‌کند، هیچ تب اضافه‌ای باز
+ * نمی‌شود و صفحه‌ی فعلی دست‌نخورده می‌ماند.
+ *
+ * @returns {Promise<void>} در صورت نبود لینک، استثنا می‌اندازد.
+ */
+export async function downloadFile(fileId, filename) {
+    const url = await fileService.getDownloadUrl(fileId)
+    if (!url) throw new Error('لینک دانلود دریافت نشد')
+
+    const a = document.createElement('a')
+    a.href = url
+    /* لینک presigned روی دامنه‌ی S3 است (cross-origin)، پس مرورگر
+       `download` را برای نام فایل نادیده می‌گیرد و به هدر
+       Content-Disposition سرور تکیه می‌کند. همین که هست ضرری ندارد
+       و برای فایل‌های هم‌دامنه نام درست را می‌دهد. */
+    if (filename) a.download = filename
+    a.rel = 'noopener'
+    /* بدون target، فایل‌هایی که مرورگر می‌تواند نمایش دهد (PDF)
+       ممکن بود صفحه را عوض کنند. */
+    a.target = '_blank'
+    a.style.display = 'none'
+
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+}
