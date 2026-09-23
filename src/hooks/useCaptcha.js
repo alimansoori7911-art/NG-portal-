@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
     isCaptchaEnabled,
     renderWidget,
@@ -6,23 +6,17 @@ import {
     resetWidget,
     getToken,
 } from '../services/captcha'
-import styles from './useCaptcha.module.css'
 
 /**
  * کپچای Turnstile برای یک فرم.
  *
  * استفاده:
- *   const { Captcha, execute } = useCaptcha()
+ *   const { containerRef, execute, captchaError } = useCaptcha()
  *   ...
- *   <Captcha />          // هر جای فرم؛ خودش آخر می‌نشیند
+ *   <div ref={containerRef} />
  *   // در onSubmit:
  *   const token = await execute()
  *   await someService.call(payload, { captchaToken: token })
- *
- * `Captcha` ظرف آماده‌ای با استایل مشترک است تا ویجت در همه‌ی فرم‌ها
- * یک‌جور و **زیر** فیلدها بنشیند؛ قبلاً هر صفحه یک `<div>` خام
- * می‌گذاشت و چون اولین فرزند فرم بود، بالای همه‌چیز می‌افتاد و
- * چیدمان را به‌هم می‌ریخت.
  *
  * `execute()` هر بار توکن **تازه** می‌گیرد چون توکن‌ها یک‌بارمصرف‌اند.
  * اگر کلید سایت تنظیم نشده باشد null برمی‌گرداند و فرم عادی کار می‌کند.
@@ -93,21 +87,5 @@ export function useCaptcha() {
         }
     }, [])
 
-    /* ظرف آماده. `useMemo` لازم است وگرنه هر رندر یک نوع کامپوننت
-       تازه می‌سازد، React درخت را دور می‌ریزد و ویجت هر بار از نو
-       ساخته می‌شود. */
-    const Captcha = useMemo(
-        () =>
-            function Captcha({ className = '' }) {
-                return (
-                    <div
-                        ref={containerRef}
-                        className={`${styles.captcha} ${className}`.trim()}
-                    />
-                )
-            },
-        []
-    )
-
-    return { Captcha, containerRef, execute, captchaError, setCaptchaError }
+    return { containerRef, execute, captchaError, setCaptchaError }
 }

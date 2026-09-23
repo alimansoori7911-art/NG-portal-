@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
 
     const [step, setStep] = useState(1); // 1: شناسه، 2: کد، 3: رمز جدید، 4: موفقیت
     const [loading, setLoading] = useState(false);
-    const { Captcha, execute: runCaptcha } = useCaptcha();
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha();
     const [apiError, setApiError] = useState("");
     const [alertVariant, setAlertVariant] = useState("error");
 
@@ -242,8 +242,8 @@ export default function ForgotPasswordPage() {
                         کنید تا کد بازیابی رمز عبور برای شما ارسال شود.
                     </p>
                     <form className={styles.form} onSubmit={handleSend} noValidate>
-                        {/* کپچا — استایل و جایگاهش از خود هوک می‌آید */}
-                        <Captcha />
+                        {/* ویجت نامرئی Turnstile */}
+                        <div ref={captchaRef} />
                         <Input
                             type="text"
                             placeholder="ایمیل یا شماره تلفن"

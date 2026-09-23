@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Phone, Mail, Check, LifeBuoy, Briefcase } from 'lucide-react'
+import { Phone, Mail, Check } from 'lucide-react'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Input from '../../../components/ui/Input/Input'
@@ -37,12 +37,8 @@ const REQUEST_TYPES = ['درخواست دمو', 'دریافت پیش فاکتو�
 const ASSET_COUNTS = ['کمتر از 15', 'کمتر از 50', 'کمتر از 150', 'بیشتر از 150']
 
 const CONTACT_CARDS = [
-    { icon: Phone, label: 'شماره تلفن', value: '02122500058' },
-    { icon: Mail, label: 'ایمیل', value: 'Info@ngcorion.com' },
-    /* پشتیبانی روی دامنه‌ی taktacom است، نه ngcorion — عمدی است و
-       اشتباه تایپی نیست. */
-    { icon: LifeBuoy, label: 'پشتیبانی', value: 'Support@taktacom.com' },
-    { icon: Briefcase, label: 'فروش', value: 'Sales@ngcorion.com' },
+    { icon: Phone, label: 'شماره تلفن', value: '09937791943' },
+    { icon: Mail, label: 'ایمیل', value: 'info@ngcorion.com' },
     { icon: InstagramIcon, label: 'اینستاگرام', value: '@ngcorion' },
 ]
 
@@ -69,7 +65,7 @@ function ContactPage() {
 
     const [view, setView] = useState('form') // form | success
     const [loading, setLoading] = useState(false)
-    const { Captcha, execute: runCaptcha } = useCaptcha()
+    const { containerRef: captchaRef, execute: runCaptcha } = useCaptcha()
     const [alert, setAlert] = useState({ message: '', variant: 'error' })
 
     // این اندپوینت برای مهمان هم باز است؛ فیلدها قابل ویرایش‌اند و
@@ -186,8 +182,8 @@ function ContactPage() {
                         <>
                             <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                                {/* کپچا — استایل و جایگاهش از خود هوک می‌آید */}
-                                <Captcha />
+                                {/* ویجت نامرئی Turnstile */}
+                                <div ref={captchaRef} />
                                 <div className={styles.grid}>
                                     <Input
                                         label="* نام و نام خانوادگی"

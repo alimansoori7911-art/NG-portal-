@@ -138,13 +138,6 @@
 }
 
 /* خبرنامه */
-/* فرم خبرنامه = کادر ایمیل + کپچای زیرش */
-.newsletterForm {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
 .newsletter {
     display: flex;
     align-items: center;

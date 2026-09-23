@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { invoiceService } from '../../../../services/invoiceService'
-import { downloadFile } from '../../../../services/fileService'
 
 /* هر صفحه ۱۰ ردیف — هم‌راستا با بقیه‌ی جدول‌های داشبورد */
 export const INVOICES_PER_PAGE = 10
@@ -47,7 +46,13 @@ export function useInvoices() {
         load()
     }, [load])
 
-    /** دانلود PDF فاکتور — جزئیاتش در `downloadFile`. */
+    /**
+     * باز کردن PDF فاکتور در تب جدید.
+     *
+     * تب **قبل از** درخواست باز می‌شود و بعد آدرسش ست می‌شود. اگر بعد
+     * از await باز می‌کردیم، مرورگر آن را پاپ‌آپ ناخواسته می‌دید و
+     * بلاک می‌کرد، چون دیگر مستقیماً حاصل کلیک کاربر نبود.
+     */
     const openPdf = useCallback(async (invoice) => {
         if (!invoice?.pdf_file_id) {
             setOpenError('فایل PDF این فاکتور هنوز آماده نشده است')
@@ -59,12 +64,21 @@ export function useInvoices() {
         setOpeningId(invoice.id)
         setOpenError(null)
 
+        const tab = window.open('', '_blank', 'noopener,noreferrer')
+
         try {
-            await downloadFile(
-                invoice.pdf_file_id,
-                `${invoice.invoice_number || 'invoice'}.pdf`
-            )
+            const url = await invoiceService.getPdfUrl(invoice.pdf_file_id)
+            if (!url) throw new Error('لینک دانلود دریافت نشد')
+
+            if (tab) {
+                tab.location.href = url
+            } else {
+                /* پاپ‌آپ بلاک شده — در همین تب باز می‌کنیم تا کاربر
+                   دست‌کم فاکتورش را ببیند. */
+                window.location.href = url
+            }
         } catch (err) {
+            tab?.close()
             setOpenError(err?.message || 'باز کردن فاکتور ناموفق بود')
         } finally {
             setOpeningId(null)
