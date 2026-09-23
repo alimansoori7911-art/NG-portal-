@@ -5,6 +5,7 @@ import OtpInput from "../components/OtpInput/OtpInput";
 import SetPasswordModal from "../components/SetPasswordModal/SetPasswordModal";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
+import Captcha from "../../../components/ui/Captcha/Captcha";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
 import { useAuthStore } from "../../../store/authStore";
@@ -347,8 +348,6 @@ export default function RegisterPage() {
                 <CardLayout onBack={() => navigate("/")}>
                     <h1 className={styles.title}>شماره تلفن خود را وارد کنید!</h1>
                     <form className={styles.form} onSubmit={handleSendCode} noValidate>
-                        {/* ویجت نامرئی Turnstile */}
-                        <div ref={captchaRef} />
                         <Input
                             type="tel"
                             placeholder="شماره تلفن"
@@ -357,6 +356,8 @@ export default function RegisterPage() {
                             autoComplete="tel"
                             autoFocus
                         />
+                        <Captcha ref={captchaRef} />
+
                         <Button type="submit" loading={loading} disabled={!isValidPhone(phone)}>
                             ارسال کد
                         </Button>

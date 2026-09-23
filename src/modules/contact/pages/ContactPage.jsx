@@ -5,6 +5,7 @@ import Footer from '../../../components/layout/Footer/Footer'
 import Input from '../../../components/ui/Input/Input'
 import Select from '../../../components/ui/Select/Select'
 import Button from '../../../components/ui/Button/Button'
+import Captcha from '../../../components/ui/Captcha/Captcha'
 import Alert from '../../../components/ui/Alert/Alert'
 import { contactService } from '../../../services/contactService'
 import { useAuthStore, getDisplayName, getIdentifier } from '../../../store/authStore'
@@ -182,8 +183,6 @@ function ContactPage() {
                         <>
                             <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                                {/* ویجت نامرئی Turnstile */}
-                                <div ref={captchaRef} />
                                 <div className={styles.grid}>
                                     <Input
                                         label="* نام و نام خانوادگی"
@@ -237,6 +236,8 @@ function ContactPage() {
                                     onChange={(e) => setDescription(e.target.value)}
                                     rows={5}
                                 />
+
+                                <Captcha ref={captchaRef} />
 
                                 <div className={styles.actions}>
                                     <Button type="submit" loading={loading}>

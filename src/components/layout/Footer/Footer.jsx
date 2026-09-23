@@ -4,6 +4,7 @@ import logo from '../../../assets/images/logo/logowhite.png'
 import { Mail, Phone, Send, LoaderCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { contactService } from '../../../services/contactService'
+import Captcha from '../../ui/Captcha/Captcha'
 import { HTTP, MSG, CAPTCHA_ERROR_CODE } from '../../../constants/auth'
 import { useCaptcha } from '../../../hooks/useCaptcha'
 
@@ -111,34 +112,40 @@ function Footer() {
                 {/* ستون چپ — خبرنامه + شبکه‌های اجتماعی */}
                 <div className={styles.col}>
                     <h4 className={styles.colTitle}>عضویت در خبرنامه</h4>
-                    {/* form تا کلید Enter هم فرم را ارسال کند */}
-                    <form className={styles.newsletter} onSubmit={handleSubscribe} noValidate>
-                        {/* ویجت نامرئی Turnstile */}
-                        <div ref={captchaRef} />
-                        <input
-                            type="email"
-                            placeholder="آدرس ایمیل خود را وارد کنید"
-                            className={styles.input}
-                            value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value)
-                                if (feedback) setFeedback(null)
-                            }}
-                            aria-label="آدرس ایمیل برای عضویت در خبرنامه"
-                            disabled={loading}
-                        />
-                        <button
-                            type="submit"
-                            className={styles.inputBtn}
-                            disabled={loading}
-                            aria-label="عضویت در خبرنامه"
-                        >
-                            {loading ? (
-                                <LoaderCircle size={16} className={styles.spinner} />
-                            ) : (
-                                <Send size={16} />
-                            )}
-                        </button>
+                    {/* form تا کلید Enter هم فرم را ارسال کند.
+
+                        فرم دورِ ردیف می‌پیچد تا کپچا زیرِ آن بنشیند، نه
+                        کنار فیلد و دکمه — `.newsletter` خودش یک ردیف
+                        افقی است. */}
+                    <form className={styles.newsletterForm} onSubmit={handleSubscribe} noValidate>
+                        <div className={styles.newsletter}>
+                            <input
+                                type="email"
+                                placeholder="آدرس ایمیل خود را وارد کنید"
+                                className={styles.input}
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value)
+                                    if (feedback) setFeedback(null)
+                                }}
+                                aria-label="آدرس ایمیل برای عضویت در خبرنامه"
+                                disabled={loading}
+                            />
+                            <button
+                                type="submit"
+                                className={styles.inputBtn}
+                                disabled={loading}
+                                aria-label="عضویت در خبرنامه"
+                            >
+                                {loading ? (
+                                    <LoaderCircle size={16} className={styles.spinner} />
+                                ) : (
+                                    <Send size={16} />
+                                )}
+                            </button>
+                        </div>
+
+                        <Captcha ref={captchaRef} />
                     </form>
 
                     {feedback && (

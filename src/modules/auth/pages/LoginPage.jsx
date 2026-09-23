@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout/AuthLayout";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
+import Captcha from "../../../components/ui/Captcha/Captcha";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
 import { healthService } from "../../../services/healthService";
@@ -111,8 +112,6 @@ export default function LoginPage() {
             <h1 className={styles.title}>خوش آمدید!</h1>
 
             <form className={styles.form} onSubmit={handleSubmit} noValidate>
-                {/* ویجت نامرئی Turnstile — چیزی رندر نمی‌کند مگر چالش لازم شود */}
-                <div ref={captchaRef} />
                 <Input
                     type="text"
                     placeholder="نام کاربری"
@@ -134,6 +133,8 @@ export default function LoginPage() {
                 <Link to="/forgot-password" className={styles.link}>
                     آیا رمز عبور خود را فراموش کرده اید؟
                 </Link>
+
+                <Captcha ref={captchaRef} />
 
                 <Button type="submit" loading={loading}>
                     ورود

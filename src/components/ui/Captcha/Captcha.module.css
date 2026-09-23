@@ -1,0 +1,52 @@
+/* ظرف ویجت Turnstile.
+
+   ویجت خودش یک iframe با اندازه‌ی ثابت است (۳۰۰×۶۵ در حالت normal) و
+   اندازه‌اش را نمی‌شود با CSS عوض کرد؛ فقط می‌شود ظرف را چید و در
+   صورت لزوم کل آن را مقیاس داد. */
+.captcha {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.captchaInner {
+    display: flex;
+    justify-content: center;
+}
+
+/* وقتی کلید تنظیم نشده باشد (توسعه) یا Turnstile دامنه را نپذیرد،
+   هیچ ویجتی ساخته نمی‌شود؛ ظرف خالی نباید فاصله‌ی الکی بیندازد. */
+.captchaInner:empty {
+    display: none;
+}
+
+/* ویجت ۳۰۰px عرض ثابت دارد (iframe است و از داخل دست ما نیست)، پس
+   وقتی ظرفش باریک‌تر شود بیرون می‌زند.
+
+   به‌جای breakpoint ثابت، خود ظرف را معیار می‌گیریم: `container-type`
+   اجازه می‌دهد بر اساس عرضِ **ظرف** تصمیم بگیریم نه عرض صفحه. این
+   مهم است چون ستون فوتر خیلی باریک‌تر از فرم ورود است و با
+   breakpointِ صفحه‌ای یکی‌شان همیشه اشتباه می‌شد. */
+.captcha {
+    container-type: inline-size;
+}
+
+/* زیر ۳۰۰px ظرف، ویجت را به اندازه‌ی لازم کوچک می‌کنیم.
+   `transform-origin: top` تا فضای خالی بالای آن نماند. */
+@container (max-width: 310px) {
+    .captchaInner {
+        transform: scale(0.8);
+        transform-origin: center top;
+    }
+}
+
+/* مرورگرهای بدون پشتیبانی container query — بر اساس عرض صفحه، که
+   برای فرم‌های اصلی درست است. */
+@supports not (container-type: inline-size) {
+    @media (max-width: 400px) {
+        .captchaInner {
+            transform: scale(0.8);
+            transform-origin: center top;
+        }
+    }
+}

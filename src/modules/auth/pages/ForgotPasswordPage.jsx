@@ -5,6 +5,7 @@ import CardLayout from "../components/CardLayout/CardLayout";
 import OtpInput from "../components/OtpInput/OtpInput";
 import Input from "../../../components/ui/Input/Input";
 import Button from "../../../components/ui/Button/Button";
+import Captcha from "../../../components/ui/Captcha/Captcha";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService } from "../../../services/authService";
 import { OTP, HTTP, MSG, CAPTCHA_ERROR_CODE, toEnglishDigits } from "../../../constants/auth";
@@ -242,8 +243,6 @@ export default function ForgotPasswordPage() {
                         کنید تا کد بازیابی رمز عبور برای شما ارسال شود.
                     </p>
                     <form className={styles.form} onSubmit={handleSend} noValidate>
-                        {/* ویجت نامرئی Turnstile */}
-                        <div ref={captchaRef} />
                         <Input
                             type="text"
                             placeholder="ایمیل یا شماره تلفن"
@@ -253,6 +252,8 @@ export default function ForgotPasswordPage() {
                             autoComplete="username"
                             autoFocus
                         />
+                        <Captcha ref={captchaRef} />
+
                         <Button type="submit" loading={loading} disabled={!identifier.trim()}>
                             بازیابی رمز عبور
                         </Button>
