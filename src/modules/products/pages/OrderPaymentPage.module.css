@@ -15,7 +15,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px 24px 32px;
+    /* هدر ثابت است و روی محتوا می‌افتد، پس بالای صفحه به اندازه‌ی
+       ارتفاع آن فاصله لازم است؛ وگرنه کارت زیر هدر شروع می‌شود. */
+    padding: calc(96px + 16px) 24px 32px;
     box-sizing: border-box;
 }
 
@@ -31,7 +33,13 @@
     box-sizing: border-box;
     width: 100%;
     max-width: 1024px;
-    max-height: calc(100vh - 140px);
+    /* سقف = ارتفاع پنجره منهای هدر و padding خودِ `main`
+       (۹۶ هدر + ۱۶ بالا + ۳۲ پایین = ۱۴۴).
+
+       `100%` اینجا کار نمی‌کند چون `main` ارتفاعش را از محتوا
+       می‌گیرد، نه از پنجره؛ با آن کارت تا ۷۲۷px بزرگ می‌شد و از
+       صفحه بیرون می‌زد. */
+    max-height: calc(100dvh - 144px);
 
     display: flex;
     flex-direction: column;
@@ -107,6 +115,37 @@
     flex-direction: column;
     gap: clamp(12px, 2vh, 18px);
     padding-left: 4px;
+    /* برچسبِ شناورِ فیلدها بالای کادرشان می‌نشیند و کمی بیرون از
+       جریان است؛ بدون این فاصله، بالای «روش پرداخت» با لبه‌ی ناحیه‌ی
+       اسکرول بریده می‌شد. */
+    padding-top: 10px;
+}
+
+/* سایه‌ی محوِ پایین — نشانه‌ی اینکه محتوا ادامه دارد.
+
+   بدون آن، در پنجره‌ی کوتاه فرم دقیقاً روی لبه بریده می‌شد و هیچ
+   سرنخی نبود که ردیف آپلود رسید پایین‌تر منتظر است. */
+.scrollShade {
+    position: relative;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+}
+
+.scrollShade::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 28px;
+    pointer-events: none;
+    background: linear-gradient(
+            to top,
+            var(--color-bg-darkest),
+            transparent
+    );
+    opacity: 0.9;
 }
 
 .scroll::-webkit-scrollbar {
@@ -270,12 +309,21 @@
 
 @media (max-width: 767px) {
     .main {
-        padding: 12px 12px 24px;
+        /* هدر روی موبایل ۷۲px است (نه ۹۶px) و باز هم ثابت می‌ماند */
+        padding: calc(72px + 12px) 12px 24px;
     }
 
     .card {
+        /* روی موبایل کارت آزاد است و خودِ صفحه اسکرول می‌شود —
+           بهتر از اسکرولِ تودرتو روی نمایشگر کوچک. */
         max-height: none;
         padding: 56px 16px 20px;
+    }
+
+    /* با اسکرولِ صفحه، ناحیه‌ی داخلی دیگر بریده نمی‌شود پس سایه لازم
+       نیست و فقط وسط فرم یک نوار تیره می‌انداخت. */
+    .scrollShade::after {
+        display: none;
     }
 
     .grid,

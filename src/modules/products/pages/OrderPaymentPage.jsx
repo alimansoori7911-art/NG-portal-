@@ -291,6 +291,7 @@ export default function OrderPaymentPage() {
                                 باقی‌مانده: {formatToman(remainingRial)}
                             </p>
 
+                            <div className={styles.scrollShade}>
                             <div className={styles.scroll}>
                                 <Alert onClose={() => {}}>{submitError}</Alert>
 
@@ -393,6 +394,7 @@ export default function OrderPaymentPage() {
                                         )}
                                     </div>
                                 </div>
+                            </div>
                             </div>
 
                             {/* رسید ثبت شده ولی فایل نرفته — کاربر نباید
