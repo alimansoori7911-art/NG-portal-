@@ -665,13 +665,39 @@ const routes = [
         db.tickets.push(t)
         return [201, ok(t)]
     }],
-    ['GET', /^\/ticketing\/tickets\/[^/]+\/messages$/, () => ok([])],
-    ['POST', /^\/ticketing\/tickets\/[^/]+\/reply$/, (req) => [201, ok({
-        id: uuid(), ticket_id: uuid(), author_type: 'customer',
-        message_type: 'public', body: req.body.message,
-        created_at: new Date().toISOString(), attachments: [],
-    })],
-    ],
+    /* پیام‌ها واقعاً روی تیکت ذخیره می‌شوند.
+
+       قبلاً این مسیر همیشه `[]` می‌داد و `reply` چیزی را نگه
+       نمی‌داشت، پس صفحه‌ی گفتگو همیشه خالی بود و باگ‌های چیدمانِ
+       گفتگوی طولانی اصلاً دیده نمی‌شدند. */
+    ['GET', /^\/ticketing\/tickets\/[^/]+\/messages$/, (req) => {
+        const t = db.tickets.find((x) => req.path.includes(x.id))
+        return t ? ok(t.messages ?? []) : [404, fail('NOT_FOUND', 'ticket not found')]
+    }],
+    ['POST', /^\/ticketing\/tickets\/[^/]+\/reply$/, (req) => {
+        const t = db.tickets.find((x) => req.path.includes(x.id))
+        if (!t) return [404, fail('NOT_FOUND', 'ticket not found')]
+
+        /* ادمین که پاسخ می‌دهد `staff` است و کاربر عادی `customer`؛
+           بدون این تفکیک هر دو طرف گفتگو یک‌شکل نشان داده می‌شدند. */
+        const isStaff = (req.user?.roles ?? []).includes('admin')
+        const m = {
+            id: uuid(),
+            ticket_id: t.id,
+            author_type: isStaff ? 'staff' : 'customer',
+            author_user_id: req.user
+                ? [...db.users.keys()].indexOf(req.user.username) + 1
+                : null,
+            message_type: req.body.message_type ?? 'public',
+            body: req.body.message,
+            created_at: new Date().toISOString(),
+            attachments: [],
+        }
+        t.messages = t.messages ?? []
+        t.messages.push(m)
+        t.last_activity_at = m.created_at
+        return [201, ok(m)]
+    }],
     ['GET', /^\/ticketing\/tickets\/[^/]+$/, (req) => {
         const t = db.tickets.find((x) => req.path.includes(x.id))
         return t ? ok(t) : [404, fail('NOT_FOUND', 'ticket not found')]
