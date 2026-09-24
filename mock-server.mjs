@@ -688,6 +688,10 @@ const routes = [
             author_user_id: req.user
                 ? [...db.users.keys()].indexOf(req.user.username) + 1
                 : null,
+            /* نام نویسنده — اسپک فعلی این را روی پیام ندارد و بک‌اند
+               قرار است اضافه‌اش کند. mock آن را می‌فرستد تا نمایشِ
+               نام قابل آزمایش باشد. */
+            author_username: req.user?.username ?? null,
             message_type: req.body.message_type ?? 'public',
             body: req.body.message,
             created_at: new Date().toISOString(),

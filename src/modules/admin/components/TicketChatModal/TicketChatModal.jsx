@@ -107,8 +107,15 @@ export default function TicketChatModal({
                                 m.from === 'support' ? styles.rowSupport : styles.rowUser
                             }`}
                         >
+                            {/* نام واقعی وقتی بک‌اند بدهد، وگرنه نقش.
+                                نقش همیشه می‌آید تا معلوم باشد پیام از
+                                سمت پشتیبانی است یا مشتری. */}
                             <span className={styles.sender}>
-                                {m.from === 'support' ? 'پشتیبان:' : 'کاربر:'}
+                                {m.name
+                                    ? `${m.name} (${m.from === 'support' ? 'پشتیبان' : 'کاربر'}):`
+                                    : m.from === 'support'
+                                      ? 'پشتیبان:'
+                                      : 'کاربر:'}
                                 {m.internal && ' (یادداشت داخلی)'}
                             </span>
                             <p className={styles.bubble}>{m.text}</p>

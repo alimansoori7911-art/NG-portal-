@@ -8,9 +8,32 @@ import { ticketService } from '../../../services/ticketService'
  * برخلاف نمای کاربر، این‌جا یادداشت‌های داخلی هم نشان داده می‌شوند
  * چون مخاطبشان همین کارشناسان‌اند.
  */
+/* نام نویسنده‌ی پیام.
+
+   اسپک روی پیام فقط `author_user_id` عددی دارد و هیچ نامی نمی‌دهد،
+   برای همین همه‌ی حباب‌ها برچسب یکسانِ «کاربر» می‌گرفتند — حتی وقتی
+   چند نفر در گفتگو بودند.
+
+   بک‌اند قرار است نام را اضافه کند؛ تا آن موقع هر کدام از این کلیدها
+   که برسد استفاده می‌شود و در نبودشان به همان برچسب نقشی برمی‌گردیم.
+   ترتیب از دقیق‌ترین به کلی‌ترین است. */
+const authorName = (m) => {
+    const first = m.author_first_name?.trim()
+    const last = m.author_last_name?.trim()
+    const full = [first, last].filter(Boolean).join(' ')
+    return (
+        m.author_full_name?.trim() ||
+        full ||
+        m.author_username?.trim() ||
+        m.author_name?.trim() ||
+        null
+    )
+}
+
 const toBubble = (m) => ({
     id: m.id,
     from: m.author_type === 'customer' ? 'user' : 'support',
+    name: authorName(m),
     text: m.body,
     internal: m.message_type === 'internal_note',
     attachments: m.attachments ?? [],
