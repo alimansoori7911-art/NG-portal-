@@ -8,8 +8,9 @@
     position: fixed;
     inset: 0;
     z-index: 100;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 40px 20px;
     background: rgba(0, 0, 0, 0.75);
 }
@@ -19,7 +20,15 @@
     display: flex;
     flex-direction: column;
     width: min(1180px, 100%);
-    height: min(800px, 100%);
+    /* ارتفاع بر حسب خودِ پنجره، نه `100%`.
+
+       `100%` به ظرفِ grid برمی‌گشت که ارتفاعش را از محتوا می‌گرفت، پس
+       در پنجره‌ی کوتاه دیالوگ ۸۰۰px می‌ماند و از پایین صفحه بیرون
+       می‌زد — فیلد نوشتن کلاً بیرون از دید قرار می‌گرفت و راهی برای
+       رسیدن به آن نبود. `dvh` ارتفاع واقعی را می‌دهد و `80px` هم
+       padding بالا و پایینِ overlay است. */
+    height: min(800px, calc(100dvh - 80px));
+    max-height: calc(100dvh - 80px);
     padding: 56px 40px 32px;
     border-radius: 24px;
     background: #060B13;
@@ -48,16 +57,26 @@
 
 /* ── گفتگو ── */
 /* پیام‌ها از پایین چیده می‌شوند تا وقتی گفتگو کوتاه است،
-   فضای خالی بالای آن بماند — مطابق فیگما. */
+   فضای خالی بالای آن بماند — مطابق فیگما.
+
+   ⚠️ این کار را `margin-top: auto` روی فهرست انجام می‌دهد، نه
+   `justify-content: flex-end` روی خودِ ظرفِ اسکرول‌شونده. آن حالت
+   وقتی محتوا از ظرف بلندتر شود بالای گفتگو را بیرونِ ناحیه‌ی اسکرول
+   می‌اندازد و هیچ‌وقت نمی‌شود به پیام‌های اول رسید. */
 .messages {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     gap: 24px;
     overflow-y: auto;
     padding-bottom: 24px;
+}
+
+/* اولین پیام فضای خالیِ بالا را می‌بلعد؛ وقتی گفتگو بلند شد این
+   فضا خودبه‌خود صفر می‌شود و چیزی از دست نمی‌رود. */
+.messages > *:first-child {
+    margin-top: auto;
 }
 
 .messages::-webkit-scrollbar {
