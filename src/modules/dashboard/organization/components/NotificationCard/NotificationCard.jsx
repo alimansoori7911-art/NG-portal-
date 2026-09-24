@@ -1,6 +1,37 @@
-import { ChevronDown } from 'lucide-react'
-import logo from '../../../../../assets/images/logo/logo-color.png'
+import {
+    ChevronDown,
+    Bell,
+    BadgeCheck,
+    LifeBuoy,
+    ShoppingCart,
+    ShieldAlert,
+    Receipt,
+} from 'lucide-react'
 import styles from './NotificationCard.module.css'
+
+/* آیکون بر اساس نوع اعلان — enum `NotificationType` بک‌اند.
+
+   قبلاً اینجا `logo-color.png` بود که فایلش خالی است (۵۰۸ بایت) و
+   فقط یک مربع تهی نشان می‌داد. آیکون هم دیده می‌شود هم می‌گوید اعلان
+   درباره‌ی چیست. */
+const TYPE_ICONS = {
+    system: Bell,
+    kyc: BadgeCheck,
+    ticket: LifeBuoy,
+    order: ShoppingCart,
+    security: ShieldAlert,
+    /* در enum اسپک نیست ولی بک‌اند می‌فرستد */
+    invoice: Receipt,
+}
+
+const TYPE_LABELS = {
+    system: 'سیستمی',
+    kyc: 'احراز هویت',
+    ticket: 'تیکت',
+    order: 'سفارش',
+    security: 'امنیتی',
+    invoice: 'فاکتور',
+}
 
 /**
  * کارت اعلان — مطابق SVG فیگما.
@@ -17,6 +48,10 @@ import styles from './NotificationCard.module.css'
  * آن زمان مفهوم خوانده/نخوانده وجود نداشت؛ حالا بک‌اند read_at دارد).
  */
 export default function NotificationCard({ item, expanded, onToggle }) {
+    /* نوع ناشناخته هم آیکون می‌گیرد تا جای خالی نماند */
+    const Icon = TYPE_ICONS[item.type] ?? Bell
+    const typeLabel = TYPE_LABELS[item.type] ?? 'اعلان'
+
     return (
         <article
             className={`${styles.card} ${expanded ? styles.expanded : ''} ${
@@ -48,7 +83,13 @@ export default function NotificationCard({ item, expanded, onToggle }) {
                     {!expanded && <p className={styles.collapsedBody}>{item.body}</p>}
                 </div>
 
-                <img src={logo} alt="" className={styles.logo} aria-hidden="true" />
+                <span
+                    className={`${styles.typeIcon} ${styles[item.type] ?? ''}`}
+                    title={typeLabel}
+                >
+                    <Icon size={16} strokeWidth={2} aria-hidden="true" />
+                    <span className={styles.srOnly}>{typeLabel}</span>
+                </span>
             </header>
 
             {expanded && (
