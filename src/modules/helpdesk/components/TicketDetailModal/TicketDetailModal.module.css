@@ -25,7 +25,13 @@
     box-sizing: border-box;
     width: 961px;
     max-width: 100%;
-    height: clamp(600px, 92vh, 833px);
+    /* کفِ ۶۰۰px نباید از ارتفاعِ در دسترس بیشتر شود.
+
+       `clamp(600px, …)` یعنی کارت هیچ‌وقت کوتاه‌تر از ۶۰۰px نمی‌شود،
+       پس در پنجره‌ی ۶۰۰px — با ۴۸px padding خودِ overlay — کارت از
+       پایین صفحه بیرون می‌زد و دکمه‌ها ناپیدا می‌شدند. `min()` سقف را
+       به فضای واقعی محدود می‌کند. */
+    height: min(clamp(600px, 92vh, 833px), calc(100dvh - 48px));
 
     display: flex;
     flex-direction: column;
@@ -170,6 +176,65 @@
     overflow-y: auto;
 }
 
+/* ─── گفتگو ───
+   جای متنِ تک‌خطیِ «نتیجه» را گرفت تا همه‌ی پیام‌ها دیده شوند. */
+.thread {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px, 1.6vh, 16px);
+    margin: clamp(14px, 2.9vh, 29px) 39px 0;
+    /* `min-height: 0` لازم است وگرنه آیتم flex از ظرفش بیرون می‌زند
+       و به‌جای اسکرول، مودال کشیده می‌شود. */
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.threadRow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 88%;
+}
+
+.threadUser {
+    align-self: flex-start;
+}
+
+.threadAgent {
+    align-self: flex-end;
+}
+
+.threadSender {
+    font-size: clamp(12px, 1.5vh, 14px);
+}
+
+.threadUser .threadSender {
+    color: #8CABD9;
+}
+
+.threadAgent .threadSender {
+    color: #1474FF;
+}
+
+.threadText {
+    margin: 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: clamp(13px, 1.7vh, 16px);
+    line-height: 1.9;
+    text-align: justify;
+    color: #E0EDFF;
+}
+
+.threadUser .threadText {
+    border: 1px solid #8CABD9;
+}
+
+.threadAgent .threadText {
+    border: 1px solid #1474FF;
+    color: #1474FF;
+}
+
 /* ─── دکمه‌ها ─── */
 /* y≈847 و کارت تا y=928.5 → حدود ۳۲ از پایین
    جهت RTL: «رفتن به صفحه چت» راست، «بستن تیکت» چپ */
@@ -239,6 +304,7 @@
     .descBox,
     .resultHead,
     .resultText,
+    .thread,
     .actions {
         margin-left: 16px;
         margin-right: 16px;

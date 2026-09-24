@@ -73,8 +73,11 @@ export default function TicketDetailModal({
 
     if (!open || !summary) return null
 
+    /* اولین پیام کاربر همان متن ثبت تیکت است و بالاتر جداگانه
+       نشان داده می‌شود؛ بقیه‌ی گفتگو پایین می‌آید. */
     const description = messages.find((m) => m.author === 'user')?.text
-    const result = [...messages].reverse().find((m) => m.author === 'agent')?.text
+    const firstUserIndex = messages.findIndex((m) => m.author === 'user')
+    const thread = messages.filter((_, i) => i !== firstUserIndex)
 
     const placeholder = loading ? 'در حال دریافت…' : error || '—'
     const closable = isTicketOpen(summary.rawStatus)
@@ -114,9 +117,39 @@ export default function TicketDetailModal({
                     <span className={styles.statusBadge}>{summary.status}</span>
                 </div>
 
-                <p className={styles.resultText}>
-                    {result || (loading ? placeholder : 'هنوز پاسخی ثبت نشده است')}
-                </p>
+                {/* کل گفتگو، نه فقط آخرین پاسخ پشتیبانی.
+
+                    قبلاً تنها آخرین پیام کارشناس نشان داده می‌شد، پس
+                    وقتی هنوز جوابی نیامده بود کاربر «هنوز پاسخی ثبت
+                    نشده» می‌دید در حالی که پیام‌های خودش هم ناپیدا
+                    می‌ماند. */}
+                {loading ? (
+                    <p className={styles.resultText}>{placeholder}</p>
+                ) : thread.length === 0 ? (
+                    <p className={styles.resultText}>هنوز پاسخی ثبت نشده است</p>
+                ) : (
+                    <div className={styles.thread}>
+                        {thread.map((m) => (
+                            <div
+                                key={m.id}
+                                className={`${styles.threadRow} ${
+                                    m.author === 'agent'
+                                        ? styles.threadAgent
+                                        : styles.threadUser
+                                }`}
+                            >
+                                <span className={styles.threadSender}>
+                                    {m.name
+                                        ? `${m.name} (${m.author === 'agent' ? 'پشتیبان' : 'کاربر'}):`
+                                        : m.author === 'agent'
+                                          ? 'پشتیبان:'
+                                          : 'کاربر:'}
+                                </span>
+                                <p className={styles.threadText}>{m.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* ─── دکمه‌ها ─── */}
                 <div className={styles.actions}>

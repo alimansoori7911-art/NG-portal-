@@ -28,6 +28,29 @@ export const MESSAGE_TYPE = {
 }
 
 /**
+ * نام نویسنده‌ی یک پیام تیکت، یا null اگر نامی نیامده باشد.
+ *
+ * اسپک روی `TicketMessageOutSchema` فقط `author_user_id` عددی دارد و
+ * هیچ نامی نمی‌دهد؛ بک‌اند قرار است اضافه‌اش کند. تا آن موقع هر کدام
+ * از این کلیدها که برسد کار می‌کند و در نبودشان صفحه به برچسب نقشی
+ * («کاربر» / «پشتیبان») برمی‌گردد.
+ *
+ * ترتیب از دقیق‌ترین به کلی‌ترین است.
+ */
+export const messageAuthorName = (m = {}) => {
+    const first = m.author_first_name?.trim()
+    const last = m.author_last_name?.trim()
+    const full = [first, last].filter(Boolean).join(' ')
+    return (
+        m.author_full_name?.trim() ||
+        full ||
+        m.author_username?.trim() ||
+        m.author_name?.trim() ||
+        null
+    )
+}
+
+/**
  * سرویس تیکتینگ — ماژول ticketing بک‌اند.
  *
  * همه‌ی اندپوینت‌ها نیاز به لاگین دارند.

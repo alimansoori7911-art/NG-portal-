@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
     ticketService,
     isTicketOpen,
+    messageAuthorName,
     MESSAGE_TYPE,
 } from '../../../services/ticketService'
 import { fileService, validateFile } from '../../../services/fileService'
@@ -15,6 +16,7 @@ import { fileService, validateFile } from '../../../services/fileService'
 const toBubble = (m) => ({
     id: m.id,
     author: m.author_type === 'customer' ? 'user' : 'agent',
+    name: messageAuthorName(m),
     text: m.body,
     createdAt: m.created_at,
     attachments: m.attachments ?? [],
