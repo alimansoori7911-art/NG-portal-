@@ -133,6 +133,9 @@ function seedInvoices() {
 /* خطاهای تزریق‌شده: "POST /auth/login" -> 401 */
 const forcedErrors = new Map()
 
+/* زمانِ رفرش‌های یک دقیقه‌ی اخیر — برای شبیه‌سازی سقف بک‌اند */
+let refreshHits = []
+
 /* مسیرهای عمومیِ محافظت‌شده با کپچا — طبق سند Turnstile بک‌اند.
    `/orders/demo` عمداً اینجا نیست: نیاز به لاگین دارد پس کپچا نمی‌خواهد. */
 const CAPTCHA_ROUTES = [
@@ -155,7 +158,7 @@ seedTerms()
 seedLicenses()
 
 /* توکن تقلبی با exp واقعی تا tokenManager درست بخواندش */
-function makeToken(sub, minutes = 7) {
+function makeToken(sub, minutes = Number(process.env.MOCK_TOKEN_MINUTES) || 7) {
     /* نقش‌ها داخل JWT گذاشته می‌شوند تا سناریویی که بک‌اند پرسیده
        (خواندن نقش از توکن) قابل تست باشد. */
     /* `MOCK_NO_JWT_ROLES=1` نقش را از توکن برمی‌دارد ولی در
@@ -427,6 +430,18 @@ const routes = [
         if (!req.cookies.session_id) {
             return [401, fail('UNAUTHORIZED', 'no session cookie')]
         }
+
+        /* سقف رفرش — آینه‌ی سرور واقعی (۱۵ در دقیقه، در برابر ۱۵۰ برای
+           بقیه‌ی مسیرها). بدون این، حلقه‌ی رفرشِ پی‌درپی محلی هیچ‌وقت
+           دیده نمی‌شد و فقط روی پروداکشن خودش را نشان می‌داد. */
+        const now = Date.now()
+        refreshHits = refreshHits.filter((t) => now - t < 60_000)
+        if (refreshHits.length >= 15) {
+            console.log('   🚦 /auth/refresh → 429 (سقف ۱۵ در دقیقه)')
+            return [429, fail('TOO_MANY_REQUESTS', 'refresh rate limit exceeded')]
+        }
+        refreshHits.push(now)
+
         return ok({ access_token: makeToken(req.cookies.session_id) })
     }],
 

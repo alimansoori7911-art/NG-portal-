@@ -104,7 +104,32 @@ export function broadcastLogout() {
 // یک رفرش می‌مونن.
 let refreshPromise = null;
 
-async function refreshAccessToken() {
+/*
+  آخرین رفرشِ موفق، و کف فاصله‌ی بین دو رفرش.
+
+  ⚠️ `POST /auth/refresh` روی سرور واقعی سقف **۱۵ درخواست در دقیقه**
+  دارد (بقیه‌ی مسیرها ۱۵۰) — یعنی بک‌اند عمداً آن را تنگ گرفته.
+
+  بدون این کف، هر ۴۰۱ یک رفرش می‌سازد: چند درخواست پشت‌سرهم که ۴۰۱
+  بگیرند، سهمیه را در چند ثانیه می‌سوزانند و بعد خودِ رفرش ۴۲۹
+  می‌گیرد. چون ۴۲۹ نه ۴۰۱ است نه ۴۰۳، نشست هم پاک نمی‌شد و کاربر در
+  حالت نیمه‌واردشده گیر می‌کرد — همان «بعد چند دقیقه دسترسی‌ها از بین
+  می‌رود».
+
+  `_retry` فقط جلوی رفرشِ دومِ **همان درخواست** را می‌گیرد؛ درخواست
+  بعدی دوباره از صفر شروع می‌کند. پس گاردِ زمانی لازم است.
+*/
+let lastRefreshAt = 0;
+const MIN_REFRESH_GAP_MS = 5_000;
+
+export async function refreshAccessToken({ force = false } = {}) {
+    /* رفرشِ پشت‌سرهم بی‌فایده است: توکنِ تازه چند دقیقه عمر دارد، پس
+       اگر همین الان یکی گرفته‌ایم، همان معتبر است. */
+    if (!force && !refreshPromise && Date.now() - lastRefreshAt < MIN_REFRESH_GAP_MS) {
+        const current = tokenManager.get();
+        if (current) return current;
+    }
+
     if (!refreshPromise) {
         refreshPromise = refreshClient
             .post("/auth/refresh")
@@ -133,6 +158,7 @@ async function refreshAccessToken() {
                 }
 
                 tokenManager.set(newToken);
+                lastRefreshAt = Date.now();
                 broadcastToken(newToken);
                 return newToken;
             })
@@ -225,6 +251,22 @@ api.interceptors.response.use(
                 const refreshStatus = refreshError?.response?.status;
                 const rejectedByServer =
                     refreshStatus === 401 || refreshStatus === 403;
+
+                /*
+                  ۴۲۹ یعنی سهمیه‌ی رفرش تمام شده، نه اینکه کوکی باطل
+                  باشد. کاربر نباید بیرون انداخته شود، ولی باید تا
+                  پایان مهلت دست نگه داریم وگرنه هر درخواست بعدی
+                  دوباره به دیوار می‌خورد و وضعیت طولانی‌تر می‌شود.
+                */
+                if (refreshStatus === 429) {
+                    const retryAfterSec = Number(
+                        refreshError?.response?.headers?.["retry-after"]
+                    );
+                    const waitMs = Number.isFinite(retryAfterSec)
+                        ? retryAfterSec * 1000
+                        : 60_000;
+                    lastRefreshAt = Date.now() + waitMs - MIN_REFRESH_GAP_MS;
+                }
 
                 if (rejectedByServer) {
                     tokenManager.clear();

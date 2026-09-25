@@ -16,6 +16,7 @@
 import { create } from "zustand";
 import { authService } from "../services/authService";
 import { tokenManager } from "../services/tokenManager";
+import { refreshAccessToken } from "../services/api";
 // جلوگیری از اجرای موازی initialize.
 // StrictMode در dev افکت‌ها را دوبار اجرا می‌کند؛ بدون این، دو درخواست
 // همزمان /auth/refresh می‌رود که اگر بک‌اند refresh token را rotate کند،
@@ -74,16 +75,15 @@ export const useAuthStore = create((set) => ({
 
         initPromise = (async () => {
             try {
-                const { access_token } = await authService.refresh();
+                /* از مسیر مشترکِ `refreshAccessToken` می‌رود، نه
+                   `authService.refresh()`.
 
-                /* پاسخِ بدون توکن نباید «موفق» حساب شود، وگرنه
-                   `set(undefined)` توکن را پاک می‌کند و کاربر بی‌دلیل
-                   بیرون می‌افتد. */
-                if (!access_token) {
-                    throw new Error("refresh response had no access_token");
-                }
-
-                tokenManager.set(access_token);
+                   آن یکی مستقیم به `api` می‌زد و از ددوپ و کفِ فاصله‌ی
+                   رفرش بی‌خبر بود، پس لودِ صفحه یک رفرشِ اضافه روی
+                   سهمیه‌ی تنگِ ۱۵‌تایی می‌گذاشت. این تابع خودش توکن را
+                   در tokenManager می‌نشاند و نبودِ access_token را هم
+                   خطا می‌دهد. */
+                await refreshAccessToken({ force: true });
                 const user = await authService.getMe();
 
                 /* منبع نقش‌ها `/auth/me` است — بک‌اند صریحاً گفت
