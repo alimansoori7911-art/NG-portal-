@@ -3,18 +3,21 @@ import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
+import { useAdminPayments } from '../hooks/useAdminPayments'
 import styles from './FinancePage.module.css'
 
 /* ستون‌های تراکنش‌ها — از اسکرین‌شات فیگما (۷ ستون).
    SVG این تب نرسیده بود، پس عرض‌ها متناسب با محتوا تنظیم شده. */
 const TRANSACTION_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '9.50%' },
-    { key: 'user', label: 'نام کاربر', width: '14.00%', ltr: true },
-    { key: 'trackingCode', label: 'شماره پیگیری', width: '15.50%', ltr: true },
-    { key: 'receiptCode', label: 'کد رهگیری', width: '14.50%', ltr: true },
-    { key: 'source', label: 'منبع', width: '17.00%' },
-    { key: 'status', label: 'وضعیت', width: '15.50%' },
-    { key: 'date', label: 'تاریخ', width: '14.00%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '7.00%' },
+    { key: 'user', label: 'نام کاربر', width: '14.00%' },
+    { key: 'trackingCode', label: 'شماره پیگیری', width: '14.00%', ltr: true },
+    { key: 'receiptCode', label: 'کد رهگیری', width: '13.00%', ltr: true },
+    { key: 'source', label: 'منبع', width: '13.00%' },
+    /* مبلغ در فیگما نبود ولی مهم‌ترین ستون یک جدول تراکنش است */
+    { key: 'amount', label: 'مبلغ', width: '15.00%', ltr: true },
+    { key: 'status', label: 'وضعیت', width: '13.00%' },
+    { key: 'date', label: 'تاریخ', width: '11.00%', ltr: true },
 ]
 
 /* ستون‌های فاکتورها — از tab2.svg */
@@ -31,13 +34,18 @@ const TABS = [
 ]
 
 /**
- * مدیریت مالی — دو تب: تراکنش‌ها و مدیریت/صدور فاکتور.
+ * مدیریت مالی — دو تب.
  *
- * TODO: هیچ‌کدام اندپوینت ندارند. رجوع به BACKEND_NEEDS.md
+ * «تراکنش‌ها» به `GET /admin/orders/payments` وصل است: فهرست همه‌ی
+ * رسیدهای پرداخت سیستم. تا پیش از این تنها راه دیدن رسید، باز کردن
+ * تک‌تک سفارش‌ها در صفحه‌ی فروش بود.
+ *
+ * «صدور فاکتور» هنوز اندپوینت ندارد و `ComingSoon` می‌ماند.
  */
 export default function FinancePage() {
     const [tab, setTab] = useState('transactions')
     const [page, setPage] = useState(1)
+    const payments = useAdminPayments()
     const [selectedId, setSelectedId] = useState(null)
     const [creating, setCreating] = useState(false)
     const [fieldErrors, setFieldErrors] = useState({})
@@ -112,50 +120,72 @@ export default function FinancePage() {
                 ))}
             </div>
 
-            <ComingSoon note="تراکنش‌ها و صدور فاکتور در فاز توسعه اضافه می‌شوند.">
-            {creating ? (
-                <InvoiceForm
-                    fieldErrors={fieldErrors}
-                    onSubmit={handleCreateInvoice}
-                    onFieldChange={(key) =>
-                        setFieldErrors((prev) => {
-                            const next = { ...prev }
-                            delete next[key]
-                            return next
-                        })
-                    }
-                    onClose={() => {
-                        setCreating(false)
-                        setFieldErrors({})
-                    }}
-                />
+            {/* تراکنش‌ها داده‌ی واقعی دارد؛ فاکتور هنوز اندپوینت ندارد
+                پس فقط آن تب زیر ComingSoon می‌ماند. */}
+            {isInvoices ? (
+                <ComingSoon note="صدور فاکتور در فاز توسعه اضافه می‌شود.">
+                    {creating ? (
+                        <InvoiceForm
+                            fieldErrors={fieldErrors}
+                            onSubmit={handleCreateInvoice}
+                            onFieldChange={(key) =>
+                                setFieldErrors((prev) => {
+                                    const next = { ...prev }
+                                    delete next[key]
+                                    return next
+                                })
+                            }
+                            onClose={() => {
+                                setCreating(false)
+                                setFieldErrors({})
+                            }}
+                        />
+                    ) : (
+                        <>
+                            <div className={styles.toolbar}>
+                                <button
+                                    type="button"
+                                    className={styles.createBtn}
+                                    onClick={() => setCreating(true)}
+                                >
+                                    صدور فاکتور
+                                </button>
+                            </div>
+
+                            <AdminTable
+                                columns={INVOICE_COLUMNS}
+                                rows={[]}
+                                page={page}
+                                onPageChange={setPage}
+                                selectedId={selectedId}
+                                onRowClick={toggleRow}
+                                renderRowActions={rowActions}
+                            />
+                        </>
+                    )}
+                </ComingSoon>
             ) : (
                 <>
-                    {/* دکمه‌ی صدور فاکتور فقط در تب فاکتورها */}
-                    {isInvoices && (
-                        <div className={styles.toolbar}>
-                            <button
-                                type="button"
-                                className={styles.createBtn}
-                                onClick={() => setCreating(true)}
-                            >
-                                صدور فاکتور
-                            </button>
-                        </div>
+                    {payments.error && (
+                        <p className={styles.error} role="alert">
+                            {payments.error}
+                        </p>
                     )}
 
                     <AdminTable
-                        columns={isInvoices ? INVOICE_COLUMNS : TRANSACTION_COLUMNS}
-                        rows={[]}
-                        page={page}
-                        onPageChange={setPage}
-                        selectedId={isInvoices ? selectedId : null}
-                        onRowClick={isInvoices ? toggleRow : undefined}
-                        renderRowActions={isInvoices ? rowActions : undefined}
+                        columns={TRANSACTION_COLUMNS}
+                        rows={payments.rows}
+                        page={payments.page}
+                        onPageChange={payments.setPage}
+                        pageCount={payments.pageCount}
+                        emptyMessage={
+                            payments.loading
+                                ? 'در حال دریافت…'
+                                : 'تراکنشی ثبت نشده است'
+                        }
                     />
                 </>
             )}
-            </ComingSoon>
         </div>
     )
 }

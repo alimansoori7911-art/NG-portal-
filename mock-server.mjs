@@ -749,7 +749,29 @@ const routes = [
     ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'updated' })],
     ['DELETE', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'deleted' })],
 
-    ['GET', /^\/admin\/orders\/payments$/, () => page([])],
+    /* همه‌ی پرداخت‌های سیستم — شکل `PaymentRecordOutputAdmin`.
+
+       خروجی **تخت نیست**: هر آیتم یک سفارش است و پرداخت‌هایش در
+       `PaymentRecords` تودرتو می‌آیند؛ نام کاربر هم جدا
+       (`first_name`/`last_name`) کنارش است. قبلاً این مسیر همیشه
+       `[]` می‌داد و صفحه‌ی مالی اصلاً قابل ساخت نبود. */
+    ['GET', /^\/admin\/orders\/payments$/, () => {
+        const rows = db.orders
+            .filter((o) => (o.payments ?? []).length > 0)
+            .map((o) => {
+                const u = [...db.users.values()].find(
+                    (x) => x.public_id === o.user_public_id
+                )
+                return {
+                    order_id: o.id,
+                    user_public_id: o.user_public_id,
+                    first_name: u?.first_name ?? u?.username ?? '—',
+                    last_name: u?.last_name ?? '',
+                    PaymentRecords: o.payments,
+                }
+            })
+        return page(rows)
+    }],
     ['GET', /^\/admin\/orders\/$/, () => page(db.orders)],
     /* ساخت قیمت برای یک پلن.
 
