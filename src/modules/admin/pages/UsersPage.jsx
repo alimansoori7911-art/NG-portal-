@@ -18,7 +18,18 @@ const COLUMNS = [
     { key: 'phone', label: 'شماره تماس', width: '13.59%', ltr: true },
     { key: 'status', label: 'وضعیت', width: '12.10%' },
     { key: 'role', label: 'نقش', width: '13.23%' },
-    { key: 'vip', label: 'برچسب VIP', width: '15.26%' },
+    {
+        key: 'vip',
+        label: 'برچسب VIP',
+        width: '15.26%',
+        /* بج به‌جای متن خام تا در فهرست از یک نگاه پیدا باشد */
+        render: (row) =>
+            row.vip === 'VIP' ? (
+                <span className={styles.vipBadge}>VIP</span>
+            ) : (
+                <span className={styles.vipNone}>—</span>
+            ),
+    },
     { key: 'registeredAt', label: 'تاریخ ثبت نام', width: '9.57%', ltr: true },
 ]
 

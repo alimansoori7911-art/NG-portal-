@@ -3,11 +3,22 @@ import { adminUserService, identifierOf } from '../../../services/adminUserServi
 import { formatJalaliDateTime } from '../../../utils/datetime'
 import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
 
+/* نام نقشی که یعنی کاربر VIP است.
+
+   بک‌اند فیلد جداگانه‌ای برای VIP ندارد و قرار هم نیست داشته باشد:
+   VIP یک **نقش RBAC** است، پس با همان `/admin/auth/roles` ساخته و با
+   `/admin/auth/users/{id}/roles` به کاربر داده می‌شود — همان مسیری که
+   دیالوگ «تغییر نقش» از قبل استفاده می‌کند.
+
+   چند املا پذیرفته می‌شود چون اسم دقیق نقش را ادمین می‌سازد و ممکن
+   است با حروف بزرگ یا فارسی ثبت شود. */
+const VIP_ROLE_NAMES = ['vip', 'VIP', 'وی‌آی‌پی', 'ویژه']
+
+const isVipRole = (name) =>
+    VIP_ROLE_NAMES.some((v) => String(name).trim().toLowerCase() === v.toLowerCase())
+
 /**
  * تبدیل UserResponseSchema به ردیف جدول کاربران.
- *
- * ⚠️ ستون «برچسب VIP» در فیگما هست ولی بک‌اند چنین مفهومی ندارد.
- * تا اضافه شدن، خط تیره نشان داده می‌شود — نه «غیرفعال» که دروغ است.
  *
  * نقش‌ها آرایه‌ای از UserRoleResponseSchema هستند و نام واقعی نقش
  * یک لایه تودرتوست: role.name
@@ -27,8 +38,8 @@ function toRow(user, i, offset) {
         phone: identifierOf(user, 'phone') || '—',
         status: user.is_active ? 'فعال' : 'غیرفعال',
         role: roleNames.length > 0 ? roleNames.join('، ') : 'کاربر عادی',
-        /* بک‌اند فیلد VIP ندارد — رجوع به BACKEND_NEEDS.md */
-        vip: '—',
+        /* از روی نقش‌ها، نه یک فیلد جدا */
+        vip: roleNames.some(isVipRole) ? 'VIP' : '—',
         registeredAt: date || '—',
         /* داده‌ی خام برای نوار عملیات و مودال پروفایل */
         raw: user,

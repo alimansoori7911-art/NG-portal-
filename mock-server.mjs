@@ -40,6 +40,14 @@ const db = {
     otps: new Map(), // identifier -> code
     resetTokens: new Map(), // reset token -> identifier (یک‌بارمصرف)
     nextTemplateId: 1,
+    nextRoleId: 4,
+    roles: [
+        { id: 1, name: 'admin', description: 'مدیر سیستم', is_active: true, is_system: true, created_at: null, updated_at: null },
+        { id: 2, name: 'support', description: 'پشتیبانی', is_active: true, is_system: false, created_at: null, updated_at: null },
+        /* VIP یک نقش است، نه فیلد جدا — همان چیزی که فرانت از آن
+           برچسب VIP را می‌سازد. */
+        { id: 3, name: 'vip', description: 'کاربر ویژه', is_active: true, is_system: false, created_at: null, updated_at: null },
+    ],
     nextOrderNum: 1001,
     nextTermId: 3,
     nextPriceId: 1,
@@ -741,13 +749,45 @@ const routes = [
         }))),
     ],
     ['GET', /^\/admin\/auth\/(admins|permissions)$/, () => page([])],
-    ['GET', /^\/admin\/auth\/roles$/, () =>
-        page([
-            { id: 1, name: 'admin', description: 'مدیر سیستم', is_active: true, is_system: true, created_at: null, updated_at: null },
-            { id: 2, name: 'support', description: 'پشتیبانی', is_active: true, is_system: false, created_at: null, updated_at: null },
-        ]),
-    ],
-    ['POST', /^\/admin\/auth\/users\/[^/]+\/roles$/, () => ok({ message: 'assigned' })],
+    /* نقش‌ها واقعاً نگه داشته می‌شوند و تخصیص اثر دارد.
+
+       قبلاً فهرست ثابت بود و `POST .../roles` فقط «assigned» می‌گفت
+       بی‌آنکه چیزی عوض شود، پس برچسب VIP — که از روی نقش‌های کاربر
+       ساخته می‌شود — هیچ‌وقت در mock دیده نمی‌شد. */
+    ['GET', /^\/admin\/auth\/roles$/, () => page(db.roles)],
+
+    ['POST', /^\/admin\/auth\/roles$/, (req) => {
+        const name = req.body?.name?.trim()
+        if (!name) return [422, fail('VALIDATION_ERROR', 'name الزامی است')]
+        if (db.roles.some((r) => r.name === name)) {
+            return [409, fail('CONFLICT', 'این نقش قبلاً ثبت شده')]
+        }
+        const r = {
+            id: db.nextRoleId++,
+            name,
+            description: req.body?.description ?? null,
+            is_active: req.body?.is_active ?? true,
+            is_system: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+        db.roles.push(r)
+        console.log(`   🏷️  نقش ${r.name} ساخته شد`)
+        return [201, ok(r)]
+    }],
+
+    ['POST', /^\/admin\/auth\/users\/[^/]+\/roles$/, (req) => {
+        const uid = Number(req.path.split('/')[4])
+        const role = db.roles.find((r) => r.id === Number(req.body?.role_id))
+        if (!role) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+
+        const u = [...db.users.values()][uid - 1]
+        if (!u) return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+
+        u.roles = [...new Set([...(u.roles ?? []), role.name])]
+        console.log(`   🏷️  نقش ${role.name} به ${u.username} داده شد`)
+        return ok({ message: 'assigned' })
+    }],
     ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'updated' })],
     ['DELETE', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'deleted' })],
 
