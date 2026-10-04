@@ -1,0 +1,153 @@
+/* انتخابگر کاربر — هم‌پالت با SendNotificationForm و ContentForm.
+   همان فیلد ۶۳px با حاشیه‌ی --text-body و فوکوس آبی، تا در کنار
+   بقیه‌ی فیلدهای فرم ناهماهنگ نباشد. */
+
+.wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* ── کادر ورودی ── */
+
+.box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    min-height: 63px;
+    padding: 8px 16px;
+    border: 1px solid var(--text-body);
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.box:focus-within {
+    border-color: var(--color-primary-light);
+}
+
+.boxDisabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.label {
+    color: var(--text-body);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.input::placeholder {
+    color: var(--text-faint);
+}
+
+/* ── تراشه‌های انتخاب‌شده ── */
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid var(--line-accent);
+    border-radius: var(--radius-full);
+    background: var(--surface-raised);
+    color: var(--text-bright);
+    font-size: var(--font-size-xs);
+}
+
+.chipRemove {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-body);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.chipRemove:hover {
+    color: var(--status-error);
+}
+
+/* ── فهرست نتایج ── */
+
+.menu {
+    position: absolute;
+    top: 100%;
+    inset-inline: 0;
+    z-index: 20;
+    margin-top: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-md);
+    /* کدر، نه شفاف: پشتش فیلدهای فرم است و متن روی متن می‌افتاد */
+    background: var(--surface-card);
+    box-shadow: var(--shadow-lg);
+}
+
+.option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.option:hover,
+.optionActive {
+    background: var(--surface-hover);
+}
+
+.optionName {
+    color: var(--text-bright);
+}
+
+.optionMeta {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.state {
+    padding: 12px 14px;
+    color: var(--text-body);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+    background: var(--line-default);
+    border-radius: 4px;
+}

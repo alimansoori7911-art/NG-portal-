@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import { notificationService } from '../../../../services/notificationService'
+import UserPicker from '../UserPicker/UserPicker'
 import styles from './SendNotificationForm.module.css'
 
 /**
@@ -15,7 +16,7 @@ import styles from './SendNotificationForm.module.css'
  */
 export default function SendNotificationForm({ templates = [], onSent, onClose }) {
     const [templateKey, setTemplateKey] = useState('')
-    const [recipients, setRecipients] = useState('')
+    const [recipientIds, setRecipientIds] = useState([])
     const [broadcast, setBroadcast] = useState(false)
     const [confirmed, setConfirmed] = useState(false)
     const [values, setValues] = useState({})
@@ -31,12 +32,6 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
         setError(null)
     }
 
-    /* شناسه‌ها با کاما یا فاصله جدا می‌شوند */
-    const parseRecipients = () =>
-        recipients
-            .split(/[\s,،]+/)
-            .map((s) => Number(s.trim()))
-            .filter((n) => Number.isInteger(n) && n > 0)
 
     const submit = async (e) => {
         e.preventDefault()
@@ -53,7 +48,7 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
             return
         }
 
-        const ids = parseRecipients()
+        const ids = recipientIds
         if (!broadcast && ids.length === 0) {
             setError('حداقل یک شناسه‌ی کاربر وارد کنید یا ارسال همگانی را بزنید')
             return
@@ -115,19 +110,12 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
                     </div>
                 </label>
 
-                <label className={styles.field}>
-                    <span className={styles.fieldLabel}>
-                        شناسه کاربران (با کاما جدا کنید)
-                    </span>
-                    <input
-                        className={styles.fieldInput}
-                        value={recipients}
-                        onChange={(e) => setRecipients(e.target.value)}
-                        disabled={broadcast}
-                        placeholder="مثال: 42, 43, 44"
-                        dir="ltr"
-                    />
-                </label>
+                <UserPicker
+                    value={recipientIds}
+                    onChange={setRecipientIds}
+                    disabled={broadcast}
+                    label="گیرندگان"
+                />
             </div>
 
             {/* متغیرهای قالب — فقط اگر قالب انتخاب‌شده متغیر داشته باشد */}
