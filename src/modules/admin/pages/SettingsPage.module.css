@@ -86,3 +86,60 @@
         font-size: var(--font-size-xs);
     }
 }
+
+/* ── نوار عملیات ردیف قالب ──
+   هم‌شکل با نوار عملیات صفحه‌ی مالی و فروش. */
+.rowActions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.rowActionBtn,
+.rowActionDanger {
+    height: 34px;
+    min-width: 160px;
+    padding: 0 16px;
+    border-radius: 10.5px;
+    background: transparent;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.rowActionBtn {
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    color: var(--color-white);
+}
+
+.rowActionBtn:hover {
+    background: var(--color-white);
+    color: var(--color-primary-light);
+}
+
+/* حذف برگشت‌ناپذیر است، پس رنگش با بقیه فرق دارد */
+.rowActionDanger {
+    border: 1px solid var(--status-error);
+    color: var(--status-error);
+}
+
+.rowActionDanger:hover {
+    background: var(--status-error);
+    color: var(--surface-page);
+}
+
+@media (max-width: 767px) {
+    .rowActions {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .rowActionBtn,
+    .rowActionDanger {
+        width: 100%;
+    }
+}

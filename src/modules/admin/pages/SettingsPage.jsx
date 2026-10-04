@@ -3,7 +3,12 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import SystemAlertList from '../components/SystemAlertList/SystemAlertList'
 import ContentForm from '../components/ContentForm/ContentForm'
 import SendNotificationForm from '../components/SendNotificationForm/SendNotificationForm'
-import { useNotificationTemplates } from '../hooks/useNotificationTemplates'
+import TemplateForm from '../components/TemplateForm/TemplateForm'
+import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
+import {
+    useNotificationTemplates,
+    useTemplateActions,
+} from '../hooks/useNotificationTemplates'
 import { useReleaseNotes } from '../hooks/useReleaseNotes'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SettingsPage.module.css'
@@ -54,12 +59,48 @@ export default function SettingsPage() {
     const [creating, setCreating] = useState(false)
     const [fieldErrors, setFieldErrors] = useState({})
 
+    /* مدیریت قالب — `templateForm` حالت فرم است:
+       null بسته، 'new' ساخت، و یک شیء یعنی ویرایش همان قالب. */
+    const [templateForm, setTemplateForm] = useState(null)
+    const [deleting, setDeleting] = useState(null)
+    const [selectedId, setSelectedId] = useState(null)
+
     const templates = useNotificationTemplates()
+    const templateActions = useTemplateActions()
 
     const switchTab = (id) => {
         setTab(id)
         setCreating(false)
         setFieldErrors({})
+        setTemplateForm(null)
+        setDeleting(null)
+        setSelectedId(null)
+    }
+
+    const closeTemplateForm = () => {
+        setTemplateForm(null)
+        templateActions.clearError()
+    }
+
+    const saveTemplate = async (payload) => {
+        const ok =
+            templateForm === 'new'
+                ? await templateActions.create(payload)
+                : await templateActions.update(templateForm.id, payload)
+
+        if (ok) {
+            closeTemplateForm()
+            templates.reload()
+        }
+    }
+
+    const confirmDelete = async () => {
+        const ok = await templateActions.remove(deleting.id)
+        if (ok) {
+            setDeleting(null)
+            setSelectedId(null)
+            templates.reload()
+        }
     }
 
     const isNotifications = tab === 'notifications'
@@ -108,6 +149,14 @@ export default function SettingsPage() {
                 <ComingSoon note="اعلان‌های سیستمی در فاز توسعه اضافه می‌شوند.">
                     <SystemAlertList items={[]} />
                 </ComingSoon>
+            ) : templateForm ? (
+                <TemplateForm
+                    template={templateForm === 'new' ? null : templateForm}
+                    busy={templateActions.busy}
+                    error={templateActions.error}
+                    onSubmit={saveTemplate}
+                    onClose={closeTemplateForm}
+                />
             ) : creating ? (
                 isNotifications ? (
                     <SendNotificationForm
@@ -163,6 +212,14 @@ export default function SettingsPage() {
                         >
                             فرم ارسال نوتیفیکیشن
                         </button>
+
+                        <button
+                            type="button"
+                            className={styles.createBtn}
+                            onClick={() => setTemplateForm('new')}
+                        >
+                            ساخت قالب
+                        </button>
                     </div>
 
                     <AdminTable
@@ -172,11 +229,55 @@ export default function SettingsPage() {
                         pageCount={templates.pageCount}
                         onPageChange={templates.setPage}
                         rowsPerPage={9}
+                        selectedId={selectedId}
+                        onRowClick={(row) =>
+                            setSelectedId((id) => (id === row.id ? null : row.id))
+                        }
+                        renderRowActions={(row) => (
+                            <div className={styles.rowActions}>
+                                <button
+                                    type="button"
+                                    className={styles.rowActionBtn}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setTemplateForm(row.raw)
+                                    }}
+                                >
+                                    ویرایش قالب
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className={styles.rowActionDanger}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setDeleting(row)
+                                    }}
+                                >
+                                    حذف قالب
+                                </button>
+                            </div>
+                        )}
                         emptyMessage={
                             templates.loading
                                 ? 'در حال دریافت قالب‌ها…'
                                 : templates.error || 'قالبی تعریف نشده است'
                         }
+                    />
+
+                    <ConfirmDialog
+                        open={Boolean(deleting)}
+                        title="حذف قالب اعلان"
+                        message={
+                            deleting
+                                ? `قالب «${deleting.title}» حذف شود؟ اعلان‌هایی که با این قالب ساخته شده‌اند دست‌نخورده می‌مانند.`
+                                : ''
+                        }
+                        confirmLabel="حذف"
+                        cancelLabel="انصراف"
+                        loading={templateActions.busy}
+                        onConfirm={confirmDelete}
+                        onClose={() => setDeleting(null)}
                     />
                 </>
             )}

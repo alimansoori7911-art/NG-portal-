@@ -33,11 +33,13 @@ const db = {
     tickets: [],
     invoices: [],
     notifications: [],
+    templates: [],
     terms: [],
     licenses: [],
     planPrices: [],
     otps: new Map(), // identifier -> code
     resetTokens: new Map(), // reset token -> identifier (یک‌بارمصرف)
+    nextTemplateId: 1,
     nextOrderNum: 1001,
     nextTermId: 3,
     nextPriceId: 1,
@@ -965,7 +967,62 @@ const routes = [
         console.log(`   🗑️  مدت اعتبار ${gone.code} حذف شد`)
         return ok({ message: 'deleted' })
     }],
-    ['GET', /^\/admin\/notifications\/templates$/, () => page([])],
+    /* ── قالب‌های اعلان ──
+       قبلاً فقط یک GET خالی بود و هیچ‌کدام از عملیات نوشتن وجود
+       نداشت، پس صفحه‌ی قالب‌ها همیشه خالی می‌ماند و ساخت/ویرایش
+       ۴۰۴ می‌گرفت بی‌آنکه معلوم باشد تقصیر فرانت است یا mock. */
+    ['GET', /^\/admin\/notifications\/templates$/, () => page(db.templates)],
+
+    ['POST', /^\/admin\/notifications\/templates$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.key || !b.title || !b.body) {
+            return [422, fail('VALIDATION_ERROR', 'key, title و body الزامی‌اند')]
+        }
+        if (db.templates.some((t) => t.key === b.key)) {
+            return [409, fail('CONFLICT', 'این کلید قبلاً ثبت شده')]
+        }
+
+        const t = {
+            id: db.nextTemplateId++,
+            key: b.key,
+            type: b.type ?? 'system',
+            title: b.title,
+            body: b.body,
+            sms_body: b.sms_body ?? null,
+            default_channels: b.default_channels ?? ['in_app'],
+            variables: b.variables ?? [],
+            is_active: b.is_active ?? true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+        db.templates.push(t)
+        console.log(`   🧩 قالب ${t.key} ساخته شد`)
+        return [201, ok(t)]
+    }],
+
+    ['PATCH', /^\/admin\/notifications\/templates\/\d+$/, (req) => {
+        const id = Number(req.path.split('/').pop())
+        const t = db.templates.find((x) => x.id === id)
+        if (!t) return [404, fail('NOT_FOUND', 'قالب پیدا نشد')]
+
+        /* `key` عمداً نادیده گرفته می‌شود — `NotificationTemplateUpdate`
+           آن را ندارد چون اعلان‌های موجود به همان کلید وصل‌اند. */
+        const { key, ...rest } = req.body ?? {}
+        void key
+        Object.assign(t, rest, { updated_at: new Date().toISOString() })
+        console.log(`   ✏️  قالب ${t.key} ویرایش شد`)
+        return ok(t)
+    }],
+
+    ['DELETE', /^\/admin\/notifications\/templates\/\d+$/, (req) => {
+        const id = Number(req.path.split('/').pop())
+        const i = db.templates.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'قالب پیدا نشد')]
+        const [gone] = db.templates.splice(i, 1)
+        console.log(`   🗑️  قالب ${gone.key} حذف شد`)
+        return [204, null]
+    }],
+
     ['GET', /^\/admin\/product-categories$/, () => page([])],
 
     /* اعلان و فاکتور و لاگ */

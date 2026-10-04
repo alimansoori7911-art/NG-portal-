@@ -24,6 +24,9 @@ function toRow(t, i, offset) {
         key: t.key,
         variables: t.variables ?? [],
         isActive: t.is_active,
+        /* شیء کامل برای فرم ویرایش — فرم به body و sms_body هم
+           نیاز دارد که ستون‌های جدول ندارندشان. */
+        raw: t,
     }
 }
 
@@ -75,4 +78,40 @@ export function useNotificationTemplates() {
     }, [page, attempt])
 
     return { rows, page, pageCount, loading, error, setPage, reload }
+}
+
+/**
+ * ساخت، ویرایش و حذف قالب اعلان.
+ *
+ * از `useNotificationTemplates` جداست چون چرخه‌ی عمر متفاوتی دارد:
+ * فهرست همیشه روی صفحه است ولی این فقط وقتی فرم باز می‌شود لازم
+ * می‌شود — همان الگوی `useAdminOrders` / `useAdminOrderActions`.
+ */
+export function useTemplateActions() {
+    const [busy, setBusy] = useState(false)
+    const [error, setError] = useState(null)
+
+    const run = useCallback(async (fn) => {
+        setBusy(true)
+        setError(null)
+        try {
+            await fn()
+            return true
+        } catch (err) {
+            setError(err?.message || 'عملیات ناموفق بود')
+            return false
+        } finally {
+            setBusy(false)
+        }
+    }, [])
+
+    return {
+        busy,
+        error,
+        clearError: () => setError(null),
+        create: (data) => run(() => notificationService.createTemplate(data)),
+        update: (id, changes) =>
+            run(() => notificationService.updateTemplate(id, changes)),
+        remove: (id) => run(() => notificationService.deleteTemplate(id)),
+    }
 }
