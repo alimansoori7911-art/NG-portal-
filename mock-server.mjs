@@ -900,7 +900,26 @@ const routes = [
         }
         return ok(o ?? {})
     }],
-    ['POST', /^\/admin\/orders\/[^/]+\/payments\/[^/]+\/verify$/, () => ok({ message: 'verified' })],
+    ['POST', /^\/admin\/orders\/[^/]+\/payments\/[^/]+\/verify$/, (req) => {
+        /* رسید را واقعاً تأیید می‌کند.
+
+           قبلاً فقط «verified» می‌گفت و `verified_at` خالی می‌ماند، پس
+           وضعیت رسید و خلاصه‌ی مالی — که هر دو از همین فیلد خوانده
+           می‌شوند — در mock هیچ‌وقت عوض نمی‌شدند. */
+        const parts = req.path.split('/')
+        const paymentId = parts[5]
+        for (const o of db.orders) {
+            const p = (o.payments ?? []).find((x) => x.id === paymentId)
+            if (p) {
+                p.verified_at = new Date().toISOString()
+                p.status = 'verified'
+                p.amount = p.claimed_amount
+                console.log(`   ✅ رسید ${paymentId.slice(-6)} تأیید شد`)
+                return ok(o)
+            }
+        }
+        return [404, fail('NOT_FOUND', 'رسید پیدا نشد')]
+    }],
     ['POST', /^\/admin\/orders\/[^/]+\/tickets\/link$/, (req) => [201, ok({
         id: uuid(), order_id: uuid(), ticket_id: req.body.ticket_id,
         relation_type: req.body.relation_type, is_primary: req.body.is_primary,

@@ -145,3 +145,59 @@
     color: #FF6369;
     font-size: var(--font-size-sm);
 }
+
+/* ── خلاصه‌ی مالی ──
+   کارت‌های عددی بالای جدول تراکنش‌ها. */
+.summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.summaryCard {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface-card);
+}
+
+.summaryLabel {
+    color: var(--text-body);
+    font-size: var(--font-size-xs);
+}
+
+.summaryValue,
+.summaryValueOk,
+.summaryValueWarn {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.summaryValue {
+    color: var(--text-bright);
+}
+
+.summaryValueOk {
+    color: var(--status-success);
+}
+
+.summaryValueWarn {
+    color: var(--status-warning);
+}
+
+@media (max-width: 1023px) {
+    .summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .summary {
+        grid-template-columns: 1fr;
+    }
+}

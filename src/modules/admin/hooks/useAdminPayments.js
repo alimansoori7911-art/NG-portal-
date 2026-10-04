@@ -47,6 +47,29 @@ function toRows(groups, offset) {
     return rows.map((r, i) => ({ ...r, index: offset + i + 1 }))
 }
 
+/* جمع این صفحه.
+
+   ⚠️ فقط روی ردیف‌های همین صفحه است، نه کل سیستم: اندپوینت
+   تجمیعی وجود ندارد و `/admin/orders/payments` صفحه‌بندی‌شده است.
+   تا وقتی بک‌اند گزارش ندهد، UI باید همین را صریح بگوید وگرنه
+   ادمین عددی را کل فروش می‌پندارد که نیست. */
+function summarize(groups) {
+    let verified = 0
+    let pending = 0
+    let count = 0
+
+    for (const g of groups ?? []) {
+        for (const p of g.PaymentRecords ?? []) {
+            count++
+            const amount = Number(p.claimed_amount ?? p.amount) || 0
+            if (p.verified_at) verified += amount
+            else pending += amount
+        }
+    }
+
+    return { verified, pending, count }
+}
+
 /**
  * تراکنش‌های سیستم برای پنل ادمین — `GET /admin/orders/payments`.
  *
@@ -56,6 +79,8 @@ function toRows(groups, offset) {
  */
 export function useAdminPayments() {
     const [rows, setRows] = useState([])
+    const [summary, setSummary] = useState({ verified: 0, pending: 0, count: 0 })
+    const [total, setTotal] = useState(0)
     const [page, setPage] = useState(1)
     const [pageCount, setPageCount] = useState(1)
     const [loading, setLoading] = useState(true)
@@ -78,6 +103,10 @@ export function useAdminPayments() {
                 if (cancelled) return
 
                 setRows(toRows(items, (page - 1) * ROWS_PER_PAGE))
+                setSummary(summarize(items))
+                /* تعداد کلِ سفارش‌های دارای رسید — این یکی واقعاً
+                   سیستمی است چون از meta.pagination می‌آید. */
+                setTotal(pagination?.total ?? 0)
                 setPageCount(pagination?.total_pages ?? 1)
             } catch (err) {
                 if (!cancelled) {
@@ -94,5 +123,5 @@ export function useAdminPayments() {
         }
     }, [page, attempt])
 
-    return { rows, page, pageCount, loading, error, setPage, reload }
+    return { rows, summary, total, page, pageCount, loading, error, setPage, reload }
 }

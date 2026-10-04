@@ -4,6 +4,7 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import { useAdminPayments } from '../hooks/useAdminPayments'
+import { formatToman } from '../../../utils/currency'
 import styles from './FinancePage.module.css'
 
 /* ستون‌های تراکنش‌ها — از اسکرین‌شات فیگما (۷ ستون).
@@ -171,6 +172,52 @@ export default function FinancePage() {
                             {payments.error}
                         </p>
                     )}
+
+                    {/* خلاصه‌ی مالی.
+
+                        ⚠️ مبلغ‌ها جمعِ **همین صفحه**‌اند نه کل سیستم،
+                        چون اندپوینت تجمیعی وجود ندارد و این مسیر
+                        صفحه‌بندی‌شده است. برچسب صریح گذاشته شده تا کسی
+                        این عدد را «کل فروش» نخواند. تنها عددِ واقعاً
+                        سیستمی «تعداد سفارش‌های دارای رسید» است که از
+                        meta.pagination می‌آید. */}
+                    <div className={styles.summary}>
+                        <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                                تأییدشده (این صفحه)
+                            </span>
+                            <span className={styles.summaryValueOk}>
+                                {formatToman(payments.summary.verified)}
+                            </span>
+                        </div>
+
+                        <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                                در انتظار بررسی (این صفحه)
+                            </span>
+                            <span className={styles.summaryValueWarn}>
+                                {formatToman(payments.summary.pending)}
+                            </span>
+                        </div>
+
+                        <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                                رسیدهای این صفحه
+                            </span>
+                            <span className={styles.summaryValue}>
+                                {payments.summary.count.toLocaleString('fa-IR')}
+                            </span>
+                        </div>
+
+                        <div className={styles.summaryCard}>
+                            <span className={styles.summaryLabel}>
+                                کل سفارش‌های دارای رسید
+                            </span>
+                            <span className={styles.summaryValue}>
+                                {payments.total.toLocaleString('fa-IR')}
+                            </span>
+                        </div>
+                    </div>
 
                     <AdminTable
                         columns={TRANSACTION_COLUMNS}
