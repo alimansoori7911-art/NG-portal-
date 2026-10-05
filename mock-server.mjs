@@ -34,6 +34,7 @@ const db = {
     invoices: [],
     notifications: [],
     templates: [],
+    discounts: [],
     terms: [],
     licenses: [],
     planPrices: [],
@@ -1030,6 +1031,106 @@ const routes = [
        قبلاً فقط یک GET خالی بود و هیچ‌کدام از عملیات نوشتن وجود
        نداشت، پس صفحه‌ی قالب‌ها همیشه خالی می‌ماند و ساخت/ویرایش
        ۴۰۴ می‌گرفت بی‌آنکه معلوم باشد تقصیر فرانت است یا mock. */
+    /* ── کدهای تخفیف ── */
+    ['GET', /^\/admin\/discount\/$/, (req) => {
+        const q = req.query
+        let rows = [...db.discounts]
+
+        const isRevoked = q.get('is_revoked')
+        if (isRevoked != null && isRevoked !== '') {
+            rows = rows.filter((d) => String(d.is_revoked) === isRevoked)
+        }
+        const dType = q.get('discount_type')
+        if (dType) rows = rows.filter((d) => d.discount_type === dType)
+        const tType = q.get('target_type')
+        if (tType) rows = rows.filter((d) => d.target_type === tType)
+
+        /* پیش‌فرض بک‌اند منقضی‌ها را پنهان می‌کند */
+        if (q.get('include_expired') !== 'true') {
+            const now = Date.now()
+            rows = rows.filter((d) => new Date(d.valid_until).getTime() >= now)
+        }
+        return page(rows)
+    }],
+
+    ['POST', /^\/admin\/discount\/$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.code || !b.discount_type || b.value == null || !b.valid_until) {
+            return [422, fail('VALIDATION_ERROR', 'code، discount_type، value و valid_until الزامی‌اند')]
+        }
+        if (db.discounts.some((d) => d.code === b.code)) {
+            return [409, fail('CONFLICT', 'این کد قبلاً صادر شده')]
+        }
+
+        const d = {
+            id: uuid(),
+            code: b.code,
+            discount_type: b.discount_type,
+            target_type: b.target_type ?? 'ALL',
+            value: String(b.value),
+            valid_from: new Date().toISOString(),
+            valid_until: b.valid_until,
+            max_usage: b.max_usage ?? null,
+            used_count: 0,
+            remaining_usage: b.max_usage ?? null,
+            comment: b.comment ?? null,
+            is_revoked: false,
+            revoked_at: null,
+            target_user_public_ids: b.target_user_public_ids ?? null,
+            organization_id: b.organization_id ?? null,
+            created_by_user_id: 1,
+            revoked_by_user_id: null,
+            usages: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+        }
+        db.discounts.push(d)
+        console.log(`   🎟️  کد تخفیف ${d.code} صادر شد`)
+        return [201, ok(d)]
+    }],
+
+    ['GET', /^\/admin\/discount\/[^/]+$/, (req) => {
+        const id = req.path.split('/').pop()
+        const d = db.discounts.find((x) => x.id === id)
+        return d ? ok(d) : [404, fail('NOT_FOUND', 'کد پیدا نشد')]
+    }],
+
+    ['PUT', /^\/admin\/discount\/[^/]+$/, (req) => {
+        const id = req.path.split('/').pop()
+        const d = db.discounts.find((x) => x.id === id)
+        if (!d) return [404, fail('NOT_FOUND', 'کد پیدا نشد')]
+
+        /* `code` و `discount_type` در DiscountUpdate نیستند */
+        const { code, discount_type, ...rest } = req.body ?? {}
+        void code
+        void discount_type
+        Object.assign(d, rest, { updated_at: new Date().toISOString() })
+        if (d.max_usage != null) d.remaining_usage = d.max_usage - d.used_count
+        console.log(`   ✏️  کد ${d.code} ویرایش شد`)
+        return ok(d)
+    }],
+
+    ['DELETE', /^\/admin\/discount\/[^/]+$/, (req) => {
+        const id = req.path.split('/').pop()
+        const d = db.discounts.find((x) => x.id === id)
+        if (!d) return [404, fail('NOT_FOUND', 'کد پیدا نشد')]
+        /* باطل کردن، نه حذف — رکورد می‌ماند */
+        d.is_revoked = true
+        d.revoked_at = new Date().toISOString()
+        d.revoked_by_user_id = 1
+        console.log(`   🚫 کد ${d.code} باطل شد`)
+        return ok(d)
+    }],
+
+    ['GET', /^\/user\/discount\/$/, (req) => {
+        const now = Date.now()
+        return page(
+            db.discounts.filter(
+                (d) => !d.is_revoked && new Date(d.valid_until).getTime() >= now
+            )
+        )
+    }],
+
     ['GET', /^\/admin\/notifications\/templates$/, () => page(db.templates)],
 
     ['POST', /^\/admin\/notifications\/templates$/, (req) => {

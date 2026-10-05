@@ -1,0 +1,258 @@
+/* فرم کد تخفیف — هم‌پالت با TemplateForm و SendNotificationForm:
+   عنوان ۳۸px، فیلدهای ۶۳px در دو ستون با فاصله‌ی ۲۵، دکمه‌ها ۴۰px. */
+
+.wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 24px;
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    left: 24px;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--text-bright);
+    color: var(--surface-admin);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+.divider {
+    width: 100%;
+    height: 1px;
+    margin-bottom: 22px;
+    background: var(--line-default);
+}
+
+.title {
+    height: 38px;
+    margin: 0 0 40px;
+    padding: 0 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+}
+
+.body {
+    width: 100%;
+    max-width: 883px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+}
+
+/* ── فیلد ── */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    min-height: 63px;
+    padding: 8px 16px;
+    border: 1px solid var(--text-body);
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.field:focus-within {
+    border-color: var(--color-primary-light);
+}
+
+.fieldError {
+    border-color: var(--status-error-border);
+}
+
+.fieldError .label,
+.fieldError .input {
+    color: var(--status-error);
+}
+
+.label {
+    color: var(--text-body);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.input::placeholder {
+    color: var(--text-faint);
+}
+
+.input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ── select ── */
+
+.selectRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.select {
+    flex: 1;
+    appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    cursor: pointer;
+}
+
+.select option {
+    background: var(--surface-card);
+    color: var(--color-white);
+}
+
+.selectIcon {
+    flex-shrink: 0;
+    color: var(--text-body);
+    pointer-events: none;
+}
+
+/* ── چک‌باکس ── */
+
+.checkBox {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    padding: 14px 16px;
+    border: 1px solid var(--text-body);
+    border-radius: 5.5px;
+}
+
+.checkRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.checkRow input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary-light);
+    cursor: pointer;
+}
+
+/* ── راهنما و خطا ── */
+
+.hint {
+    margin: 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+    line-height: 1.8;
+}
+
+.error {
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 99, 105, 0.35);
+    border-radius: var(--radius-md);
+    background: rgba(255, 99, 105, 0.08);
+    color: var(--status-error);
+    font-size: var(--font-size-sm);
+}
+
+/* ── دکمه‌ها ── */
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: var(--spacing-md);
+}
+
+.submit,
+.cancel {
+    min-width: 180px;
+    height: 40px;
+    padding: 0 24px;
+    border-radius: 10px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.submit {
+    border: none;
+    background: var(--color-action);
+    color: var(--color-white);
+}
+
+.submit:hover:not(:disabled) {
+    background: var(--color-action-hover);
+}
+
+.submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cancel {
+    border: 1px solid var(--line-strong);
+    background: transparent;
+    color: var(--text-bright);
+}
+
+.cancel:hover {
+    background: var(--surface-hover);
+}
+
+@media (max-width: 767px) {
+    .row {
+        grid-template-columns: 1fr;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .submit,
+    .cancel {
+        width: 100%;
+    }
+}

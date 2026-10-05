@@ -201,3 +201,67 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── بج وضعیت کد تخفیف ──
+   وضعیت از ترکیب is_revoked، انقضا و سقف مصرف ساخته می‌شود؛
+   رنگ‌ها همان پالت وضعیت پروژه‌اند. */
+.badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 72px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.badge_active {
+    border: 1px solid rgba(107, 203, 119, 0.4);
+    background: rgba(107, 203, 119, 0.12);
+    color: var(--status-success);
+}
+
+.badge_revoked {
+    border: 1px solid rgba(255, 99, 105, 0.4);
+    background: rgba(255, 99, 105, 0.12);
+    color: var(--status-error);
+}
+
+.badge_expired {
+    border: 1px solid var(--line-strong);
+    background: var(--surface-raised);
+    color: var(--text-muted-2);
+}
+
+.badge_used {
+    border: 1px solid rgba(232, 93, 4, 0.4);
+    background: rgba(232, 93, 4, 0.12);
+    color: var(--status-warning);
+}
+
+/* دکمه‌ی خطرناک نوار عملیات — باطل کردن برگشت‌ناپذیر است */
+.rowActionDanger {
+    height: 34px;
+    min-width: 160px;
+    padding: 0 16px;
+    border: 1px solid var(--status-error);
+    border-radius: 10.5px;
+    background: transparent;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.rowActionDanger:hover {
+    background: var(--status-error);
+    color: var(--surface-page);
+}
+
+@media (max-width: 767px) {
+    .rowActionDanger {
+        width: 100%;
+    }
+}

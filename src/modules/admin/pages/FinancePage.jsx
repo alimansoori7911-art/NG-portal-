@@ -4,6 +4,9 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import { useAdminPayments } from '../hooks/useAdminPayments'
+import DiscountForm from '../components/DiscountForm/DiscountForm'
+import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
+import { useDiscounts, useDiscountActions } from '../hooks/useDiscounts'
 import { formatToman } from '../../../utils/currency'
 import styles from './FinancePage.module.css'
 
@@ -31,7 +34,30 @@ const INVOICE_COLUMNS = [
 
 const TABS = [
     { id: 'transactions', label: 'تراکنش‌ها' },
+    { id: 'discounts', label: 'کدهای تخفیف' },
     { id: 'invoices', label: 'مدیریت و صدور فاکتور' },
+]
+
+/* ستون‌های کد تخفیف — فیگمایی برایش نرسیده بود، عرض‌ها متناسب با
+   محتوا تنظیم شده. */
+const DISCOUNT_COLUMNS = [
+    { key: 'index', label: 'ردیف', width: '7%' },
+    { key: 'code', label: 'کد', width: '16%', ltr: true },
+    { key: 'type', label: 'نوع', width: '12%' },
+    { key: 'value', label: 'مقدار', width: '14%', ltr: true },
+    { key: 'target', label: 'دامنه', width: '15%' },
+    { key: 'usage', label: 'استفاده', width: '13%', ltr: true },
+    {
+        key: 'status',
+        label: 'وضعیت',
+        width: '12%',
+        render: (row) => (
+            <span className={`${styles.badge} ${styles['badge_' + row.status.key]}`}>
+                {row.status.label}
+            </span>
+        ),
+    },
+    { key: 'validUntil', label: 'معتبر تا', width: '11%', ltr: true },
 ]
 
 /**
@@ -47,6 +73,39 @@ export default function FinancePage() {
     const [tab, setTab] = useState('transactions')
     const [page, setPage] = useState(1)
     const payments = useAdminPayments()
+
+    /* کد تخفیف — `discountForm` حالت فرم است: null بسته،
+       'new' صدور، و یک شیء یعنی ویرایش همان کد. */
+    const discounts = useDiscounts()
+    const discountActions = useDiscountActions()
+    const [discountForm, setDiscountForm] = useState(null)
+    const [revoking, setRevoking] = useState(null)
+
+    const closeDiscountForm = () => {
+        setDiscountForm(null)
+        discountActions.clearError()
+    }
+
+    const saveDiscount = async (payload) => {
+        const ok =
+            discountForm === 'new'
+                ? await discountActions.create(payload)
+                : await discountActions.update(discountForm.id, payload)
+
+        if (ok) {
+            closeDiscountForm()
+            discounts.reload()
+        }
+    }
+
+    const confirmRevoke = async () => {
+        const ok = await discountActions.revoke(revoking.id)
+        if (ok) {
+            setRevoking(null)
+            setSelectedId(null)
+            discounts.reload()
+        }
+    }
     const [selectedId, setSelectedId] = useState(null)
     const [creating, setCreating] = useState(false)
     const [fieldErrors, setFieldErrors] = useState({})
@@ -57,12 +116,15 @@ export default function FinancePage() {
         setSelectedId(null)
         setCreating(false)
         setFieldErrors({})
+        setDiscountForm(null)
+        setRevoking(null)
     }
 
     const toggleRow = (row) =>
         setSelectedId((id) => (id === row.id ? null : row.id))
 
     const isInvoices = tab === 'invoices'
+    const isDiscounts = tab === 'discounts'
 
     /* در تب فاکتورها نوار عملیات یک دکمه دارد؛ در تراکنش‌ها
        فیگما نوار عملیاتی نشان نمی‌دهد. */
@@ -121,9 +183,95 @@ export default function FinancePage() {
                 ))}
             </div>
 
-            {/* تراکنش‌ها داده‌ی واقعی دارد؛ فاکتور هنوز اندپوینت ندارد
-                پس فقط آن تب زیر ComingSoon می‌ماند. */}
-            {isInvoices ? (
+            {/* تراکنش‌ها و کد تخفیف داده‌ی واقعی دارند؛ فاکتور هنوز
+                اندپوینت ندارد پس فقط آن تب زیر ComingSoon می‌ماند. */}
+            {isDiscounts ? (
+                discountForm ? (
+                    <DiscountForm
+                        discount={discountForm === 'new' ? null : discountForm}
+                        busy={discountActions.busy}
+                        error={discountActions.error}
+                        onSubmit={saveDiscount}
+                        onClose={closeDiscountForm}
+                    />
+                ) : (
+                    <>
+                        {discounts.error && (
+                            <p className={styles.error} role="alert">
+                                {discounts.error}
+                            </p>
+                        )}
+
+                        <div className={styles.toolbar}>
+                            <button
+                                type="button"
+                                className={styles.createBtn}
+                                onClick={() => setDiscountForm('new')}
+                            >
+                                صدور کد تخفیف
+                            </button>
+                        </div>
+
+                        <AdminTable
+                            columns={DISCOUNT_COLUMNS}
+                            rows={discounts.rows}
+                            page={discounts.page}
+                            pageCount={discounts.pageCount}
+                            onPageChange={discounts.setPage}
+                            selectedId={selectedId}
+                            onRowClick={toggleRow}
+                            renderRowActions={(row) => (
+                                <div className={styles.rowActions}>
+                                    <button
+                                        type="button"
+                                        className={styles.rowActionBtn}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            setDiscountForm(row.raw)
+                                        }}
+                                    >
+                                        ویرایش کد
+                                    </button>
+
+                                    {/* کد باطل‌شده دوباره باطل نمی‌شود */}
+                                    {!row.raw.is_revoked && (
+                                        <button
+                                            type="button"
+                                            className={styles.rowActionDanger}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                setRevoking(row)
+                                            }}
+                                        >
+                                            باطل کردن
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            emptyMessage={
+                                discounts.loading
+                                    ? 'در حال دریافت…'
+                                    : 'کد تخفیفی صادر نشده است'
+                            }
+                        />
+
+                        <ConfirmDialog
+                            open={Boolean(revoking)}
+                            title="باطل کردن کد تخفیف"
+                            message={
+                                revoking
+                                    ? `کد «${revoking.code}» باطل شود؟ کد حذف نمی‌شود ولی دیگر قابل استفاده نیست.`
+                                    : ''
+                            }
+                            confirmLabel="باطل کن"
+                            cancelLabel="انصراف"
+                            loading={discountActions.busy}
+                            onConfirm={confirmRevoke}
+                            onClose={() => setRevoking(null)}
+                        />
+                    </>
+                )
+            ) : isInvoices ? (
                 <ComingSoon note="صدور فاکتور در فاز توسعه اضافه می‌شود.">
                     {creating ? (
                         <InvoiceForm
