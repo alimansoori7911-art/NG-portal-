@@ -50,7 +50,10 @@ export const CATEGORIES = [
         title: 'پایگاه دانش',
         description: 'پاسخ‌ها و راهکارهای عملی به سوالات متداول.',
         linkLabel: 'مشاهده مقالات',
-        ready: false,
+        /* تنها دسته‌ای که مقصد واقعی دارد: مقاله‌های منتشرشده‌ی CMS.
+           بقیه هنوز نه صفحه‌ای دارند نه منبعی. */
+        ready: true,
+        to: '/resources/articles',
     },
     {
         id: 'security',

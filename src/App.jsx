@@ -15,6 +15,8 @@ import TermsPage from "./modules/terms/pages/TermsPage";
    را نشان می‌دهد و اسمش هم ServicesPage است. */
 import PublicServicesPage from "./modules/services/pages/ServicesPage";
 import ResourcesPage from "./modules/resources/pages/ResourcesPage";
+import ArticlesPage from "./modules/resources/pages/ArticlesPage";
+import ArticlePage from "./modules/resources/pages/ArticlePage";
 import ProductsPage from "./modules/products/pages/ProductsPage";
 import ProductsBuyPage from "./modules/products/pages/ProductsBuyPage";
 import HelpdeskPage from "./modules/helpdesk/pages/HelpdeskPage";
@@ -70,6 +72,8 @@ function App() {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/services" element={<PublicServicesPage />} />
                 <Route path="/resources" element={<ResourcesPage />} />
+                <Route path="/resources/articles" element={<ArticlesPage />} />
+                <Route path="/resources/articles/:slug" element={<ArticlePage />} />
 
                 {/* ═══ فقط کاربر واردنشده ═══ */}
                 <Route element={<GuestRoute />}>

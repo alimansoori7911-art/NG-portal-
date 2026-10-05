@@ -1,0 +1,196 @@
+/* فهرست مقاله‌ها — هم‌پالت با مرکز منابع:
+   کارت با گرادیان تیره و حاشیه‌ی --color-primary-dark، شبکه‌ی
+   auto-fit با کمینه ۳۰۰px، هدر ثابت ۹۶px. */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-darkest);
+}
+
+.main {
+    flex: 1;
+    padding-top: 96px;
+}
+
+.container {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding-inline: var(--spacing-xl);
+    padding-block: var(--spacing-2xl);
+}
+
+/* ── مسیر صفحه ── */
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted-2);
+}
+
+.crumb:hover {
+    color: var(--color-primary-soft);
+}
+
+.current {
+    color: var(--color-primary-soft);
+}
+
+/* ── فیلتر برچسب ── */
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.tag {
+    height: 34px;
+    padding: 0 16px;
+    border: 1px solid var(--color-primary-dark);
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-muted-2);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast),
+        background var(--transition-fast);
+}
+
+.tag:hover {
+    color: var(--color-white);
+    border-color: var(--color-primary-soft);
+}
+
+.tagActive {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-soft);
+    color: var(--color-white);
+}
+
+/* ── شبکه‌ی مقاله‌ها ── */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    background: linear-gradient(
+        180deg,
+        var(--color-bg-dark) 0%,
+        var(--color-bg-darkest) 100%
+    );
+    border: 1px solid var(--color-primary-dark);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-fast);
+}
+
+.card:hover {
+    border-color: var(--color-primary-soft);
+}
+
+.cardIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--color-primary-dark);
+    color: var(--color-primary-soft);
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--color-white);
+}
+
+/* کل عنوان کلیک‌پذیر است، نه فقط «خواندن» */
+.cardLinkTitle {
+    color: inherit;
+}
+
+.cardLinkTitle:hover {
+    color: var(--color-primary-soft);
+}
+
+.cardText {
+    margin: 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+    /* خلاصه‌ها طول‌های متفاوتی دارند؛ بریدن در سه خط کارت‌ها را
+       هم‌قد نگه می‌دارد. */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cardFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    /* فوتر همیشه ته کارت می‌چسبد حتی اگر خلاصه کوتاه باشد */
+    margin-top: auto;
+    padding-top: var(--spacing-sm);
+}
+
+.date {
+    color: var(--text-faint);
+    font-size: var(--font-size-xs);
+}
+
+.cardLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-primary-soft);
+    font-size: var(--font-size-sm);
+}
+
+.cardLink:hover {
+    color: var(--color-white);
+}
+
+/* ── حالت‌ها ── */
+
+.state {
+    margin: 0;
+    padding: var(--spacing-2xl) 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-md);
+    text-align: center;
+}
+
+.cta {
+    margin-top: var(--spacing-2xl);
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding-inline: var(--spacing-md);
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

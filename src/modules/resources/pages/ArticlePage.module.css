@@ -1,0 +1,204 @@
+/* صفحه‌ی مقاله — ستون متنی باریک‌تر از بقیه‌ی صفحه‌ها.
+
+   عرض خواندن عمداً ۸۲۰px است نه ۱۳۱۲: خط متنِ خیلی بلند خواندن را
+   سخت می‌کند و این تنها صفحه‌ای است که کاربر واقعاً متن طولانی
+   می‌خواند. */
+
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-darkest);
+}
+
+.main {
+    flex: 1;
+    padding-top: 96px;
+}
+
+.container {
+    max-width: 1312px;
+    margin: 0 auto;
+    padding-inline: var(--spacing-xl);
+    padding-block: var(--spacing-2xl);
+}
+
+.breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    font-size: var(--font-size-sm);
+    color: var(--text-muted-2);
+}
+
+.crumb:hover {
+    color: var(--color-primary-soft);
+}
+
+/* ── مقاله ── */
+
+.article {
+    max-width: 820px;
+    margin: 0 auto;
+}
+
+.head {
+    padding-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+    margin: 0;
+    font-size: var(--font-size-3xl);
+    font-weight: 800;
+    line-height: 1.5;
+    color: var(--color-white);
+}
+
+.excerpt {
+    margin: var(--spacing-md) 0 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-lg);
+    line-height: 1.9;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.tag {
+    padding: 3px 12px;
+    border: 1px solid var(--color-primary-dark);
+    border-radius: var(--radius-full);
+    color: var(--color-primary-soft);
+    font-size: var(--font-size-xs);
+}
+
+.tag:hover {
+    border-color: var(--color-primary-soft);
+    color: var(--color-white);
+}
+
+/* ── متن مقاله ──
+   این استایل‌ها روی HTMLی اعمال می‌شوند که ویرایشگر CMS ساخته، پس
+   باید با ناحیه‌ی نوشتن در پنل ادمین بخواند. */
+
+.content {
+    color: var(--text-bright);
+    font-size: var(--font-size-md);
+    line-height: 2.1;
+    overflow-wrap: anywhere;
+}
+
+.content :is(h1, h2, h3) {
+    margin: var(--spacing-xl) 0 var(--spacing-md);
+    color: var(--color-white);
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.content h1 { font-size: var(--font-size-2xl); }
+.content h2 { font-size: var(--font-size-xl); }
+.content h3 { font-size: var(--font-size-lg); }
+
+.content p {
+    margin: 0 0 var(--spacing-md);
+}
+
+.content :is(ul, ol) {
+    margin: 0 0 var(--spacing-md);
+    padding-inline-start: var(--spacing-xl);
+}
+
+.content li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.content blockquote {
+    margin: 0 0 var(--spacing-md);
+    padding-inline-start: var(--spacing-lg);
+    border-inline-start: 3px solid var(--color-primary-soft);
+    color: var(--text-muted-2);
+}
+
+.content code {
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-dark);
+    color: var(--color-primary-soft);
+    font-size: 0.9em;
+    /* کد همیشه چپ‌به‌راست است حتی در متن فارسی */
+    direction: ltr;
+    display: inline-block;
+}
+
+.content a {
+    color: var(--color-primary-soft);
+    text-decoration: underline;
+}
+
+.content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+
+/* ── برگشت و حالت‌ها ── */
+
+.back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: var(--spacing-xl);
+    color: var(--color-primary-soft);
+    font-size: var(--font-size-sm);
+}
+
+.back:hover {
+    color: var(--color-white);
+}
+
+.state {
+    margin: 0;
+    padding: var(--spacing-xl) 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-md);
+    text-align: center;
+}
+
+.notFound {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.notFoundTitle {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    color: var(--color-white);
+}
+
+.cta {
+    margin-top: var(--spacing-2xl);
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding-inline: var(--spacing-md);
+    }
+
+    .title {
+        font-size: var(--font-size-2xl);
+    }
+
+    .excerpt {
+        font-size: var(--font-size-md);
+    }
+}

@@ -1736,18 +1736,28 @@ const routes = [
 
     ['GET', /^\/cms\/pages$/, (req) => {
         const tag = req.query.get('tag')
+        /* فقط **مقاله** — اسپک می‌گوید «List published articles».
+           صفحه‌ی ساختاریافته (مثل صفحه‌ی اصلی) محتوای مستقل نیست و
+           نباید در فهرست مقاله‌ها بیاید. */
         let rows = db.cmsPages.filter(
-            (p) => !p.deleted_at && p.status === 'PUBLISHED' && p.is_public
+            (p) =>
+                !p.deleted_at &&
+                p.status === 'PUBLISHED' &&
+                p.is_public &&
+                p.kind === 'ARTICLE'
         )
         if (tag) rows = rows.filter((p) => (p.tags ?? []).some((t) => t.slug === tag))
         return page(
             rows.map((p) => ({
                 id: p.id,
+                /* `kind` در `CmsPagePublicListItemOut` الزامی است */
+                kind: p.kind,
                 slug: p.slug,
                 title: p.title,
                 excerpt: p.excerpt,
                 published_at: p.published_at,
                 tags: p.tags,
+                permissions: p.permissions,
             }))
         )
     }],
@@ -1774,6 +1784,7 @@ const routes = [
         const pub = db.cmsVersions.find((v) => v.id === p.published_version_id)
         return ok({
             id: p.id,
+            kind: p.kind,
             slug: p.slug,
             title: p.title,
             excerpt: p.excerpt,
