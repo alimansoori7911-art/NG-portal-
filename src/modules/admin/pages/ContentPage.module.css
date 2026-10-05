@@ -380,3 +380,88 @@
         min-width: 86px;
     }
 }
+
+/* ── کارت‌های صفحه‌ی ساختاریافته ──
+   اینها جدول نمی‌شوند: تعدادشان کم است و مهم‌ترین چیزشان «چند بلوک
+   قابل ویرایش دارد» است نه ردیف‌های هم‌شکل. */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 20px;
+    border: 1px solid var(--line-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+}
+
+.cardHead {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cardTitle {
+    margin: 0;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    font-weight: 400;
+}
+
+.cardSlug {
+    margin: 0;
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+}
+
+.cardMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-default);
+}
+
+.cardMetaRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.cardMetaRow dt {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.cardMetaRow dd {
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--font-size-xs);
+}
+
+.cardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+@media (max-width: 767px) {
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .cardActions .rowActionBtn {
+        flex: 1;
+    }
+}

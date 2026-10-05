@@ -4,9 +4,11 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import CmsPageForm from '../components/CmsPageForm/CmsPageForm'
 import CmsVersionsModal from '../components/CmsVersionsModal/CmsVersionsModal'
 import CmsPreviewModal from '../components/CmsPreviewModal/CmsPreviewModal'
+import CmsBlockEditor from '../components/CmsBlockEditor/CmsBlockEditor'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
 import { useCmsPages, useCmsActions, useCmsPage } from '../hooks/useCmsPages'
-import { PAGE_KIND, PAGE_STATUS } from '../../../services/cmsService'
+import { useEditablePages } from '../hooks/useEditablePages'
+import { PAGE_KIND, PAGE_STATUS, pageState } from '../../../services/cmsService'
 import styles from './ContentPage.module.css'
 
 /* ستون‌های فهرست صفحه‌ها — فیگمایی برایش نرسیده بود، عرض‌ها متناسب
@@ -64,6 +66,10 @@ export default function ContentPage() {
     const [deleting, setDeleting] = useState(null)
     const [publishing, setPublishing] = useState(null)
 
+    /* صفحه‌های ساختاریافته — فهرست و بلوکی که در حال ویرایش است */
+    const editablePages = useEditablePages()
+    const [blockEditFor, setBlockEditFor] = useState(null)
+
     /* فرم ویرایش به محتوای کامل نیاز دارد و فهرست آن را ندارد
        (`content_raw` و `seo` فقط در `GET /pages/{id}` هستند). */
     const editingId = form && form !== 'new' ? form : null
@@ -109,6 +115,15 @@ export default function ContentPage() {
         }
     }
 
+    const saveBlocks = async (payload) => {
+        if (await actions.update(blockEditFor.id, payload)) {
+            setBlockEditFor(null)
+            editablePages.reload()
+            /* فهرست صفحه‌ها هم نسخه و وضعیتش عوض شده است */
+            pages.reload()
+        }
+    }
+
     const switchTab = (id) => {
         setTab(id)
         setSelectedId(null)
@@ -117,6 +132,8 @@ export default function ContentPage() {
         setPreviewFor(null)
         setDeleting(null)
         setPublishing(null)
+        setBlockEditFor(null)
+        actions.clearError()
     }
 
     const toggleRow = (row) =>
@@ -180,14 +197,128 @@ export default function ContentPage() {
             </div>
 
             {tab === 'structured' ? (
-                <p className={styles.note}>
-                    صفحه‌های ساختاریافته (مثل صفحه‌ی اصلی) بلوک‌های از پیش
-                    تعریف‌شده دارند و متن آزاد نمی‌گیرند. ویرایش بلوک‌به‌بلوکِ
-                    آن‌ها به طرح فیگما نیاز دارد که هنوز نرسیده؛ تا آن‌موقع
-                    خودِ صفحه‌ها در تب «صفحه‌های محتوا» با نوع «صفحه‌ی
-                    ساختاریافته» دیده می‌شوند و وضعیت و انتشارشان از همان‌جا
-                    مدیریت می‌شود.
-                </p>
+                blockEditFor ? (
+                    <CmsBlockEditor
+                        page={blockEditFor}
+                        busy={actions.busy}
+                        error={actions.error}
+                        onSubmit={saveBlocks}
+                        onClose={() => {
+                            setBlockEditFor(null)
+                            actions.clearError()
+                        }}
+                    />
+                ) : (
+                    <>
+                        {editablePages.error && (
+                            <p className={styles.error} role="alert">
+                                {editablePages.error}
+                            </p>
+                        )}
+
+                        <p className={styles.note}>
+                            این صفحه‌ها قالب ثابت دارند: چیدمانشان سمت سایت
+                            مشخص شده و فقط محتوای بلوک‌هایشان قابل تغییر است.
+                            فرم ویرایش از روی همان قالبی ساخته می‌شود که
+                            بک‌اند می‌دهد، پس فیلدی که سرور قبول نمی‌کند اصلاً
+                            نشان داده نمی‌شود.
+                        </p>
+
+                        {editablePages.loading ? (
+                            <p className={styles.loading}>در حال دریافت…</p>
+                        ) : editablePages.rows.length === 0 ? (
+                            <p className={styles.loading}>
+                                صفحه‌ی ساختاریافته‌ای برای ویرایش ندارید.
+                            </p>
+                        ) : (
+                            <div className={styles.cards}>
+                                {editablePages.rows.map((p) => {
+                                    const state = pageState(p)
+                                    const blocks = p.editable_blocks ?? []
+                                    const editableCount = blocks.filter(
+                                        (b) => b.editable
+                                    ).length
+
+                                    return (
+                                        <article key={p.id} className={styles.card}>
+                                            <header className={styles.cardHead}>
+                                                <h3 className={styles.cardTitle}>
+                                                    {p.title}
+                                                </h3>
+                                                <span
+                                                    className={`${styles.badge} ${
+                                                        styles['badge_' + state.key]
+                                                    }`}
+                                                >
+                                                    {state.label}
+                                                </span>
+                                            </header>
+
+                                            <p className={styles.cardSlug} dir="ltr">
+                                                /{p.slug}
+                                            </p>
+
+                                            <dl className={styles.cardMeta}>
+                                                <div className={styles.cardMetaRow}>
+                                                    <dt>بلوک‌ها</dt>
+                                                    <dd>
+                                                        {editableCount.toLocaleString(
+                                                            'fa-IR'
+                                                        )}{' '}
+                                                        از{' '}
+                                                        {blocks.length.toLocaleString(
+                                                            'fa-IR'
+                                                        )}{' '}
+                                                        قابل ویرایش
+                                                    </dd>
+                                                </div>
+                                                <div className={styles.cardMetaRow}>
+                                                    <dt>نسخه</dt>
+                                                    <dd dir="ltr">
+                                                        v
+                                                        {Number(
+                                                            p.version_counter ?? 1
+                                                        ).toLocaleString('fa-IR')}
+                                                    </dd>
+                                                </div>
+                                            </dl>
+
+                                            <div className={styles.cardActions}>
+                                                {p.permissions?.can_edit &&
+                                                    editableCount > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            className={styles.rowActionBtn}
+                                                            onClick={() =>
+                                                                setBlockEditFor(p)
+                                                            }
+                                                        >
+                                                            ویرایش بلوک‌ها
+                                                        </button>
+                                                    )}
+
+                                                <button
+                                                    type="button"
+                                                    className={styles.rowActionBtn}
+                                                    onClick={() => setPreviewFor(p)}
+                                                >
+                                                    پیش‌نمایش
+                                                </button>
+                                            </div>
+                                        </article>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {previewFor && (
+                            <CmsPreviewModal
+                                page={previewFor}
+                                onClose={() => setPreviewFor(null)}
+                            />
+                        )}
+                    </>
+                )
             ) : (
                 <>
                     {pages.error && (
