@@ -251,6 +251,75 @@ function makeCmsPage(b) {
     }
 }
 
+/* قالب صفحه‌های ساختاریافته — مرجع هم برای مسیر schemas و هم برای
+   ساختن بلوک‌های اولیه‌ی seed، تا این دو از هم جدا نیفتند. */
+const STRUCTURED_SCHEMAS = [
+    {
+        key: 'home',
+        title: 'صفحه‌ی اصلی',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'intro',
+                type: 'RICH_TEXT',
+                editable: true,
+                fields: [
+                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'banner',
+                type: 'IMAGE',
+                editable: true,
+                fields: [
+                    { name: 'image_url', kind: 'image', required: true, max_length: null, allowed_sizes: [1920, 1280] },
+                    { name: 'alt', kind: 'text', required: true, max_length: 160, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                /* بلوک تکرارشونده — سقف دارد */
+                key: 'features',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 4,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon_url', kind: 'image', required: false, max_length: null, allowed_sizes: [64] },
+                    ],
+                },
+            },
+            {
+                key: 'cta',
+                type: 'CTA',
+                editable: true,
+                fields: [
+                    { name: 'label', kind: 'text', required: true, max_length: 40, allowed_sizes: null },
+                    { name: 'url', kind: 'url', required: true, max_length: null, allowed_sizes: null },
+                    /* بلوک غیرقابل‌ویرایش هم باید تست شود */
+                    { name: 'variant', kind: 'text', required: false, max_length: 20, allowed_sizes: null },
+                ],
+                items: null,
+            },
+        ],
+    },
+]
+
 function seedCms() {
     db.cmsPages = []
     db.cmsVersions = []
@@ -327,6 +396,37 @@ function seedCms() {
                 type: 'TEXT',
                 version: 1,
                 fields: { heading: 'نرم‌افزار یکپارچه', subheading: 'ساده و سریع' },
+                items: [],
+            },
+            {
+                key: 'intro',
+                type: 'RICH_TEXT',
+                version: 1,
+                fields: { body: '<p>معرفی کوتاه محصول.</p>' },
+                items: [],
+            },
+            {
+                key: 'banner',
+                type: 'IMAGE',
+                version: 1,
+                fields: { image_url: 'https://example.com/banner.png', alt: 'تصویر اصلی' },
+                items: [],
+            },
+            {
+                key: 'features',
+                type: 'CARD_LIST',
+                version: 1,
+                fields: { section_title: 'چرا ما' },
+                items: [
+                    { title: 'سرعت', description: 'راه‌اندازی در یک روز', icon_url: '' },
+                    { title: 'پشتیبانی', description: 'پاسخ در کمتر از ۲۴ ساعت', icon_url: '' },
+                ],
+            },
+            {
+                key: 'cta',
+                type: 'CTA',
+                version: 1,
+                fields: { label: 'درخواست دمو', url: 'https://ngcorion.com/demo', variant: 'primary' },
                 items: [],
             },
         ],
@@ -1343,40 +1443,50 @@ const routes = [
                     version_counter: p.version_counter,
                     has_unpublished_changes: p.has_unpublished_changes,
                     permissions: p.permissions,
-                    editable_blocks: (p.blocks ?? []).map((b) => ({
-                        key: b.key,
-                        type: b.type,
-                        editable: true,
-                        fields: Object.entries(b.fields ?? {}).map(([name, value]) => ({
-                            name,
-                            kind: 'text',
-                            required: false,
-                            value,
-                        })),
-                        items: null,
-                    })),
+                    /* مقدار ذخیره‌شده با مشخصات قالب ادغام می‌شود.
+
+                       اگر `kind` و `required` و `max_length` را از
+                       قالب برنداریم، فرمِ تولیدشده همه‌چیز را یک
+                       input ساده می‌بیند و محدودیت‌ها اصلاً تست
+                       نمی‌شوند. */
+                    editable_blocks: (() => {
+                        const schema = STRUCTURED_SCHEMAS.find(
+                            (x) => x.key === p.schema_key
+                        )
+                        if (!schema) return []
+
+                        return schema.blocks.map((spec) => {
+                            const saved = (p.blocks ?? []).find(
+                                (b) => b.key === spec.key
+                            )
+
+                            return {
+                                key: spec.key,
+                                type: spec.type,
+                                editable: spec.editable,
+                                fields: spec.fields.map((f) => ({
+                                    ...f,
+                                    value: saved?.fields?.[f.name] ?? '',
+                                })),
+                                items: spec.items
+                                    ? {
+                                          max_items: spec.items.max_items,
+                                          fields: spec.items.fields,
+                                          values: saved?.items ?? [],
+                                      }
+                                    : null,
+                            }
+                        })
+                    })(),
                 }))
         )],
 
-    ['GET', /^\/admin\/cms\/structured-schemas$/, () =>
-        ok([
-            {
-                key: 'home',
-                title: 'صفحه‌ی اصلی',
-                blocks: [
-                    {
-                        key: 'hero',
-                        type: 'TEXT',
-                        editable: true,
-                        fields: [
-                            { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                            { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
-                        ],
-                        items: null,
-                    },
-                ],
-            },
-        ])],
+    /* قالب صفحه‌های ساختاریافته.
+
+       عمداً هر پنج `BlockType` و یک بلوک تکرارشونده (`CARD_LIST` با
+       `max_items`) را پوشش می‌دهد. با یک بلوک ساده نمی‌شد فهمید فرمِ
+       تولیدشده واقعاً همه‌ی حالت‌ها را می‌سازد یا نه. */
+    ['GET', /^\/admin\/cms\/structured-schemas$/, () => ok(STRUCTURED_SCHEMAS)],
 
     ['GET', /^\/admin\/cms\/redirects$/, () => page(db.cmsRedirects)],
 
@@ -1562,7 +1672,29 @@ const routes = [
             if (b[k] != null) p[k] = b[k]
         }
         if (b.content_raw != null) p.content_html = b.content_raw
-        if (b.blocks != null) p.blocks = b.blocks
+        /* `CmsBlockIn` فقط `key`/`fields`/`items` دارد — نه `type` و
+           نه `version`. پس آن دو باید از قالب و از بلوک قبلی
+           نگه داشته شوند، وگرنه بعد از هر ذخیره نوع بلوک گم می‌شود و
+           `CmsBlockOut` که `type` را الزامی می‌داند نقض می‌شود. */
+        if (b.blocks != null) {
+            const schema = STRUCTURED_SCHEMAS.find((x) => x.key === p.schema_key)
+
+            p.blocks = b.blocks.map((incoming) => {
+                const prev = (p.blocks ?? []).find((x) => x.key === incoming.key)
+                const spec = schema?.blocks.find((x) => x.key === incoming.key)
+
+                return {
+                    key: incoming.key,
+                    type: prev?.type ?? spec?.type ?? 'TEXT',
+                    version: (prev?.version ?? 0) + 1,
+                    fields: incoming.fields ?? {},
+                    /* ورودی `items` آرایه‌ای از `{fields}` است ولی
+                       خروجی `CmsBlockOut.items` آرایه‌ای از خودِ
+                       فیلدهاست. */
+                    items: (incoming.items ?? []).map((it) => it?.fields ?? it),
+                }
+            })
+        }
         if (b.tags != null) {
             p.tags = b.tags.map((t) => ({ id: cmsId(), name: t, slug: slugify(t) }))
         }
