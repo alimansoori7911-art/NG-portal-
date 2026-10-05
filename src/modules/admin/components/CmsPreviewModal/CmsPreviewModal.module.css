@@ -1,0 +1,334 @@
+/* مودال پیش‌نمایش صفحه.
+
+   ارتفاع با `dvh` بسته می‌شود نه `100%` — همان درسی که در مودال
+   گفتگوی تیکت گرفتیم. */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.modal {
+    display: flex;
+    flex-direction: column;
+    width: min(840px, 100%);
+    max-height: calc(100dvh - 80px);
+    border-radius: 20px;
+    background: var(--surface-admin, #060B13);
+    border: 1px solid var(--line-default);
+    overflow: hidden;
+}
+
+/* ── سرصفحه ── */
+
+.header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line-default);
+}
+
+.headTitle {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--color-primary-light);
+}
+
+.title {
+    margin: 0;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    font-weight: 400;
+}
+
+.subtitle {
+    margin: 4px 0 0;
+    color: var(--text-body);
+    font-size: var(--font-size-xs);
+}
+
+.close {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--text-bright);
+    color: var(--surface-admin, #060B13);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.close:hover {
+    background: var(--color-white);
+}
+
+/* ── ناحیه‌ی اسکرول ──
+   ⚠️ `justify-content` اینجا گذاشته نمی‌شود: روی یک ظرف اسکرول‌شونده
+   محتوا را از بالا دور می‌کند و بالای فهرست دیگر دسترس‌پذیر نیست
+   (همان باگی که در مودال گفتگو داشتیم). */
+
+.scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px 28px 32px;
+}
+
+.scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+    background: var(--line-default);
+    border-radius: 4px;
+}
+
+/* ── فهرست نسخه‌ها ── */
+
+/* ── دکمه‌ها ── */
+
+/* ── پیش‌نمایش محتوای نسخه ── */
+
+/* استایل HTML خروجی ویرایشگر — باید با ناحیه‌ی نوشتن بخواند،
+   وگرنه پیش‌نمایش چیز دیگری نشان می‌دهد تا آنچه ادمین نوشته. */
+.html {
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+    line-height: 2;
+    overflow-wrap: anywhere;
+}
+
+.html :is(h1, h2, h3) {
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.html h1 { font-size: var(--font-size-xl); }
+.html h2 { font-size: var(--font-size-lg); }
+.html h3 { font-size: var(--font-size-md); }
+
+.html p {
+    margin: 0 0 var(--spacing-sm);
+}
+
+.html :is(ul, ol) {
+    margin: 0 0 var(--spacing-sm);
+    padding-inline-start: var(--spacing-lg);
+}
+
+.html blockquote {
+    margin: 0 0 var(--spacing-sm);
+    padding-inline-start: var(--spacing-md);
+    border-inline-start: 3px solid var(--color-primary-light);
+    color: var(--text-body);
+}
+
+.html code {
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    direction: ltr;
+    display: inline-block;
+}
+
+.html a {
+    color: var(--color-primary-light);
+    text-decoration: underline;
+}
+
+.html img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+
+/* ── حالت‌ها ── */
+
+.empty {
+    margin: 0;
+    padding: var(--spacing-lg) 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.error {
+    margin: 0 0 var(--spacing-md);
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 99, 105, 0.35);
+    border-radius: var(--radius-md);
+    background: rgba(255, 99, 105, 0.08);
+    color: var(--status-error);
+    font-size: var(--font-size-sm);
+}
+
+@media (max-width: 767px) {
+    .overlay {
+        padding: 16px 12px;
+    }
+
+    .modal {
+        max-height: calc(100dvh - 32px);
+    }
+
+    .header,
+    .scroll {
+        padding-inline: 16px;
+    }
+}
+
+/* ── اطلاعات بالای محتوا ── */
+
+.warn {
+    margin: 0 0 var(--spacing-md);
+    padding: 10px 14px;
+    border: 1px solid rgba(232, 93, 4, 0.35);
+    border-radius: var(--radius-md);
+    background: rgba(232, 93, 4, 0.08);
+    color: var(--status-warning);
+    font-size: var(--font-size-xs);
+    line-height: 1.9;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--spacing-md);
+}
+
+.metaItem {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.badge {
+    display: inline-grid;
+    place-items: center;
+    min-width: 72px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.badge_published {
+    border: 1px solid rgba(107, 203, 119, 0.4);
+    background: rgba(107, 203, 119, 0.12);
+    color: var(--status-success);
+}
+
+.badge_modified {
+    border: 1px solid rgba(232, 93, 4, 0.4);
+    background: rgba(232, 93, 4, 0.12);
+    color: var(--status-warning);
+}
+
+.badge_draft {
+    border: 1px solid var(--line-strong);
+    background: var(--surface-raised);
+    color: var(--text-muted-2);
+}
+
+.badge_deleted {
+    border: 1px solid rgba(255, 99, 105, 0.4);
+    background: rgba(255, 99, 105, 0.12);
+    color: var(--status-error);
+}
+
+/* ── خودِ صفحه ── */
+
+.pageTitle {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.excerpt {
+    margin: 0 0 var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--line-default);
+    color: var(--text-body);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+}
+
+/* ── بلوک‌های صفحه‌ی ساختاریافته ── */
+
+.blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.block {
+    padding: 14px 16px;
+    border: 1px solid var(--line-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+}
+
+.blockKey {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+}
+
+.fieldRow {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    align-items: baseline;
+}
+
+.fieldKey {
+    margin: 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+    overflow-wrap: anywhere;
+}
+
+.fieldValue {
+    margin: 0;
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 767px) {
+    .fieldRow {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}

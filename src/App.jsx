@@ -40,6 +40,7 @@ import AdminSupportPage from "./modules/admin/pages/SupportPage";
 import AdminCatalogPage from "./modules/admin/pages/CatalogPage";
 import AdminSalesPage from "./modules/admin/pages/SalesPage";
 import AdminFinancePage from "./modules/admin/pages/FinancePage";
+import AdminContentPage from "./modules/admin/pages/ContentPage";
 import AdminSettingsPage from "./modules/admin/pages/SettingsPage";
 
 function App() {
@@ -128,6 +129,7 @@ function App() {
                         <Route path="catalog" element={<AdminCatalogPage />} />
                         <Route path="sales" element={<AdminSalesPage />} />
                         <Route path="finance" element={<AdminFinancePage />} />
+                        <Route path="content" element={<AdminContentPage />} />
                         <Route path="settings" element={<AdminSettingsPage />} />
                     </Route>
                 </Route>

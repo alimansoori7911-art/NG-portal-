@@ -4,6 +4,7 @@ import {
     LogIn,
     Landmark,
     Archive,
+    FileText,
     Settings,
 } from 'lucide-react'
 
@@ -18,5 +19,6 @@ export const ADMIN_MENU_ITEMS = [
     { id: 'sales', label: 'فروش و مشتریان', path: '/admin/sales', icon: LogIn },
     { id: 'finance', label: 'مدیریت مالی', path: '/admin/finance', icon: Landmark },
     { id: 'catalog', label: 'محصولات و کاتالوگ', path: '/admin/catalog', icon: Archive },
+    { id: 'content', label: 'مدیریت محتوا', path: '/admin/content', icon: FileText },
     { id: 'settings', label: 'ابزارها و تنظیمات سیستم', path: '/admin/settings', icon: Settings },
 ]
