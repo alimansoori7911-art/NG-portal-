@@ -35,6 +35,9 @@ const db = {
     notifications: [],
     templates: [],
     discounts: [],
+    cmsPages: [],
+    cmsVersions: [],   // { ...snapshot, page_id, version }
+    cmsRedirects: [],
     terms: [],
     licenses: [],
     planPrices: [],
@@ -161,8 +164,196 @@ let captchaRequired = false
 const uuid = () =>
     '01930000-0000-7000-8000-' + String(Date.now()).slice(-12).padStart(12, '0')
 
+/* `uuid()` از ساعت ساخته می‌شود، پس در یک حلقه‌ی تنگ چند بار پشت‌هم
+   یک مقدار می‌دهد. برای CMS که چند رکورد را در یک تیک می‌سازد شناسه‌ی
+   شمارنده‌دار لازم است وگرنه id تکراری می‌شود. */
+let cmsSeq = 0
+const cmsId = () =>
+    '01930000-0000-7000-8000-' + String(++cmsSeq).padStart(12, '0')
+
+const slugify = (s) =>
+    String(s).trim().toLowerCase().replace(/[\s_]+/g, '-').replace(/-+/g, '-')
+
+/* نسخه‌ی تازه از وضعیت فعلی صفحه. بک‌اند هر ویرایش را نسخه می‌کند و
+   `version_counter` را جلو می‌برد — مک هم باید همین کار را بکند
+   وگرنه تب «تاریخچه» همیشه خالی می‌ماند و باگ واقعی پیدا نمی‌شود. */
+function snapshotCmsVersion(p, { published = false } = {}) {
+    db.cmsVersions
+        .filter((v) => v.page_id === p.id)
+        .forEach((v) => { v.is_current = false })
+
+    const v = {
+        id: cmsId(),
+        page_id: p.id,
+        version: p.version_counter,
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        created_by_user_id: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_published: published,
+        is_current: true,
+        content_format: p.content_format,
+        content_raw: p.content_raw ?? '',
+        content_html: p.content_raw ?? '',
+        structure: p.blocks ?? [],
+        is_public: p.is_public,
+        robots: p.robots,
+        seo: p.seo ?? {},
+    }
+    db.cmsVersions.push(v)
+    return v
+}
+
+function makeCmsPage(b) {
+    const title = b.title
+    const now = new Date().toISOString()
+    return {
+        id: cmsId(),
+        created_at: now,
+        updated_at: now,
+        kind: b.kind,
+        schema_key: b.schema_key ?? null,
+        slug: b.slug ? slugify(b.slug) : slugify(title),
+        title,
+        excerpt: b.excerpt ?? null,
+        status: 'DRAFT',
+        is_public: b.is_public ?? true,
+        robots: b.robots ?? 'INDEX',
+        content_format: b.content_format ?? 'HTML',
+        version_counter: 1,
+        has_unpublished_changes: false,
+        published_at: null,
+        published_slug: null,
+        created_by_user_id: 1,
+        updated_by_user_id: 1,
+        deleted_at: null,
+        tags: (b.tags ?? []).map((t) => ({ id: cmsId(), name: t, slug: slugify(t) })),
+        /* همه‌ی اجازه‌ها باز است؛ برای تست حالت بسته
+           `MOCK_CMS_READONLY=1` بگذارید. */
+        permissions: process.env.MOCK_CMS_READONLY
+            ? { can_edit: false, can_publish: false, can_delete: false, can_restore: false }
+            : { can_edit: true, can_publish: true, can_delete: true, can_restore: true },
+        current_version_id: null,
+        published_version_id: null,
+        version: 1,
+        blocks: b.blocks ?? [],
+        content_raw: b.content_raw ?? '',
+        content_html: b.content_raw ?? '',
+        seo: {
+            meta_title: b.meta_title ?? null,
+            meta_description: b.meta_description ?? null,
+            og_image_url: b.og_image_url ?? null,
+            canonical_url: b.canonical_url ?? null,
+            robots: b.robots ?? 'INDEX',
+        },
+    }
+}
+
+function seedCms() {
+    db.cmsPages = []
+    db.cmsVersions = []
+    db.cmsRedirects = []
+    cmsSeq = 0
+
+    const about = makeCmsPage({
+        kind: 'ARTICLE',
+        title: 'درباره ما',
+        slug: 'about-us',
+        excerpt: 'معرفی شرکت و تیم',
+        content_raw: '<h2>درباره ما</h2><p>ما یک تیم نرم‌افزاری هستیم.</p>',
+        tags: ['شرکت'],
+    })
+    about.status = 'PUBLISHED'
+    about.published_at = new Date().toISOString()
+    about.published_slug = about.slug
+    snapshotCmsVersion(about, { published: true })
+    about.published_version_id = db.cmsVersions.at(-1).id
+    about.current_version_id = about.published_version_id
+
+    /* صفحه‌ای که منتشر شده ولی تغییر ذخیره‌نشده دارد — حالتی که
+       `pageState()` باید «تغییر منتشرنشده» نشانش بدهد. */
+    const terms = makeCmsPage({
+        kind: 'ARTICLE',
+        title: 'قوانین و مقررات',
+        slug: 'terms',
+        excerpt: 'شرایط استفاده از سرویس',
+        content_raw: '<p>نسخه‌ی منتشرشده‌ی قوانین.</p>',
+    })
+    terms.status = 'PUBLISHED'
+    terms.published_at = new Date().toISOString()
+    terms.published_slug = terms.slug
+    snapshotCmsVersion(terms, { published: true })
+    terms.published_version_id = db.cmsVersions.at(-1).id
+    terms.version_counter = 2
+    terms.has_unpublished_changes = true
+    terms.content_raw = '<p>نسخه‌ی ویرایش‌شده که هنوز منتشر نشده.</p>'
+    terms.content_html = terms.content_raw
+    snapshotCmsVersion(terms)
+    terms.current_version_id = db.cmsVersions.at(-1).id
+
+    const draft = makeCmsPage({
+        kind: 'ARTICLE',
+        title: 'راهنمای نصب',
+        slug: 'install-guide',
+        content_raw: '<p>پیش‌نویس راهنما.</p>',
+        is_public: false,
+        robots: 'NOINDEX',
+    })
+    snapshotCmsVersion(draft)
+    draft.current_version_id = db.cmsVersions.at(-1).id
+
+    /* صفحه‌ی حذف‌شده — فقط با include_deleted=true باید بیاید */
+    const gone = makeCmsPage({
+        kind: 'ARTICLE',
+        title: 'کمپین قدیمی',
+        slug: 'old-campaign',
+        content_raw: '<p>حذف‌شده.</p>',
+    })
+    gone.deleted_at = new Date().toISOString()
+    snapshotCmsVersion(gone)
+    gone.current_version_id = db.cmsVersions.at(-1).id
+
+    /* صفحه‌ی ساختاریافته — بلوک‌هایش از structured-schemas می‌آید */
+    const home = makeCmsPage({
+        kind: 'STRUCTURED',
+        schema_key: 'home',
+        title: 'صفحه‌ی اصلی',
+        slug: 'home',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                version: 1,
+                fields: { heading: 'نرم‌افزار یکپارچه', subheading: 'ساده و سریع' },
+                items: [],
+            },
+        ],
+    })
+    home.status = 'PUBLISHED'
+    home.published_at = new Date().toISOString()
+    home.published_slug = home.slug
+    snapshotCmsVersion(home, { published: true })
+    home.published_version_id = db.cmsVersions.at(-1).id
+    home.current_version_id = home.published_version_id
+
+    db.cmsPages.push(about, terms, draft, gone, home)
+
+    db.cmsRedirects.push({
+        id: cmsId(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        from_slug: 'about',
+        to_slug: 'about-us',
+        page_id: about.id,
+        created_by_user_id: 1,
+    })
+}
+
 /* بعد از `uuid` صدا زده می‌شوند چون `seedInvoices` از آن استفاده
    می‌کند و `const` قبل از تعریفش قابل دسترسی نیست. */
+seedCms()
 seedNotifications()
 seedInvoices()
 seedTerms()
@@ -1129,6 +1320,337 @@ const routes = [
                 (d) => !d.is_revoked && new Date(d.valid_until).getTime() >= now
             )
         )
+    }],
+
+    /* ═══ مدیریت محتوا (CMS) ═══
+
+       ترتیب مسیرها مهم است: الگوهای خاص‌تر (`/versions`, `/publish`,
+       `/preview`, `/restore`) باید **قبل** از `/pages/{id}` بیایند،
+       وگرنه آن الگوی عمومی اول می‌گیردشان. */
+
+    ['GET', /^\/admin\/cms\/editable-pages$/, () =>
+        ok(
+            db.cmsPages
+                .filter((p) => !p.deleted_at && p.kind === 'STRUCTURED')
+                .map((p) => ({
+                    id: p.id,
+                    kind: p.kind,
+                    schema_key: p.schema_key,
+                    slug: p.slug,
+                    title: p.title,
+                    status: p.status,
+                    is_public: p.is_public,
+                    version_counter: p.version_counter,
+                    has_unpublished_changes: p.has_unpublished_changes,
+                    permissions: p.permissions,
+                    editable_blocks: (p.blocks ?? []).map((b) => ({
+                        key: b.key,
+                        type: b.type,
+                        editable: true,
+                        fields: Object.entries(b.fields ?? {}).map(([name, value]) => ({
+                            name,
+                            kind: 'text',
+                            required: false,
+                            value,
+                        })),
+                        items: null,
+                    })),
+                }))
+        )],
+
+    ['GET', /^\/admin\/cms\/structured-schemas$/, () =>
+        ok([
+            {
+                key: 'home',
+                title: 'صفحه‌ی اصلی',
+                blocks: [
+                    {
+                        key: 'hero',
+                        type: 'TEXT',
+                        editable: true,
+                        fields: [
+                            { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                            { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                        ],
+                        items: null,
+                    },
+                ],
+            },
+        ])],
+
+    ['GET', /^\/admin\/cms\/redirects$/, () => page(db.cmsRedirects)],
+
+    /* GET /admin/cms/pages — فیلترها واقعاً اعمال می‌شوند.
+
+       ⚠️ `include_deleted` پیش‌فرض false است. مک اگر همیشه همه را
+       برگرداند، فرانتی که این پارامتر را نمی‌فرستد هم درست به‌نظر
+       می‌رسد و باگ فقط روی سرور واقعی پیدا می‌شود. */
+    ['GET', /^\/admin\/cms\/pages$/, (req) => {
+        const q = req.query
+        let rows = [...db.cmsPages]
+
+        const includeDeleted = q.get('include_deleted') === 'true'
+        if (!includeDeleted) rows = rows.filter((p) => !p.deleted_at)
+
+        const kind = q.get('kind')
+        if (kind) rows = rows.filter((p) => p.kind === kind)
+
+        const status = q.get('status')
+        if (status) rows = rows.filter((p) => p.status === status)
+
+        const isPublic = q.get('is_public')
+        if (isPublic != null && isPublic !== '') {
+            rows = rows.filter((p) => p.is_public === (isPublic === 'true'))
+        }
+
+        const tag = q.get('tag')
+        if (tag) rows = rows.filter((p) => (p.tags ?? []).some((t) => t.slug === tag || t.name === tag))
+
+        const sortBy = q.get('sort_by') || 'created_at'
+        const dir = (q.get('sort_order') || 'desc') === 'asc' ? 1 : -1
+        rows.sort((a, b) => (String(a[sortBy] ?? '') > String(b[sortBy] ?? '') ? dir : -dir))
+
+        /* صفحه‌بندی واقعی — فهرست باید همان ۱۰ ردیف صفحه را بدهد */
+        const pNum = Number(q.get('page')) || 1
+        const limit = Number(q.get('limit')) || 10
+        const total = rows.length
+        const slice = rows.slice((pNum - 1) * limit, pNum * limit)
+
+        return ok(slice, {
+            pagination: {
+                page: pNum,
+                limit,
+                total,
+                total_pages: Math.max(1, Math.ceil(total / limit)),
+                has_previous: pNum > 1,
+                has_next: pNum * limit < total,
+            },
+        })
+    }],
+
+    ['POST', /^\/admin\/cms\/pages$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.kind || !b.title) {
+            return [422, fail('VALIDATION_ERROR', 'kind و title الزامی‌اند')]
+        }
+        const slug = b.slug ? slugify(b.slug) : slugify(b.title)
+        if (db.cmsPages.some((p) => p.slug === slug && !p.deleted_at)) {
+            return [409, fail('CONFLICT', 'صفحه‌ای با این اسلاگ موجود است')]
+        }
+
+        const p = makeCmsPage(b)
+        snapshotCmsVersion(p)
+        p.current_version_id = db.cmsVersions.at(-1).id
+        db.cmsPages.push(p)
+        console.log(`   📄 صفحه «${p.title}» ساخته شد`)
+        return [201, ok(p)]
+    }],
+
+    ['GET', /^\/admin\/cms\/pages\/[^/]+\/versions\/\d+$/, (req) => {
+        const parts = req.path.split('/')
+        const id = parts[4]
+        const version = Number(parts[6])
+        const v = db.cmsVersions.find((x) => x.page_id === id && x.version === version)
+        return v ? ok(v) : [404, fail('NOT_FOUND', 'نسخه یافت نشد')]
+    }],
+
+    ['GET', /^\/admin\/cms\/pages\/[^/]+\/versions$/, (req) => {
+        const id = req.path.split('/')[4]
+        const rows = db.cmsVersions
+            .filter((v) => v.page_id === id)
+            .sort((a, b) => b.version - a.version)
+            .map((v) => ({
+                id: v.id,
+                page_id: v.page_id,
+                version: v.version,
+                slug: v.slug,
+                title: v.title,
+                excerpt: v.excerpt,
+                created_by_user_id: v.created_by_user_id,
+                created_at: v.created_at,
+                is_published: v.is_published,
+                is_current: v.is_current,
+            }))
+        return page(rows, 1, 20)
+    }],
+
+    ['GET', /^\/admin\/cms\/pages\/[^/]+\/preview$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+
+        const wanted = req.query.get('version')
+        const v = wanted
+            ? db.cmsVersions.find((x) => x.page_id === id && x.version === Number(wanted))
+            : db.cmsVersions.find((x) => x.page_id === id && x.is_current)
+        if (wanted && !v) return [404, fail('NOT_FOUND', 'نسخه یافت نشد')]
+
+        return ok({
+            ...p,
+            version: v?.version ?? p.version_counter,
+            content_raw: v?.content_raw ?? p.content_raw,
+            content_html: v?.content_html ?? p.content_html,
+            version_created_at: v?.created_at ?? null,
+            version_created_by_user_id: v?.created_by_user_id ?? null,
+            is_published_version: Boolean(v?.is_published),
+        })
+    }],
+
+    ['POST', /^\/admin\/cms\/pages\/[^/]+\/publish$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+        if (p.deleted_at) return [409, fail('CONFLICT', 'صفحه‌ی حذف‌شده منتشر نمی‌شود')]
+        if (!p.permissions.can_publish) {
+            return [403, fail('FORBIDDEN', 'اجازه‌ی انتشار ندارید')]
+        }
+
+        db.cmsVersions.filter((v) => v.page_id === id).forEach((v) => { v.is_published = false })
+        const current = db.cmsVersions.find((v) => v.page_id === id && v.is_current)
+        if (current) {
+            current.is_published = true
+            p.published_version_id = current.id
+        }
+
+        p.status = 'PUBLISHED'
+        p.published_at = new Date().toISOString()
+        p.published_slug = p.slug
+        p.has_unpublished_changes = false
+        p.updated_at = new Date().toISOString()
+        console.log(`   🚀 صفحه «${p.title}» منتشر شد`)
+        return ok(p)
+    }],
+
+    ['POST', /^\/admin\/cms\/pages\/[^/]+\/restore$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+        if (!p.deleted_at) return [409, fail('CONFLICT', 'این صفحه حذف نشده است')]
+        p.deleted_at = null
+        p.updated_at = new Date().toISOString()
+        console.log(`   ♻️ صفحه «${p.title}» برگردانده شد`)
+        return ok(p)
+    }],
+
+    ['GET', /^\/admin\/cms\/pages\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        return p ? ok(p) : [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+    }],
+
+    /* PUT — هر ویرایش یک نسخه‌ی تازه می‌سازد و اگر صفحه منتشر شده بود
+       `has_unpublished_changes` را true می‌کند. */
+    ['PUT', /^\/admin\/cms\/pages\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+        if (p.deleted_at) return [409, fail('CONFLICT', 'صفحه‌ی حذف‌شده ویرایش نمی‌شود')]
+        if (!p.permissions.can_edit) {
+            return [403, fail('FORBIDDEN', 'اجازه‌ی ویرایش ندارید')]
+        }
+
+        const b = req.body ?? {}
+        if (b.slug != null) {
+            const slug = slugify(b.slug)
+            if (db.cmsPages.some((x) => x.id !== id && x.slug === slug && !x.deleted_at)) {
+                return [409, fail('CONFLICT', 'صفحه‌ی دیگری این اسلاگ را دارد')]
+            }
+            p.slug = slug
+        }
+
+        for (const k of ['title', 'excerpt', 'content_format', 'content_raw', 'is_public', 'robots']) {
+            if (b[k] != null) p[k] = b[k]
+        }
+        if (b.content_raw != null) p.content_html = b.content_raw
+        if (b.blocks != null) p.blocks = b.blocks
+        if (b.tags != null) {
+            p.tags = b.tags.map((t) => ({ id: cmsId(), name: t, slug: slugify(t) }))
+        }
+
+        p.seo = {
+            meta_title: b.meta_title ?? p.seo?.meta_title ?? null,
+            meta_description: b.meta_description ?? p.seo?.meta_description ?? null,
+            og_image_url: b.og_image_url ?? p.seo?.og_image_url ?? null,
+            canonical_url: b.canonical_url ?? p.seo?.canonical_url ?? null,
+            robots: p.robots,
+        }
+
+        p.version_counter += 1
+        p.updated_at = new Date().toISOString()
+        p.updated_by_user_id = 1
+        if (p.status === 'PUBLISHED') p.has_unpublished_changes = true
+
+        snapshotCmsVersion(p)
+        p.current_version_id = db.cmsVersions.at(-1).id
+        console.log(`   ✏️ صفحه «${p.title}» به نسخه‌ی ${p.version_counter} رفت`)
+        return ok(p)
+    }],
+
+    /* DELETE حذف نرم است — رکورد می‌ماند و `deleted_at` پر می‌شود */
+    ['DELETE', /^\/admin\/cms\/pages\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[4]
+        const p = db.cmsPages.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+        if (!p.permissions.can_delete) {
+            return [403, fail('FORBIDDEN', 'اجازه‌ی حذف ندارید')]
+        }
+        p.deleted_at = new Date().toISOString()
+        p.updated_at = p.deleted_at
+        console.log(`   🗑️ صفحه «${p.title}» حذف (نرم) شد`)
+        return ok(p)
+    }],
+
+    /* ── مسیرهای عمومی CMS ── */
+
+    ['GET', /^\/cms\/pages$/, (req) => {
+        const tag = req.query.get('tag')
+        let rows = db.cmsPages.filter(
+            (p) => !p.deleted_at && p.status === 'PUBLISHED' && p.is_public
+        )
+        if (tag) rows = rows.filter((p) => (p.tags ?? []).some((t) => t.slug === tag))
+        return page(
+            rows.map((p) => ({
+                id: p.id,
+                slug: p.slug,
+                title: p.title,
+                excerpt: p.excerpt,
+                published_at: p.published_at,
+                tags: p.tags,
+            }))
+        )
+    }],
+
+    ['GET', /^\/cms\/redirects\/[^/]+$/, (req) => {
+        const from = decodeURIComponent(req.path.split('/')[3])
+        const r = db.cmsRedirects.find((x) => x.from_slug === from)
+        return r ? ok({ to_slug: r.to_slug }) : [404, fail('NOT_FOUND', 'ریدایرکتی نیست')]
+    }],
+
+    ['GET', /^\/cms\/pages\/[^/]+$/, (req) => {
+        const slug = decodeURIComponent(req.path.split('/')[3])
+        const p = db.cmsPages.find(
+            (x) =>
+                x.published_slug === slug &&
+                !x.deleted_at &&
+                x.status === 'PUBLISHED' &&
+                x.is_public
+        )
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+
+        /* عمومی باید **نسخه‌ی منتشرشده** را بدهد نه نسخه‌ی جاری؛
+           وگرنه پیش‌نویسِ ذخیره‌نشده روی سایت دیده می‌شود. */
+        const pub = db.cmsVersions.find((v) => v.id === p.published_version_id)
+        return ok({
+            id: p.id,
+            slug: p.slug,
+            title: p.title,
+            excerpt: p.excerpt,
+            content_html: pub?.content_html ?? '',
+            blocks: pub?.structure ?? [],
+            published_at: p.published_at,
+            tags: p.tags,
+            seo: p.seo,
+        })
     }],
 
     ['GET', /^\/admin\/notifications\/templates$/, () => page(db.templates)],
