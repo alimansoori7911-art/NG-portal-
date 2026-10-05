@@ -1,0 +1,226 @@
+/* ویرایشگر متن — هم‌پالت با فرم‌های پنل ادمین:
+   حاشیه‌ی --text-body، فوکوس آبی، سطح --surface-card. */
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--text-body);
+    border-radius: 5.5px;
+    overflow: hidden;
+    transition: border-color var(--transition-fast);
+}
+
+.wrapper:focus-within {
+    border-color: var(--color-primary-light);
+}
+
+.error {
+    border-color: var(--status-error-border);
+}
+
+/* ── نوار ابزار ── */
+
+.toolbar {
+    /* fieldset است تا با یک `disabled` کل دکمه‌ها خاموش شوند؛
+       حاشیه و فاصله‌ی پیش‌فرضش باید صفر شود. */
+    margin: 0;
+    padding: 8px 10px;
+    border: none;
+    min-inline-size: 0;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 1px solid var(--line-default);
+    background: var(--surface-raised);
+}
+
+.group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.sep {
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+    background: var(--line-strong);
+}
+
+.btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* حالت فعال — مثلاً وقتی نشانگر داخل متن بولد است */
+.btnActive {
+    border-color: var(--color-primary-light);
+    background: rgba(20, 116, 255, 0.15);
+    color: var(--color-primary-light);
+}
+
+/* ── انتخاب رنگ ── */
+
+.colorWrap {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+}
+
+/* input[type=color] ظاهر بومی دارد که با تم نمی‌خواند؛ شفافش
+   می‌کنیم و آیکون را زیرش می‌گذاریم. */
+.colorInput {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.colorIcon {
+    pointer-events: none;
+    color: var(--text-secondary);
+}
+
+.colorBar {
+    position: absolute;
+    bottom: 4px;
+    inset-inline: 6px;
+    height: 3px;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* ── ناحیه‌ی نوشتن ── */
+
+.editor {
+    min-height: 220px;
+    max-height: 460px;
+    overflow-y: auto;
+    padding: 14px 16px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    line-height: 2;
+}
+
+.editor::-webkit-scrollbar {
+    width: 8px;
+}
+
+.editor::-webkit-scrollbar-thumb {
+    background: var(--line-default);
+    border-radius: 4px;
+}
+
+/* ── استایل محتوای داخل ویرایشگر ──
+   اینها روی خروجی HTML هم اعمال می‌شوند، پس باید با صفحه‌ی عمومی
+   هماهنگ باشند. */
+
+.editor :global(.ProseMirror) {
+    outline: none;
+    min-height: 190px;
+}
+
+.editor :global(.ProseMirror p) {
+    margin: 0 0 var(--spacing-sm);
+}
+
+.editor :global(.ProseMirror h1),
+.editor :global(.ProseMirror h2),
+.editor :global(.ProseMirror h3) {
+    margin: var(--spacing-md) 0 var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.editor :global(.ProseMirror h1) { font-size: var(--font-size-2xl); }
+.editor :global(.ProseMirror h2) { font-size: var(--font-size-xl); }
+.editor :global(.ProseMirror h3) { font-size: var(--font-size-lg); }
+
+.editor :global(.ProseMirror ul),
+.editor :global(.ProseMirror ol) {
+    margin: 0 0 var(--spacing-sm);
+    padding-inline-start: var(--spacing-lg);
+}
+
+.editor :global(.ProseMirror blockquote) {
+    margin: 0 0 var(--spacing-sm);
+    padding-inline-start: var(--spacing-md);
+    border-inline-start: 3px solid var(--color-primary-light);
+    color: var(--text-body);
+}
+
+.editor :global(.ProseMirror code) {
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    direction: ltr;
+    display: inline-block;
+}
+
+.editor :global(.ProseMirror a) {
+    color: var(--color-primary-light);
+    text-decoration: underline;
+}
+
+.editor :global(.ProseMirror img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+}
+
+/* تصویر انتخاب‌شده باید معلوم باشد */
+.editor :global(.ProseMirror img.ProseMirror-selectednode) {
+    outline: 2px solid var(--color-primary-light);
+}
+
+/* متن راهنما وقتی ویرایشگر خالی است */
+.editor :global(.ProseMirror p.is-editor-empty:first-child::before) {
+    content: attr(data-placeholder);
+    float: inline-start;
+    height: 0;
+    color: var(--text-faint);
+    pointer-events: none;
+}
+
+@media (max-width: 767px) {
+    .toolbar {
+        gap: 2px;
+        padding: 6px;
+    }
+
+    .sep {
+        margin: 0 2px;
+    }
+}
