@@ -2,7 +2,10 @@ import { useCallback } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
-import TextStyle from '@tiptap/extension-text-style'
+/* ⚠️ `extension-text-style` خروجی default ندارد و فقط نام‌دار صادر
+   می‌کند — برخلاف بقیه‌ی افزونه‌ها. import پیش‌فرض اینجا بیلد را
+   می‌شکند (lint و dev آن را نمی‌گیرند). */
+import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
