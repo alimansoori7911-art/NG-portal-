@@ -74,6 +74,8 @@ export default function UsersPage() {
         error,
         setPage,
         reload,
+        adminsOnly,
+        toggleAdminsOnly,
     } = useAdminUsers()
 
     /* نقش‌ها فقط وقتی لازم‌اند که دیالوگ تغییر نقش باز شود */
@@ -308,6 +310,17 @@ export default function UsersPage() {
                         >
                             ساخت کاربر
                         </button>
+
+                        {/* تنها راه دیدن مدیران — فهرست کاربران فیلتر
+                            نقش ندارد و مسیر جدایی برایش هست. */}
+                        <label className={styles.checkRow}>
+                            <input
+                                type="checkbox"
+                                checked={adminsOnly}
+                                onChange={toggleAdminsOnly}
+                            />
+                            <span>فقط مدیران</span>
+                        </label>
                     </div>
 
                     <AdminTable

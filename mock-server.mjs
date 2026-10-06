@@ -1231,7 +1231,17 @@ const routes = [
     ['GET', /^\/admin\/auth\/users$/, () =>
         page([...db.users.values()].map((u, i) => makeAdminUser(u, i + 1))),
     ],
-    ['GET', /^\/admin\/auth\/admins$/, () => page([])],
+    /* فهرست مدیران — کاربرانی که دست‌کم یک نقش دارند.
+
+       ⚠️ `/admin/auth/users` فیلتر نقش **ندارد** (فقط page و limit)،
+       پس این تنها راه دیدن مدیران است. قبلاً `[]` می‌داد و هر UIای
+       رویش خالی به‌نظر می‌رسید. */
+    ['GET', /^\/admin\/auth\/admins$/, () =>
+        page(
+            [...db.users.values()]
+                .filter((u) => (u.roles ?? []).length > 0)
+                .map((u) => makeAdminUser(u))
+        )],
 
     ['GET', /^\/admin\/auth\/permissions$/, () => page(db.permissions, 1, 100)],
 

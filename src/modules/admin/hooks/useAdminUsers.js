@@ -57,7 +57,18 @@ export function useAdminUsers() {
     const [error, setError] = useState(null)
     const [attempt, setAttempt] = useState(0)
 
+    /* فقط مدیران — `/admin/auth/users` فیلتر نقش **ندارد** (فقط page و
+       limit)، پس تنها راه دیدن مدیران مسیر جدای
+       `/admin/auth/admins` است. */
+    const [adminsOnly, setAdminsOnly] = useState(false)
+
     const reload = useCallback(() => setAttempt((n) => n + 1), [])
+
+    const toggleAdminsOnly = useCallback(() => {
+        setAdminsOnly((v) => !v)
+        /* فیلتر که عوض شد، ماندن در صفحه‌ی ۳ یعنی احتمالاً جدول خالی */
+        setPage(1)
+    }, [])
 
     useEffect(() => {
         let cancelled = false
@@ -66,7 +77,10 @@ export function useAdminUsers() {
             setLoading(true)
             setError(null)
             try {
-                const { items, pagination } = await adminUserService.getUsers({
+                const fetcher = adminsOnly
+                    ? adminUserService.getAdmins
+                    : adminUserService.getUsers
+                const { items, pagination } = await fetcher({
                     page,
                     limit: ROWS_PER_PAGE,
                 })
@@ -86,9 +100,19 @@ export function useAdminUsers() {
         return () => {
             cancelled = true
         }
-    }, [page, attempt])
+    }, [page, attempt, adminsOnly])
 
-    return { rows, page, pageCount, loading, error, setPage, reload }
+    return {
+        rows,
+        page,
+        pageCount,
+        loading,
+        error,
+        setPage,
+        reload,
+        adminsOnly,
+        toggleAdminsOnly,
+    }
 }
 
 /**

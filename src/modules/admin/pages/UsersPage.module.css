@@ -210,3 +210,28 @@
         flex: 1;
     }
 }
+
+/* نوار بالای فهرست کاربران — دکمه‌ی ساخت کنار فیلتر «فقط مدیران» */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.checkRow {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-bright);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.checkRow input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary-light);
+    cursor: pointer;
+}
