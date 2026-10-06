@@ -1,0 +1,195 @@
+/* فهرست موجودیت‌های کاتالوگ — هم‌پالت با فهرست «مدت‌های اعتبار» در
+   همین صفحه: ردیف‌های کارت‌مانند به‌جای جدول، چون محتوایشان طول
+   متفاوت دارد و ستون ثابت به‌شان نمی‌خورد. */
+
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.createBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    min-width: 126px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.createBtn:hover {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+/* ── فهرست ── */
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    padding: 16px 20px;
+    border: 1px solid var(--line-default);
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    transition: border-color var(--transition-fast);
+}
+
+.row:hover {
+    border-color: var(--line-strong);
+}
+
+/* غیرفعال باید از یک نگاه معلوم باشد، ولی خوانا بماند */
+.rowInactive {
+    opacity: 0.6;
+}
+
+.main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.title {
+    color: var(--text-bright);
+    font-size: var(--font-size-md);
+}
+
+/* کد ماشینی است و باید چپ‌به‌راست خوانده شود */
+.code {
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-raised);
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.offTag {
+    padding: 2px 9px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 9px;
+    border: 1px solid rgba(20, 116, 255, 0.4);
+    border-radius: var(--radius-full);
+    background: rgba(20, 116, 255, 0.12);
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.desc {
+    margin: 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    line-height: 1.8;
+}
+
+/* ── دکمه‌ها ── */
+
+.actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ghost {
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ghost:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-light);
+}
+
+.iconBtn {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted-2);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.iconBtn:hover {
+    border-color: var(--color-primary-light);
+    color: var(--color-primary-light);
+}
+
+.danger:hover {
+    border-color: var(--status-error);
+    color: var(--status-error);
+}
+
+.state {
+    margin: 0;
+    padding: var(--spacing-xl) 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actions {
+        justify-content: flex-end;
+    }
+
+    .createBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}

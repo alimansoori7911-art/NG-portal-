@@ -45,6 +45,13 @@ const db = {
        نمی‌شد. */
     permissions: [],
     rolePermissions: new Map(), // roleId -> Set<permission key>
+    /* کاتالوگ — قبلاً این‌ها stub بودند و بعضی `[]` می‌دادند، پس هر
+       UIای که رویشان ساخته می‌شد خالی به‌نظر می‌رسید. */
+    products: [],
+    categories: [],
+    features: [],
+    productVersions: [],
+    nextCatalogId: 1,
     terms: [],
     licenses: [],
     planPrices: [],
@@ -372,6 +379,37 @@ function seedPermissions() {
     ])
 }
 
+function seedCatalog() {
+    const now = () => new Date().toISOString()
+    let id = 1
+
+    db.categories = [
+        { id: id++, code: 'erp', title: 'نرم‌افزار سازمانی', description: 'راهکارهای یکپارچه', is_active: true, sort_order: 1, created_at: now(), updated_at: now() },
+        { id: id++, code: 'infra', title: 'زیرساخت', description: null, is_active: true, sort_order: 2, created_at: now(), updated_at: now() },
+        { id: id++, code: 'legacy', title: 'بایگانی‌شده', description: 'دیگر فروخته نمی‌شود', is_active: false, sort_order: 9, created_at: now(), updated_at: now() },
+    ]
+
+    db.features = [
+        { id: id++, code: 'users', name: 'تعداد کاربر', description: 'سقف کاربر همزمان', value_type: 'number', is_active: true, sort_order: 1, created_at: now(), updated_at: now() },
+        { id: id++, code: 'sso', name: 'ورود یکپارچه', description: null, value_type: 'boolean', is_active: true, sort_order: 2, created_at: now(), updated_at: now() },
+        { id: id++, code: 'sla', name: 'سطح پشتیبانی', description: null, value_type: 'text', is_active: true, sort_order: 3, created_at: now(), updated_at: now() },
+    ]
+
+    db.products = [
+        { id: id++, category_id: 1, code: 'NGC', slug: 'ng-corion', name: 'NG Corion', description: 'سامانه‌ی یکپارچه‌ی سازمانی', is_active: true, is_public: true, sort_order: 1, created_at: now(), updated_at: now() },
+        { id: id++, category_id: 2, code: 'NGW', slug: 'ng-watch', name: 'NG Watch', description: 'پایش زیرساخت', is_active: true, is_public: false, sort_order: 2, created_at: now(), updated_at: now() },
+    ]
+
+    const ngc = db.products[0].id
+    db.productVersions = [
+        { id: id++, product_id: ngc, version: '2.4.0', release_date: '2026-08-20', is_release: true, changelog: 'بهبود سرعت پایش و رفع چند باگ گزارش‌شده.', created_at: now(), updated_at: now() },
+        { id: id++, product_id: ngc, version: '2.5.0-rc1', release_date: null, is_release: false, changelog: 'نسخه‌ی آزمایشی — هنوز منتشر نشده.', created_at: now(), updated_at: now() },
+    ]
+
+    db.nextCatalogId = id
+}
+
+seedCatalog()
 seedPermissions()
 
 function seedCms() {
@@ -932,7 +970,10 @@ const routes = [
           prices: [{ id: 2, term_code: 'yearly', quoted_amount: '480000000', final_amount: '480000000', currency: 'IRR', is_active: true }], features: [] },
     ])],
 
-    ['GET', /^\/products\/(features|categories)$/, () => page([])],
+    ['GET', /^\/products\/categories$/, () =>
+        page(db.categories.filter((c) => c.is_active))],
+    ['GET', /^\/products\/features$/, () =>
+        page(db.features.filter((f) => f.is_active))],
 
     /* پلن‌های یک محصول.
        شناسه‌ها عمداً **عدد**اند، چون `plan_id` در `CreateOrder` عدد
@@ -1418,30 +1459,230 @@ const routes = [
     }],
     ['GET', /^\/admin\/departments\/[^/]+\/members$/, () => ok([])],
 
-    ['GET', /^\/admin\/products$/, () => page([
-        { id: 1, code: 'NGC', slug: 'ng-corion', name: 'NG Corion', is_active: true, is_public: true },
-    ])],
-    /* نسخه‌های محصول = ریلیز نوت‌ها در پنل ادمین.
-       فهرست سراسری ندارد، فقط زیرمجموعه‌ی محصول — عیناً مثل اسپک. */
-    ['GET', /^\/admin\/products\/[^/]+\/versions$/, () => page([
-        {
-            id: 1, product_id: 1, version: '2.4.0',
-            release_date: '2026-08-20', is_release: true,
-            changelog: 'بهبود سرعت پایش و رفع چند باگ گزارش‌شده.',
-            created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-        },
-        {
-            id: 2, product_id: 1, version: '2.5.0-rc1',
-            release_date: null, is_release: false,
-            changelog: 'نسخه‌ی آزمایشی — هنوز منتشر نشده.',
-            created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-        },
-    ])],
+    /* ── محصول ── */
+
+    ['GET', /^\/admin\/products$/, () =>
+        page(
+            db.products.map((p) => ({
+                ...p,
+                category: db.categories.find((c) => c.id === p.category_id) ?? null,
+                versions: db.productVersions.filter((v) => v.product_id === p.id),
+                plans: [],
+            }))
+        )],
+
+    ['POST', /^\/admin\/products$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.code || !b.slug || !b.name) {
+            return [422, fail('VALIDATION_ERROR', 'code، slug و name الزامی‌اند')]
+        }
+        if (db.products.some((p) => p.code === b.code)) {
+            return [409, fail('CONFLICT', 'محصولی با این کد موجود است')]
+        }
+        if (db.products.some((p) => p.slug === b.slug)) {
+            return [409, fail('CONFLICT', 'محصولی با این نشانی موجود است')]
+        }
+        /* دسته‌ی ناموجود نباید بی‌صدا قبول شود */
+        if (b.category_id != null && !db.categories.some((c) => c.id === b.category_id)) {
+            return [422, fail('VALIDATION_ERROR', 'دسته‌بندی پیدا نشد')]
+        }
+
+        const now = new Date().toISOString()
+        const p = {
+            id: db.nextCatalogId++,
+            category_id: b.category_id ?? null,
+            code: b.code,
+            slug: b.slug,
+            name: b.name,
+            description: b.description ?? null,
+            is_active: b.is_active ?? true,
+            is_public: b.is_public ?? true,
+            sort_order: b.sort_order ?? 0,
+            created_at: now,
+            updated_at: now,
+        }
+        db.products.push(p)
+        console.log(`   📦 محصول ${p.name} ساخته شد`)
+        return [201, ok(p)]
+    }],
+
+    ['GET', /^\/admin\/products\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const p = db.products.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+        return ok({
+            ...p,
+            category: db.categories.find((c) => c.id === p.category_id) ?? null,
+            versions: db.productVersions.filter((v) => v.product_id === p.id),
+            plans: [],
+        })
+    }],
+
+    ['PATCH', /^\/admin\/products\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const p = db.products.find((x) => x.id === id)
+        if (!p) return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.code && db.products.some((x) => x.id !== id && x.code === b.code)) {
+            return [409, fail('CONFLICT', 'محصول دیگری این کد را دارد')]
+        }
+        if (b.slug && db.products.some((x) => x.id !== id && x.slug === b.slug)) {
+            return [409, fail('CONFLICT', 'محصول دیگری این نشانی را دارد')]
+        }
+        if (b.category_id != null && !db.categories.some((c) => c.id === b.category_id)) {
+            return [422, fail('VALIDATION_ERROR', 'دسته‌بندی پیدا نشد')]
+        }
+
+        for (const k of ['category_id', 'code', 'slug', 'name', 'description', 'is_active', 'is_public', 'sort_order']) {
+            if (b[k] != null) p[k] = b[k]
+        }
+        p.updated_at = new Date().toISOString()
+        console.log(`   📦 محصول ${p.name} ویرایش شد`)
+        return ok(p)
+    }],
+
+    ['DELETE', /^\/admin\/products\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.products.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+
+        const [removed] = db.products.splice(i, 1)
+        /* نسخه‌هایش هم می‌روند، وگرنه نسخه‌ی یتیم می‌ماند */
+        db.productVersions = db.productVersions.filter((v) => v.product_id !== id)
+        console.log(`   🗑️  محصول ${removed.name} حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
+
+    /* ── نسخه‌ی محصول ── */
+
+    ['GET', /^\/admin\/products\/\d+\/versions$/, (req) => {
+        const pid = Number(req.path.split('/')[3])
+        if (!db.products.some((p) => p.id === pid)) {
+            return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+        }
+        return page(db.productVersions.filter((v) => v.product_id === pid))
+    }],
+
+    ['POST', /^\/admin\/products\/\d+\/versions$/, (req) => {
+        const pid = Number(req.path.split('/')[3])
+        if (!db.products.some((p) => p.id === pid)) {
+            return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+        }
+        const b = req.body ?? {}
+        if (!b.version) return [422, fail('VALIDATION_ERROR', 'version الزامی است')]
+        if (db.productVersions.some((v) => v.product_id === pid && v.version === b.version)) {
+            return [409, fail('CONFLICT', 'این نسخه قبلاً ثبت شده')]
+        }
+
+        const now = new Date().toISOString()
+        const v = {
+            id: db.nextCatalogId++,
+            product_id: pid,
+            version: b.version,
+            release_date: b.release_date ?? null,
+            is_release: b.is_release ?? true,
+            changelog: b.changelog ?? null,
+            created_at: now,
+            updated_at: now,
+        }
+        db.productVersions.push(v)
+        console.log(`   🏷️  نسخه‌ی ${v.version} ثبت شد`)
+        return [201, ok(v)]
+    }],
+
+    ['GET', /^\/admin\/product-versions\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const v = db.productVersions.find((x) => x.id === id)
+        return v ? ok(v) : [404, fail('NOT_FOUND', 'نسخه پیدا نشد')]
+    }],
+
+    ['PATCH', /^\/admin\/product-versions\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const v = db.productVersions.find((x) => x.id === id)
+        if (!v) return [404, fail('NOT_FOUND', 'نسخه پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.version && db.productVersions.some((x) => x.id !== id && x.product_id === v.product_id && x.version === b.version)) {
+            return [409, fail('CONFLICT', 'نسخه‌ی دیگری این شماره را دارد')]
+        }
+        for (const k of ['version', 'release_date', 'is_release', 'changelog']) {
+            if (b[k] != null) v[k] = b[k]
+        }
+        v.updated_at = new Date().toISOString()
+        return ok(v)
+    }],
+
+    ['DELETE', /^\/admin\/product-versions\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.productVersions.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'نسخه پیدا نشد')]
+        db.productVersions.splice(i, 1)
+        return ok({ message: 'deleted' })
+    }],
 
     ['GET', /^\/admin\/plans$/, () => page([
         { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true, prices: [], features: [] },
     ])],
-    ['GET', /^\/admin\/features$/, () => page([])],
+    /* ── ویژگی ── */
+
+    ['GET', /^\/admin\/features$/, () => page(db.features)],
+
+    ['POST', /^\/admin\/features$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.code || !b.name || !b.value_type) {
+            return [422, fail('VALIDATION_ERROR', 'code، name و value_type الزامی‌اند')]
+        }
+        if (db.features.some((f) => f.code === b.code)) {
+            return [409, fail('CONFLICT', 'ویژگی‌ای با این کد موجود است')]
+        }
+
+        const now = new Date().toISOString()
+        const f = {
+            id: db.nextCatalogId++,
+            code: b.code,
+            name: b.name,
+            description: b.description ?? null,
+            value_type: b.value_type,
+            is_active: b.is_active ?? true,
+            sort_order: b.sort_order ?? 0,
+            created_at: now,
+            updated_at: now,
+        }
+        db.features.push(f)
+        console.log(`   ✨ ویژگی ${f.name} ساخته شد`)
+        return [201, ok(f)]
+    }],
+
+    ['GET', /^\/admin\/features\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const f = db.features.find((x) => x.id === id)
+        return f ? ok(f) : [404, fail('NOT_FOUND', 'ویژگی پیدا نشد')]
+    }],
+
+    ['PATCH', /^\/admin\/features\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const f = db.features.find((x) => x.id === id)
+        if (!f) return [404, fail('NOT_FOUND', 'ویژگی پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.code && db.features.some((x) => x.id !== id && x.code === b.code)) {
+            return [409, fail('CONFLICT', 'ویژگی دیگری این کد را دارد')]
+        }
+        for (const k of ['code', 'name', 'description', 'value_type', 'is_active', 'sort_order']) {
+            if (b[k] != null) f[k] = b[k]
+        }
+        f.updated_at = new Date().toISOString()
+        return ok(f)
+    }],
+
+    ['DELETE', /^\/admin\/features\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.features.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'ویژگی پیدا نشد')]
+        db.features.splice(i, 1)
+        return ok({ message: 'deleted' })
+    }],
     /* مدت اعتبار — CRUD کامل، چون پنل ادمین حالا می‌سازد و ویرایش
        می‌کند. `is_active` وقتی در query بیاید فیلتر می‌کند. */
     ['GET', /^\/admin\/billing-term\/$/, (req) => {
@@ -2035,7 +2276,70 @@ const routes = [
         return [204, null]
     }],
 
-    ['GET', /^\/admin\/product-categories$/, () => page([])],
+    /* ── دسته‌بندی ──
+       ⚠️ عنوان دسته `title` است نه `name` (برخلاف محصول و ویژگی). */
+
+    ['GET', /^\/admin\/product-categories$/, () => page(db.categories)],
+
+    ['POST', /^\/admin\/product-categories$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.code || !b.title) {
+            return [422, fail('VALIDATION_ERROR', 'code و title الزامی‌اند')]
+        }
+        if (db.categories.some((c) => c.code === b.code)) {
+            return [409, fail('CONFLICT', 'دسته‌ای با این کد موجود است')]
+        }
+
+        const now = new Date().toISOString()
+        const c = {
+            id: db.nextCatalogId++,
+            code: b.code,
+            title: b.title,
+            description: b.description ?? null,
+            is_active: b.is_active ?? true,
+            sort_order: b.sort_order ?? 0,
+            created_at: now,
+            updated_at: now,
+        }
+        db.categories.push(c)
+        console.log(`   🗂️  دسته‌ی ${c.title} ساخته شد`)
+        return [201, ok(c)]
+    }],
+
+    ['GET', /^\/admin\/product-categories\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const c = db.categories.find((x) => x.id === id)
+        return c ? ok(c) : [404, fail('NOT_FOUND', 'دسته‌بندی پیدا نشد')]
+    }],
+
+    ['PATCH', /^\/admin\/product-categories\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const c = db.categories.find((x) => x.id === id)
+        if (!c) return [404, fail('NOT_FOUND', 'دسته‌بندی پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.code && db.categories.some((x) => x.id !== id && x.code === b.code)) {
+            return [409, fail('CONFLICT', 'دسته‌ی دیگری این کد را دارد')]
+        }
+        for (const k of ['code', 'title', 'description', 'is_active', 'sort_order']) {
+            if (b[k] != null) c[k] = b[k]
+        }
+        c.updated_at = new Date().toISOString()
+        return ok(c)
+    }],
+
+    ['DELETE', /^\/admin\/product-categories\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.categories.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'دسته‌بندی پیدا نشد')]
+        /* دسته‌ای که محصول دارد حذف نمی‌شود — وگرنه محصول به دسته‌ی
+           ناموجود اشاره می‌کند. */
+        if (db.products.some((p) => p.category_id === id)) {
+            return [409, fail('CONFLICT', 'این دسته محصول دارد و حذف نمی‌شود')]
+        }
+        db.categories.splice(i, 1)
+        return ok({ message: 'deleted' })
+    }],
 
     /* اعلان و فاکتور و لاگ */
 
