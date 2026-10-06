@@ -58,6 +58,9 @@ const db = {
     departments: [],
     departmentMembers: [], // { id, department_id, user_id, created_at, updated_at }
     nextMemberId: 1,
+    /* دسترسی مستقیم کاربر (خارج از نقش) — قبلاً مسیرش no-op بود،
+       یعنی UI تخصیص می‌داد و هیچ اثری نداشت. */
+    userPermissions: new Map(), // user index -> Set<permission key>
     terms: [],
     licenses: [],
     planPrices: [],
@@ -1328,14 +1331,103 @@ const routes = [
         return ok({ message: 'deleted' })
     }],
 
-    /* دسترسی مستقیم کاربر (خارج از نقش) */
+    /* دسترسی مستقیم کاربر — خارج از نقش.
+
+       ⚠️ مثل دسترسی نقش، سه‌تایی `{module, resource, action}` می‌گیرد
+       نه شناسه، و کل مجموعه را **جایگزین** می‌کند. */
+    ['GET', /^\/admin\/auth\/users\/\d+\/permissions$/, (req) => {
+        const uid = Number(req.path.split('/')[4])
+        const keys = db.userPermissions.get(uid) ?? new Set()
+        return page(
+            db.permissions.filter((x) => keys.has(x.key)),
+            1,
+            100
+        )
+    }],
+
     ['POST', /^\/admin\/auth\/users\/[^/]+\/permissions$/, (req) => {
+        const uid = Number(req.path.split('/')[4])
+        const users = [...db.users.values()]
+        if (!Number.isInteger(uid) || uid < 1 || uid > users.length) {
+            return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+        }
+
         const list = req.body?.permissions
         if (!Array.isArray(list) || list.length === 0) {
             return [422, fail('VALIDATION_ERROR', 'permissions الزامی است')]
         }
+
+        const keys = new Set()
+        for (const item of list) {
+            if (!item?.module || !item?.resource || !item?.action) {
+                return [
+                    422,
+                    fail('VALIDATION_ERROR', 'module، resource و action الزامی‌اند'),
+                ]
+            }
+            const key = `${item.module}.${item.resource}.${item.action}`
+            if (!db.permissions.some((x) => x.key === key)) {
+                return [422, fail('VALIDATION_ERROR', `دسترسی ناشناخته: ${key}`)]
+            }
+            keys.add(key)
+        }
+
+        db.userPermissions.set(uid, keys)
+        console.log(`   🔑 ${keys.size} دسترسی مستقیم به کاربر ${uid} داده شد`)
         return ok({ message: 'assigned' })
     }],
+
+    /* ساخت کاربر از پنل.
+
+       ⚠️ `UserCreateSchema` شناسه‌ها را **آرایه‌ای از
+       `{type, value}`** می‌گیرد، نه فیلدهای تخت username/email. */
+    ['POST', /^\/admin\/auth\/users$/, (req) => {
+        const b = req.body ?? {}
+        if (!b.password) return [422, fail('VALIDATION_ERROR', 'password الزامی است')]
+        if (!Array.isArray(b.identifiers) || b.identifiers.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'حداقل یک شناسه الزامی است')]
+        }
+
+        const byType = {}
+        for (const id of b.identifiers) {
+            if (!id?.type || !id?.value) {
+                return [422, fail('VALIDATION_ERROR', 'type و value شناسه الزامی‌اند')]
+            }
+            byType[id.type] = id.value
+        }
+
+        const username = byType.username
+        if (!username) {
+            return [422, fail('VALIDATION_ERROR', 'شناسه‌ی نام کاربری الزامی است')]
+        }
+        if (db.users.has(username)) {
+            return [409, fail('CONFLICT', 'این نام کاربری قبلاً ثبت شده')]
+        }
+
+        /* نقش‌های ناموجود نباید بی‌صدا قبول شوند */
+        const roleNames = []
+        for (const rid of b.role_ids ?? []) {
+            const r = db.roles.find((x) => x.id === Number(rid))
+            if (!r) return [422, fail('VALIDATION_ERROR', `نقش ${rid} پیدا نشد`)]
+            roleNames.push(r.name)
+        }
+
+        const u = {
+            id: db.nextUserId++,
+            username,
+            email: byType.email ?? null,
+            password: b.password,
+            phone: byType.phone ?? null,
+            public_id: uuid(),
+            is_verified: b.is_verified ?? false,
+            roles: roleNames,
+        }
+        db.users.set(username, u)
+        console.log(`   👤 کاربر ${username} از پنل ساخته شد`)
+        return [201, ok(makeAdminUser(u))]
+    }],
+
+
     /* نقش‌ها واقعاً نگه داشته می‌شوند و تخصیص اثر دارد.
 
        قبلاً فهرست ثابت بود و `POST .../roles` فقط «assigned» می‌گفت

@@ -4,6 +4,8 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import AuditLogList from '../components/AuditLogList/AuditLogList'
 import UserProfileModal from '../components/UserProfileModal/UserProfileModal'
 import RoleForm from '../components/RoleForm/RoleForm'
+import UserCreateForm from '../components/UserCreateForm/UserCreateForm'
+import UserPermissionsDialog from '../components/UserPermissionsDialog/UserPermissionsDialog'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
 import Select from '../../../components/ui/Select/Select'
 import { useAdminUsers, useUserActions, useRoles } from '../hooks/useAdminUsers'
@@ -99,6 +101,25 @@ export default function UsersPage() {
     const [roleDelete, setRoleDelete] = useState(null)
     const [roleSelectedId, setRoleSelectedId] = useState(null)
 
+    /* ساخت کاربر از پنل — تا امروز فقط ثبت‌نام خود کاربر ممکن بود */
+    const [creatingUser, setCreatingUser] = useState(false)
+    /* دسترسی مستقیم کاربر — خارج از نقش */
+    const [permsFor, setPermsFor] = useState(null)
+
+    const saveUserPermissions = async (permissions) => {
+        if (!(await roleActions.setUserPermissions(permsFor.id, permissions))) return
+        setPermsFor(null)
+        roleActions.clearError()
+        reload()
+    }
+
+    const saveUser = async (payload) => {
+        if (!(await roleActions.createUser(payload))) return
+        setCreatingUser(false)
+        roleActions.clearError()
+        reload()
+    }
+
     /* ردیف انتخاب‌شده — با کلیک روی آن نوار عملیات زیرش باز می‌شود */
     const [selectedId, setSelectedId] = useState(null)
     const [profileUser, setProfileUser] = useState(null)
@@ -180,6 +201,18 @@ export default function UsersPage() {
                 disabled={busy}
                 onClick={(e) => {
                     e.stopPropagation()
+                    setPermsFor(row.raw)
+                }}
+            >
+                دسترسی مستقیم
+            </button>
+
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                disabled={busy}
+                onClick={(e) => {
+                    e.stopPropagation()
                     setDeleteTarget(row)
                 }}
             >
@@ -251,21 +284,49 @@ export default function UsersPage() {
             )}
 
             {tab === 'users' ? (
-                <AdminTable
-                    columns={COLUMNS}
-                    rows={rows}
-                    page={page}
-                    pageCount={pageCount}
-                    onPageChange={setPage}
-                    selectedId={selectedId}
-                    onRowClick={toggleRow}
-                    renderRowActions={rowActions}
-                    emptyMessage={
-                        loading
-                            ? 'در حال دریافت کاربران…'
-                            : error || 'کاربری برای نمایش وجود ندارد'
-                    }
-                />
+                creatingUser ? (
+                    <UserCreateForm
+                        roles={rolesAdmin.roles}
+                        busy={roleActions.busy}
+                        error={roleActions.error}
+                        onSubmit={saveUser}
+                        onClose={() => {
+                            setCreatingUser(false)
+                            roleActions.clearError()
+                        }}
+                    />
+                ) : (
+                  <>
+                    <div className={styles.toolbar}>
+                        <button
+                            type="button"
+                            className={styles.createBtn}
+                            onClick={() => {
+                                roleActions.clearError()
+                                setCreatingUser(true)
+                            }}
+                        >
+                            ساخت کاربر
+                        </button>
+                    </div>
+
+                    <AdminTable
+                        columns={COLUMNS}
+                        rows={rows}
+                        page={page}
+                        pageCount={pageCount}
+                        onPageChange={setPage}
+                        selectedId={selectedId}
+                        onRowClick={toggleRow}
+                        renderRowActions={rowActions}
+                        emptyMessage={
+                            loading
+                                ? 'در حال دریافت کاربران…'
+                                : error || 'کاربری برای نمایش وجود ندارد'
+                        }
+                    />
+                  </>
+                )
             ) : tab === 'roles' ? (
                 roleForm ? (
                     <RoleForm
@@ -410,6 +471,20 @@ export default function UsersPage() {
                 user={profileUser}
                 onClose={() => setProfileUser(null)}
             />
+
+            {permsFor && (
+                <UserPermissionsDialog
+                    user={permsFor}
+                    permissions={rolesAdmin.permissions}
+                    busy={roleActions.busy}
+                    error={roleActions.error}
+                    onSubmit={saveUserPermissions}
+                    onClose={() => {
+                        setPermsFor(null)
+                        roleActions.clearError()
+                    }}
+                />
+            )}
 
             <ConfirmDialog
                 open={deleteTarget !== null}

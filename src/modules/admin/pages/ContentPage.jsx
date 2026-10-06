@@ -6,7 +6,12 @@ import CmsVersionsModal from '../components/CmsVersionsModal/CmsVersionsModal'
 import CmsPreviewModal from '../components/CmsPreviewModal/CmsPreviewModal'
 import CmsBlockEditor from '../components/CmsBlockEditor/CmsBlockEditor'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
-import { useCmsPages, useCmsActions, useCmsPage } from '../hooks/useCmsPages'
+import {
+    useCmsPages,
+    useCmsActions,
+    useCmsPage,
+    useCmsRedirects,
+} from '../hooks/useCmsPages'
 import { useEditablePages } from '../hooks/useEditablePages'
 import { PAGE_KIND, PAGE_STATUS, pageState } from '../../../services/cmsService'
 import styles from './ContentPage.module.css'
@@ -33,9 +38,17 @@ const PAGE_COLUMNS = [
     { key: 'updatedAt', label: 'آخرین تغییر', width: '10%', ltr: true },
 ]
 
+/* ریدایرکت فقط دو ستون معنادار دارد — از کجا به کجا. */
+const REDIRECT_COLUMNS = [
+    { key: 'index', label: 'ردیف', width: '10%' },
+    { key: 'from', label: 'نشانی قدیمی', width: '45%', ltr: true },
+    { key: 'to', label: 'نشانی جدید', width: '45%', ltr: true },
+]
+
 const TABS = [
     { id: 'pages', label: 'صفحه‌های محتوا' },
     { id: 'structured', label: 'صفحه‌های ساختاریافته' },
+    { id: 'redirects', label: 'ریدایرکت‌ها' },
 ]
 
 /**
@@ -68,6 +81,7 @@ export default function ContentPage() {
 
     /* صفحه‌های ساختاریافته — فهرست و بلوکی که در حال ویرایش است */
     const editablePages = useEditablePages()
+    const redirects = useCmsRedirects()
     const [blockEditFor, setBlockEditFor] = useState(null)
 
     /* فرم ویرایش به محتوای کامل نیاز دارد و فهرست آن را ندارد
@@ -196,7 +210,38 @@ export default function ContentPage() {
                 ))}
             </div>
 
-            {tab === 'structured' ? (
+            {tab === 'redirects' ? (
+                <>
+                    <p className={styles.note}>
+                        وقتی نشانی یک صفحه عوض می‌شود، سرور خودش یک ریدایرکت
+                        از نشانی قدیمی به جدید می‌سازد تا لینک‌های منتشرشده
+                        نشکنند. این فهرست فقط خواندنی است — اسپک برای
+                        ریدایرکت‌ها مسیر ساخت یا حذف ندارد.
+                    </p>
+
+                    {redirects.error && (
+                        <p className={styles.error} role="alert">
+                            {redirects.error}
+                        </p>
+                    )}
+
+                    {redirects.loading ? (
+                        <p className={styles.loading}>در حال دریافت…</p>
+                    ) : (
+                        <AdminTable
+                            columns={REDIRECT_COLUMNS}
+                            rows={redirects.items.map((r, i) => ({
+                                id: r.id,
+                                index: i + 1,
+                                from: r.from_slug,
+                                to: r.to_slug || '—',
+                            }))}
+                            paginate={false}
+                            emptyMessage="ریدایرکتی ثبت نشده است"
+                        />
+                    )}
+                </>
+            ) : tab === 'structured' ? (
                 blockEditFor ? (
                     <CmsBlockEditor
                         page={blockEditFor}

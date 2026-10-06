@@ -169,5 +169,10 @@ export function useRoleActions() {
            باید به همان شکل تبدیل شوند. */
         setPermissions: (id, permissions) =>
             run(() => adminUserService.assignRolePermissions(id, permissions)),
+        /* ساخت کاربر و دسترسی مستقیم (خارج از نقش) — هر دو روی همین
+           سرویس‌اند و فرم‌هایشان در همین صفحه باز می‌شوند. */
+        createUser: (data) => run(() => adminUserService.createUser(data)),
+        setUserPermissions: (userId, permissions) =>
+            run(() => adminUserService.assignUserPermissions(userId, permissions)),
     }
 }

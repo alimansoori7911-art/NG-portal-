@@ -261,3 +261,46 @@ export function useCmsVersions(pageId) {
         reload,
     }
 }
+
+/**
+ * ریدایرکت‌های اسلاگ — فقط خواندنی.
+ *
+ * ⚠️ اسپک برای ریدایرکت‌ها **فقط `GET`** دارد: نه ساخت، نه ویرایش، نه
+ * حذف. یعنی رکوردها را خودِ بک‌اند هنگام تغییر اسلاگ یک صفحه می‌سازد.
+ * پس این فهرست عمداً دکمه‌ی عملیات ندارد — گذاشتنش یعنی وعده‌ای که
+ * پشتش اندپوینتی نیست.
+ */
+export function useCmsRedirects() {
+    const [state, setState] = useState({ ready: false, items: [], error: null })
+
+    useEffect(() => {
+        let cancelled = false
+
+        cmsService
+            .getRedirects({ limit: 100 })
+            .then(({ items }) => {
+                if (!cancelled) {
+                    setState({ ready: true, items: items ?? [], error: null })
+                }
+            })
+            .catch((err) => {
+                if (!cancelled) {
+                    setState({
+                        ready: true,
+                        items: [],
+                        error: err?.message || 'دریافت ریدایرکت‌ها ناموفق بود',
+                    })
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [])
+
+    return {
+        items: state.items,
+        error: state.error,
+        loading: !state.ready,
+    }
+}
