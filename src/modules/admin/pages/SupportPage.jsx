@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
+import DepartmentPanel from '../components/DepartmentPanel/DepartmentPanel'
 import TicketChatModal from '../components/TicketChatModal/TicketChatModal'
 import { useDepartments } from '../../helpdesk/hooks/useDepartments'
 import { useAdminTickets } from '../hooks/useAdminTickets'
@@ -34,6 +35,7 @@ const SENDER_COLUMNS = [
 const TABS = [
     { id: 'list', label: 'لیست تیکت‌ها' },
     { id: 'detail', label: 'جزئیات تیکت' },
+    { id: 'departments', label: 'دپارتمان‌ها' },
 ]
 
 /* گزینه‌های تغییر وضعیت — همان enum بک‌اند با برچسب فارسی */
@@ -91,7 +93,9 @@ export default function SupportPage() {
                 ))}
             </div>
 
-            {tab === 'list' ? (
+            {tab === 'departments' ? (
+                <DepartmentPanel />
+            ) : tab === 'list' ? (
                 <AdminTable
                     columns={TICKET_COLUMNS}
                     rows={rows}

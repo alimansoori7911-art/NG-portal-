@@ -52,6 +52,12 @@ const db = {
     features: [],
     productVersions: [],
     nextCatalogId: 1,
+    /* دپارتمان تیکت — قبلاً `/ticketing/departments` هر بار uuid تازه
+       می‌ساخت، یعنی شناسه‌ی دپارتمان بین دو درخواست عوض می‌شد و هر
+       UIای که رویش کار می‌کرد می‌شکست. */
+    departments: [],
+    departmentMembers: [], // { id, department_id, user_id, created_at, updated_at }
+    nextMemberId: 1,
     terms: [],
     licenses: [],
     planPrices: [],
@@ -409,6 +415,37 @@ function seedCatalog() {
     db.nextCatalogId = id
 }
 
+/* اسلاگ از نام ساخته می‌شود — `TicketDepartmentCreateSchema` اسلاگ
+   نمی‌گیرد، یعنی **بک‌اند خودش می‌سازدش**.
+
+   ⚠️ نام دپارتمان فارسی است و اسلاگ فارسی در نشانی درصد-کدگذاری
+   می‌شود. اینجا حرف غیرلاتین حذف می‌شود و اگر چیزی نماند، از شناسه‌ی
+   کوتاه استفاده می‌شود. این فقط **حدس** ماست از رفتار بک‌اند — در
+   BACKEND_REQUESTS.md پرسیده شده که واقعاً چه الگویی تولید می‌کند. */
+let deptSlugSeq = 0
+const deptSlug = (name) => {
+    const latin = String(name)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+    return latin || `dept-${++deptSlugSeq}`
+}
+
+function seedDepartments() {
+    const now = () => new Date().toISOString()
+    db.departments = [
+        { id: cmsId(), slug: 'tech', name: 'فنی', description: 'مشکلات فنی و خطاها', created_at: now(), updated_at: now() },
+        { id: cmsId(), slug: 'fin', name: 'مالی', description: 'پرداخت و فاکتور', created_at: now(), updated_at: now() },
+        { id: cmsId(), slug: 'sales', name: 'فروش', description: null, created_at: now(), updated_at: now() },
+    ]
+    db.departmentMembers = []
+    db.nextMemberId = 1
+}
+
+seedDepartments()
 seedCatalog()
 seedPermissions()
 
@@ -1095,9 +1132,16 @@ const routes = [
     ],
 
     /* تیکت */
+    /* `TicketDepartmentListItemSchema` فقط id و slug و name دارد —
+       توضیح و تاریخ‌ها فقط در مسیر تکی و ادمین می‌آیند. */
     ['GET', /^\/ticketing\/departments$/, () =>
-        ok([{ id: uuid(), slug: 'tech', name: 'فنی' }, { id: uuid(), slug: 'fin', name: 'مالی' }]),
-    ],
+        ok(db.departments.map(({ id, slug, name }) => ({ id, slug, name })))],
+
+    ['GET', /^\/ticketing\/departments\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[3]
+        const d = db.departments.find((x) => x.id === id)
+        return d ? ok(d) : [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
+    }],
     ['GET', /^\/ticketing\/tickets$/, (req) =>
         req.user ? page(db.tickets) : [401, fail('UNAUTHORIZED', 'no token')],
     ],
@@ -1457,7 +1501,133 @@ const routes = [
             : db.tickets
         return page(list)
     }],
-    ['GET', /^\/admin\/departments\/[^/]+\/members$/, () => ok([])],
+    /* ── دپارتمان تیکت (ادمین) ──
+       ترتیب مهم است: `/members` قبل از `/{id}` بیاید. */
+
+    ['GET', /^\/admin\/departments\/[^/]+\/members$/, (req) => {
+        const id = req.path.split('/')[3]
+        if (!db.departments.some((d) => d.id === id)) {
+            return [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
+        }
+        return ok(db.departmentMembers.filter((m) => m.department_id === id))
+    }],
+
+    /* ⚠️ `user_id` یک **آرایه** است، نه یک عدد — افزودن عضو دسته‌جمعی
+       است. (`TicketDepartmentMemberCreateSchema`) */
+    ['POST', /^\/admin\/departments\/[^/]+\/members$/, (req) => {
+        const id = req.path.split('/')[3]
+        if (!db.departments.some((d) => d.id === id)) {
+            return [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
+        }
+
+        const raw = req.body?.user_id
+        const ids = Array.isArray(raw) ? raw : raw != null ? [raw] : []
+        if (ids.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'user_id الزامی است')]
+        }
+
+        const users = [...db.users.values()]
+        const added = []
+        for (const uid of ids) {
+            const n = Number(uid)
+            /* کاربر ناموجود نباید بی‌صدا عضو شود */
+            if (!Number.isInteger(n) || n < 1 || n > users.length) {
+                return [422, fail('VALIDATION_ERROR', `کاربر ${uid} پیدا نشد`)]
+            }
+            /* عضو تکراری خطا نیست، فقط دوباره اضافه نمی‌شود */
+            if (db.departmentMembers.some((m) => m.department_id === id && m.user_id === n)) {
+                continue
+            }
+            const now = new Date().toISOString()
+            const m = {
+                id: db.nextMemberId++,
+                department_id: id,
+                user_id: n,
+                created_at: now,
+                updated_at: now,
+            }
+            db.departmentMembers.push(m)
+            added.push(m)
+        }
+
+        console.log(`   👥 ${added.length} عضو به دپارتمان اضافه شد`)
+        return [201, ok(added.length === 1 ? added[0] : added)]
+    }],
+
+    /* ⚠️ مسیر حذف با **`user_id`** است نه شناسه‌ی خود عضو. */
+    ['DELETE', /^\/admin\/departments\/[^/]+\/members\/\d+$/, (req) => {
+        const parts = req.path.split('/')
+        const id = parts[3]
+        const uid = Number(parts[5])
+
+        const i = db.departmentMembers.findIndex(
+            (m) => m.department_id === id && m.user_id === uid
+        )
+        if (i === -1) return [404, fail('NOT_FOUND', 'عضو پیدا نشد')]
+
+        db.departmentMembers.splice(i, 1)
+        console.log(`   👥 کاربر ${uid} از دپارتمان حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
+
+    ['POST', /^\/admin\/departments$/, (req) => {
+        const name = req.body?.name?.trim()
+        if (!name) return [422, fail('VALIDATION_ERROR', 'name الزامی است')]
+        if (db.departments.some((d) => d.name === name)) {
+            return [409, fail('CONFLICT', 'دپارتمانی با این نام موجود است')]
+        }
+
+        const now = new Date().toISOString()
+        const d = {
+            id: cmsId(),
+            /* اسلاگ را بک‌اند می‌سازد؛ فرانت نمی‌فرستدش */
+            slug: deptSlug(name),
+            name,
+            description: req.body?.description ?? null,
+            created_at: now,
+            updated_at: now,
+        }
+        db.departments.push(d)
+        console.log(`   🏢 دپارتمان ${d.name} ساخته شد`)
+        return [201, ok(d)]
+    }],
+
+    ['PATCH', /^\/admin\/departments\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[3]
+        const d = db.departments.find((x) => x.id === id)
+        if (!d) return [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.name && db.departments.some((x) => x.id !== id && x.name === b.name)) {
+            return [409, fail('CONFLICT', 'دپارتمان دیگری این نام را دارد')]
+        }
+        if (b.name != null) {
+            d.name = b.name
+            d.slug = deptSlug(b.name)
+        }
+        if (b.description !== undefined) d.description = b.description
+        d.updated_at = new Date().toISOString()
+        return ok(d)
+    }],
+
+    ['DELETE', /^\/admin\/departments\/[^/]+$/, (req) => {
+        const id = req.path.split('/')[3]
+        const i = db.departments.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
+
+        /* دپارتمانی که تیکت باز دارد نباید حذف شود — وگرنه تیکت به
+           دپارتمان ناموجود اشاره می‌کند. */
+        if (db.tickets.some((t) => t.department_id === id)) {
+            return [409, fail('CONFLICT', 'این دپارتمان تیکت دارد و حذف نمی‌شود')]
+        }
+
+        const [removed] = db.departments.splice(i, 1)
+        db.departmentMembers = db.departmentMembers.filter(
+            (m) => m.department_id !== id
+        )
+        console.log(`   🗑️  دپارتمان ${removed.name} حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
 
     /* ── محصول ── */
 
