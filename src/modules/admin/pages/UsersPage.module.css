@@ -155,3 +155,58 @@
 .vipNone {
     color: var(--text-faint);
 }
+
+/* ── تب نقش‌ها ──
+   همان الگوی نوار «صدور» در بخش مالی: دکمه‌ی ۱۲۶×۴۰ بالای جدول. */
+
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    margin-bottom: 24px;
+}
+
+.createBtn {
+    height: 40px;
+    min-width: 126px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.createBtn:hover {
+    background: #16243B;
+    color: var(--color-white);
+}
+
+/* حذف نقش برگشت‌ناپذیر است و از همه‌ی کاربران هم برداشته می‌شود */
+.rowActionDanger {
+    height: 34px;
+    min-width: 120px;
+    padding: 0 16px;
+    border: 1px solid var(--status-error);
+    border-radius: 10.5px;
+    background: transparent;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.rowActionDanger:hover {
+    background: var(--status-error);
+    color: var(--surface-page);
+}
+
+@media (max-width: 767px) {
+    .rowActionDanger {
+        flex: 1;
+    }
+}

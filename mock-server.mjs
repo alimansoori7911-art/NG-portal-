@@ -38,6 +38,13 @@ const db = {
     cmsPages: [],
     cmsVersions: [],   // { ...snapshot, page_id, version }
     cmsRedirects: [],
+    /* دسترسی‌ها و نگاشت نقش→دسترسی.
+
+       قبلاً `/admin/auth/permissions` همیشه `[]` می‌داد، یعنی هر UIای
+       که رویش ساخته می‌شد خالی به‌نظر می‌رسید و هیچ باگی پیدا
+       نمی‌شد. */
+    permissions: [],
+    rolePermissions: new Map(), // roleId -> Set<permission key>
     terms: [],
     licenses: [],
     planPrices: [],
@@ -320,6 +327,53 @@ const STRUCTURED_SCHEMAS = [
     },
 ]
 
+/* دسترسی‌ها — کلید از `module.resource.action` ساخته می‌شود، همان
+   سه‌تایی که `PermissionIdentitySchema` می‌خواهد. */
+function seedPermissions() {
+    const defs = [
+        ['auth', 'user', ['read', 'create', 'update', 'delete']],
+        ['auth', 'role', ['read', 'create', 'update', 'delete']],
+        ['cms', 'page', ['read', 'create', 'update', 'delete', 'publish']],
+        ['orders', 'order', ['read', 'update']],
+        ['payments', 'payment', ['read', 'verify']],
+        ['ticketing', 'ticket', ['read', 'reply', 'close']],
+        ['notifications', 'notification', ['read', 'send']],
+        ['discount', 'code', ['read', 'create', 'revoke']],
+    ]
+
+    let id = 1
+    db.permissions = []
+    for (const [module, resource, actions] of defs) {
+        for (const action of actions) {
+            db.permissions.push({
+                id: id++,
+                key: `${module}.${resource}.${action}`,
+                module,
+                resource,
+                action,
+                is_active: true,
+            })
+        }
+    }
+
+    /* ادمین همه را دارد، پشتیبانی فقط تیکت و کاربر */
+    db.rolePermissions = new Map([
+        [1, new Set(db.permissions.map((x) => x.key))],
+        [
+            2,
+            new Set([
+                'ticketing.ticket.read',
+                'ticketing.ticket.reply',
+                'ticketing.ticket.close',
+                'auth.user.read',
+            ]),
+        ],
+        [3, new Set()],
+    ])
+}
+
+seedPermissions()
+
 function seedCms() {
     db.cmsPages = []
     db.cmsVersions = []
@@ -491,6 +545,44 @@ const page = (items, p = 1, limit = 10) =>
             has_next: false,
         },
     })
+
+/* شکل `UserResponseSchema` برای پنل ادمین.
+
+   ⚠️ شناسه‌ی نقش از `db.roles` خوانده می‌شود نه عدد ثابت ۱. قبلاً
+   همه‌ی نقش‌ها `id: 1` می‌گرفتند، یعنی هر UIای که با شناسه‌ی نقش کار
+   می‌کرد (مثل «کاربران این نقش») روی mock درست به‌نظر می‌رسید و روی
+   سرور واقعی می‌شکست. */
+function makeAdminUser(u, index) {
+    const idx = index ?? [...db.users.values()].indexOf(u) + 1
+
+    return {
+        id: idx,
+        /* ⚠️ `public_id` در `UserResponseSchema` اسپک **نیست** و ما
+           ازش خواسته‌ایم (BACKEND_REQUESTS.md). اینجا می‌گذاریمش تا
+           وقتی اضافه شد انتخابگر کاربرِ کد تخفیف فوراً کار کند — ولی
+           فرانت نباید رویش تکیه کند تا روی سرور واقعی بیاید. */
+        public_id: u.public_id,
+        identifiers: [
+            { id: 1, type: 'username', value: u.username, status: 'active', is_verified: true, verified_at: null },
+            { id: 2, type: 'email', value: u.email, status: 'active', is_verified: false, verified_at: null },
+            { id: 3, type: 'phone', value: u.phone, status: 'active', is_verified: true, verified_at: null },
+        ],
+        is_active: true,
+        created_at: new Date().toISOString(),
+        roles: (u.roles ?? []).map((name) => ({
+            role: {
+                id: db.roles.find((r) => r.name === name)?.id ?? 0,
+                name,
+                description: db.roles.find((r) => r.name === name)?.description ?? null,
+                is_active: true,
+            },
+            assigned_at: null,
+            assigned_by: null,
+        })),
+        permissions: [],
+        kyc_profile: null,
+    }
+}
 
 function makeProfile(u) {
     return {
@@ -1026,21 +1118,116 @@ const routes = [
 
     /* ─── ادمین ─── */
     ['GET', /^\/admin\/auth\/users$/, () =>
-        page([...db.users.values()].map((u, i) => ({
-            id: i + 1,
-            identifiers: [
-                { id: 1, type: 'username', value: u.username, status: 'active', is_verified: true, verified_at: null },
-                { id: 2, type: 'email', value: u.email, status: 'active', is_verified: false, verified_at: null },
-                { id: 3, type: 'phone', value: u.phone, status: 'active', is_verified: true, verified_at: null },
-            ],
-            is_active: true,
-            created_at: new Date().toISOString(),
-            roles: u.roles.map((r) => ({ role: { id: 1, name: r }, assigned_at: null, assigned_by: null })),
-            permissions: [],
-            kyc_profile: null,
-        }))),
+        page([...db.users.values()].map((u, i) => makeAdminUser(u, i + 1))),
     ],
-    ['GET', /^\/admin\/auth\/(admins|permissions)$/, () => page([])],
+    ['GET', /^\/admin\/auth\/admins$/, () => page([])],
+
+    ['GET', /^\/admin\/auth\/permissions$/, () => page(db.permissions, 1, 100)],
+
+    /* دسترسی‌های یک نقش */
+    ['GET', /^\/admin\/auth\/roles\/\d+\/permissions$/, (req) => {
+        const roleId = Number(req.path.split('/')[4])
+        const role = db.roles.find((r) => r.id === roleId)
+        if (!role) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+
+        const keys = db.rolePermissions.get(roleId) ?? new Set()
+        return page(
+            db.permissions.filter((x) => keys.has(x.key)),
+            1,
+            100
+        )
+    }],
+
+    /* جایگزینی کامل دسترسی‌های نقش.
+
+       ⚠️ `AssignPermissionsSchema` دسترسی را با سه‌تایی
+       `{module, resource, action}` می‌گیرد، نه با id. */
+    ['POST', /^\/admin\/auth\/roles\/\d+\/permissions$/, (req) => {
+        const roleId = Number(req.path.split('/')[4])
+        const role = db.roles.find((r) => r.id === roleId)
+        if (!role) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+
+        const list = req.body?.permissions
+        if (!Array.isArray(list) || list.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'permissions الزامی است')]
+        }
+
+        const keys = new Set()
+        for (const item of list) {
+            if (!item?.module || !item?.resource || !item?.action) {
+                return [
+                    422,
+                    fail('VALIDATION_ERROR', 'module، resource و action الزامی‌اند'),
+                ]
+            }
+            const key = `${item.module}.${item.resource}.${item.action}`
+            if (!db.permissions.some((x) => x.key === key)) {
+                return [422, fail('VALIDATION_ERROR', `دسترسی ناشناخته: ${key}`)]
+            }
+            keys.add(key)
+        }
+
+        db.rolePermissions.set(roleId, keys)
+        console.log(`   🔑 ${keys.size} دسترسی به نقش ${role.name} داده شد`)
+        return ok({ message: 'assigned' })
+    }],
+
+    /* کاربران یک نقش */
+    ['GET', /^\/admin\/auth\/roles\/\d+\/users$/, (req) => {
+        const roleId = Number(req.path.split('/')[4])
+        const role = db.roles.find((r) => r.id === roleId)
+        if (!role) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+
+        const users = [...db.users.values()]
+            .filter((u) => (u.roles ?? []).includes(role.name))
+            .map((u) => makeAdminUser(u))
+        return page(users)
+    }],
+
+    ['PATCH', /^\/admin\/auth\/roles\/\d+$/, (req) => {
+        const roleId = Number(req.path.split('/')[4])
+        const role = db.roles.find((r) => r.id === roleId)
+        if (!role) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+        /* نقش سیستمی تغییر نام نمی‌دهد — کد جاهای دیگر به نامش
+           تکیه کرده (مثلاً برچسب VIP و بررسی admin). */
+        if (role.is_system && req.body?.name && req.body.name !== role.name) {
+            return [403, fail('FORBIDDEN', 'نام نقش سیستمی تغییر نمی‌کند')]
+        }
+
+        for (const k of ['name', 'description', 'is_active']) {
+            if (req.body?.[k] != null) role[k] = req.body[k]
+        }
+        role.updated_at = new Date().toISOString()
+        console.log(`   🏷️  نقش ${role.name} ویرایش شد`)
+        return ok(role)
+    }],
+
+    ['DELETE', /^\/admin\/auth\/roles\/\d+$/, (req) => {
+        const roleId = Number(req.path.split('/')[4])
+        const i = db.roles.findIndex((r) => r.id === roleId)
+        if (i === -1) return [404, fail('NOT_FOUND', 'نقش پیدا نشد')]
+        if (db.roles[i].is_system) {
+            return [403, fail('FORBIDDEN', 'نقش سیستمی حذف نمی‌شود')]
+        }
+
+        const [removed] = db.roles.splice(i, 1)
+        db.rolePermissions.delete(roleId)
+        /* از کاربرانی که داشتندش هم برداشته شود */
+        for (const u of db.users.values()) {
+            u.roles = (u.roles ?? []).filter((n) => n !== removed.name)
+        }
+        console.log(`   🗑️  نقش ${removed.name} حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
+
+    /* دسترسی مستقیم کاربر (خارج از نقش) */
+    ['POST', /^\/admin\/auth\/users\/[^/]+\/permissions$/, (req) => {
+        const list = req.body?.permissions
+        if (!Array.isArray(list) || list.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'permissions الزامی است')]
+        }
+        return ok({ message: 'assigned' })
+    }],
     /* نقش‌ها واقعاً نگه داشته می‌شوند و تخصیص اثر دارد.
 
        قبلاً فهرست ثابت بود و `POST .../roles` فقط «assigned» می‌گفت
