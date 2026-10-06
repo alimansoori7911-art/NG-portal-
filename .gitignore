@@ -35,3 +35,6 @@ dist-ssr
 # نسخه‌های پشتیبانِ دستی هم همان IP محلی را دارند
 .env.bak
 .env.*.bak
+
+# گراف دانش graphify — خروجی تولیدی (۳MB+)، با `graphify update .` بازساخته می‌شود
+graphify-out/
