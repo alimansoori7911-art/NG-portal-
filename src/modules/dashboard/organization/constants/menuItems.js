@@ -17,6 +17,8 @@ export const ORG_MENU_ITEMS = [
     { id: 'tickets', label: 'مدیریت تیکت', path: '/dashboard/tickets' },
     { id: 'notifications', label: 'اعلان ها', path: '/dashboard/notifications' },
     { id: 'invoices', label: 'فاکتور', path: '/dashboard/invoices' },
+    { id: 'payments', label: 'پرداخت‌ها', path: '/dashboard/payments' },
+    { id: 'discounts', label: 'کدهای تخفیف', path: '/dashboard/discounts' },
     { id: 'sessions', label: 'مدیریت نشست ها', path: '/dashboard/sessions' },
     { id: 'account', label: 'حساب کاربری', path: '/dashboard/account' },
 ]

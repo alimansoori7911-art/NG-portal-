@@ -34,6 +34,8 @@ import SessionsPage from "./modules/dashboard/organization/pages/SessionsPage";
 import AccountPage from "./modules/dashboard/organization/pages/AccountPage";
 import NotificationsPage from "./modules/dashboard/organization/pages/NotificationsPage";
 import InvoicesPage from "./modules/dashboard/organization/pages/InvoicesPage";
+import PaymentsPage from "./modules/dashboard/organization/pages/PaymentsPage";
+import DiscountsPage from "./modules/dashboard/organization/pages/DiscountsPage";
 /* پنل ادمین */
 import AdminRoute from "./router/AdminRoute";
 import AdminLayout from "./modules/admin/components/AdminLayout/AdminLayout";
@@ -111,6 +113,8 @@ function App() {
                         <Route path="tickets" element={<DashboardTicketsPage />} />
                         <Route path="notifications" element={<NotificationsPage />} />
                         <Route path="invoices" element={<InvoicesPage />} />
+                        <Route path="payments" element={<PaymentsPage />} />
+                        <Route path="discounts" element={<DiscountsPage />} />
                         <Route path="sessions" element={<SessionsPage />} />
                         <Route path="account" element={<AccountPage />} />
                         {/* «مدیریت LOG» حذف شد (لاگ کاربر عادی وجود

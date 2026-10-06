@@ -1,0 +1,167 @@
+/* کدهای تخفیف کاربر — کارت به‌جای جدول، چون مهم‌ترین کارِ کاربر
+   کپی کردن کد است و در جدول آن دکمه گم می‌شود. */
+
+.page {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.intro {
+    margin: 0 0 var(--spacing-lg);
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid #0D1726;
+    border-radius: var(--radius-lg);
+    background: #000814;
+}
+
+.head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+/* مقدار تخفیف بزرگ‌ترین چیز کارت است — همان چیزی که کاربر دنبالش است */
+.value {
+    color: var(--color-white);
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+}
+
+.type {
+    padding: 2px 10px;
+    border: 1px solid rgba(20, 116, 255, 0.4);
+    border-radius: var(--radius-full);
+    background: rgba(20, 116, 255, 0.12);
+    color: var(--color-primary-light);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+/* ── کد و کپی ── */
+
+.codeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.codeBtn:hover {
+    border-color: var(--color-primary-light);
+    background: rgba(20, 116, 255, 0.06);
+}
+
+/* کد همیشه لاتین است و باید چپ‌به‌راست خوانده شود */
+.code {
+    font-size: var(--font-size-md);
+    letter-spacing: 0.08em;
+    overflow-wrap: anywhere;
+}
+
+.copied {
+    position: absolute;
+    top: 14px;
+    inset-inline-start: 20px;
+    color: var(--status-success);
+    font-size: var(--font-size-xs);
+}
+
+/* ── اطلاعات ── */
+
+.meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px solid #0D1726;
+}
+
+.metaRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.metaRow dt {
+    color: var(--text-muted-2);
+    font-size: var(--font-size-xs);
+}
+
+.metaRow dd {
+    margin: 0;
+    color: var(--text-body);
+    font-size: var(--font-size-xs);
+}
+
+/* ── حالت‌ها ── */
+
+.state {
+    margin: 0;
+    padding: var(--spacing-2xl) 0;
+    color: var(--text-muted-2);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-lg);
+    color: var(--text-muted-2);
+    text-align: center;
+}
+
+.emptyTitle {
+    margin: 4px 0 0;
+    color: var(--text-bright);
+    font-size: var(--font-size-md);
+}
+
+.emptyText {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    line-height: 1.9;
+}
+
+@media (max-width: 767px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

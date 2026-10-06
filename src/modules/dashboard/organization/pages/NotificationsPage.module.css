@@ -115,3 +115,82 @@
     border-color: #1474FF;
     color: var(--color-white);
 }
+
+/* ── حذف گروهی ──
+   حالت انتخاب پیش‌فرض خاموش است تا صفحه‌ی روزمره شلوغ نشود و حذف
+   تصادفی سخت‌تر باشد. */
+
+.toolbarActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-inline-start: auto;
+}
+
+.deleteBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid var(--status-error);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--status-error);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.deleteBtn:hover:not(:disabled) {
+    background: var(--status-error);
+    color: var(--color-bg-darkest);
+}
+
+.deleteBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* کارت در حالت انتخاب — چک‌باکس روی گوشه می‌نشیند */
+.pickWrap {
+    position: relative;
+    display: block;
+    cursor: pointer;
+}
+
+.pickBox {
+    position: absolute;
+    top: 14px;
+    inset-inline-end: 14px;
+    z-index: 2;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary-light);
+    cursor: pointer;
+}
+
+.pickCard {
+    display: block;
+}
+
+/* ردیف انتخاب‌شده باید از یک نگاه معلوم باشد */
+.pickBox:checked ~ .pickCard {
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 2px;
+    border-radius: var(--radius-lg);
+}
+
+@media (max-width: 767px) {
+    .toolbarActions {
+        width: 100%;
+        margin-inline-start: 0;
+    }
+
+    .deleteBtn {
+        flex: 1;
+        justify-content: center;
+    }
+}

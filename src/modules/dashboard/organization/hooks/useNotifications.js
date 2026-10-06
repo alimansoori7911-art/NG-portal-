@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { notificationService } from '../../../../services/notificationService'
+import {
+    notificationService,
+    BULK_LIMIT,
+} from '../../../../services/notificationService'
 import { formatJalaliDateTime } from '../../../../utils/datetime'
 
 /* هر صفحه ۹ کارت — شبکه‌ی سه‌ستونه‌ی فیگما */
@@ -213,6 +216,33 @@ export function useNotifications({ poll = true } = {}) {
         [items, load]
     )
 
+    /* حذف گروهی — `DELETE /notifications/bulk` با سقف ۱۰۰ در هر
+       درخواست. حذف **نرم** است، ولی از دید کاربر برگشت‌ناپذیر است.
+
+       ⚠️ خوش‌بینانه حذف می‌کنیم و در خطا برمی‌گردانیم؛ اگر منتظر پاسخ
+       بمانیم، روی فهرست چندتایی کُند به‌نظر می‌رسد. */
+    const removeMany = useCallback(
+        async (ids) => {
+            const list = [...ids].slice(0, BULK_LIMIT)
+            if (list.length === 0) return true
+
+            const snapshot = items
+            const set = new Set(list)
+            setItems((prev) => prev.filter((n) => !set.has(n.id)))
+
+            try {
+                await notificationService.removeMany(list)
+                load({ silent: true })
+                loadUnread()
+                return true
+            } catch {
+                setItems(snapshot)
+                return false
+            }
+        },
+        [items, load, loadUnread]
+    )
+
     return {
         items,
         page,
@@ -224,6 +254,9 @@ export function useNotifications({ poll = true } = {}) {
         markRead,
         markAllRead,
         remove,
+        removeMany,
+        /* سقف سمت سرور — صفحه برای پیام و برش به آن نیاز دارد */
+        bulkLimit: BULK_LIMIT,
         reload: () => load(),
     }
 }

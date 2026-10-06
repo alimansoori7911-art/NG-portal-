@@ -1079,7 +1079,6 @@ const routes = [
         return [201, ok(o)]
     }],
 
-    ['GET', /^\/orders\/payments$/, () => page([])],
     ['GET', /^\/orders\/$/, (req) =>
         req.user ? page(db.orders) : [401, fail('UNAUTHORIZED', 'no token')],
     ],
@@ -1102,6 +1101,30 @@ const routes = [
     }],
 
     ['GET', /^\/orders\/[^/]+\/invoices$/, () => page([])],
+    /* همه‌ی پرداخت‌های کاربر جاری — تخت، نه تودرتو مثل مسیر ادمین. */
+    ['GET', /^\/orders\/payments$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+
+        const rows = []
+        for (const o of db.orders) {
+            for (const pay of o.payments ?? []) {
+                rows.push({ ...pay, order_id: o.id, order_number: o.order_number })
+            }
+        }
+        const pNum = Number(req.query.get('page')) || 1
+        const limit = Number(req.query.get('limit')) || 10
+        return ok(rows.slice((pNum - 1) * limit, pNum * limit), {
+            pagination: {
+                page: pNum,
+                limit,
+                total: rows.length,
+                total_pages: Math.max(1, Math.ceil(rows.length / limit)),
+                has_previous: pNum > 1,
+                has_next: pNum * limit < rows.length,
+            },
+        })
+    }],
+
     ['GET', /^\/orders\/[^/]+\/payments$/, () => page([])],
     ['GET', /^\/orders\/[^/]+$/, (req) => {
         const o = db.orders.find((x) => req.path.includes(x.id))
@@ -2011,15 +2034,6 @@ const routes = [
         return ok(d)
     }],
 
-    ['GET', /^\/user\/discount\/$/, (req) => {
-        const now = Date.now()
-        return page(
-            db.discounts.filter(
-                (d) => !d.is_revoked && new Date(d.valid_until).getTime() >= now
-            )
-        )
-    }],
-
     /* ═══ مدیریت محتوا (CMS) ═══
 
        ترتیب مسیرها مهم است: الگوهای خاص‌تر (`/versions`, `/publish`,
@@ -2392,6 +2406,75 @@ const routes = [
             tags: p.tags,
             seo: p.seo,
         })
+    }],
+
+    /* حذف گروهی اعلان — `DELETE /notifications/bulk` با بدنه.
+
+       ⚠️ بدنه‌ی DELETE: `MarkReadRequest` با `notification_ids` و سقف
+       ۱۰۰. حذف **نرم** است، پس رکورد می‌ماند و فقط از فهرست می‌رود. */
+    ['DELETE', /^\/notifications\/bulk$/, (req) => {
+        const ids = req.body?.notification_ids
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'notification_ids الزامی است')]
+        }
+        if (ids.length > 100) {
+            return [422, fail('VALIDATION_ERROR', 'حداکثر ۱۰۰ مورد در هر درخواست')]
+        }
+
+        const set = new Set(ids)
+        const before = db.notifications.length
+        db.notifications = db.notifications.filter((n) => !set.has(n.id))
+        const removed = before - db.notifications.length
+        console.log(`   🔕 ${removed} اعلان حذف شد`)
+        return ok({ deleted: removed })
+    }],
+
+    /* علامت‌زدن گروهی — سقف ۱۰۰ */
+    ['PATCH', /^\/notifications\/bulk\/read$/, (req) => {
+        const ids = req.body?.notification_ids
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'notification_ids الزامی است')]
+        }
+        if (ids.length > 100) {
+            return [422, fail('VALIDATION_ERROR', 'حداکثر ۱۰۰ مورد در هر درخواست')]
+        }
+
+        const set = new Set(ids)
+        let n = 0
+        for (const x of db.notifications) {
+            if (set.has(x.id) && !x.read_at) {
+                x.read_at = new Date().toISOString()
+                n++
+            }
+        }
+        return ok({ updated: n })
+    }],
+
+    /* کدهای تخفیف در دسترس کاربر.
+
+       ⚠️ `UserDiscountOut` با `DiscountListItemOut` فرق دارد: فقط
+       id/code/discount_type/value/valid_until/remaining_usage دارد —
+       نه `used_count`، نه `is_revoked`، نه دامنه. */
+    ['GET', /^\/user\/discount\/$/, () => {
+        const now = Date.now()
+        const usable = db.discounts.filter(
+            (d) => !d.is_revoked && new Date(d.valid_until).getTime() >= now
+        )
+
+        return ok(
+            usable.map((d) => ({
+                id: d.id,
+                code: d.code,
+                discount_type: d.discount_type,
+                value: d.value,
+                valid_until: d.valid_until,
+                /* `max_usage` تهی یعنی نامحدود، که اینجا `null` است */
+                remaining_usage:
+                    d.max_usage == null
+                        ? null
+                        : Math.max(0, d.max_usage - (d.used_count ?? 0)),
+            }))
+        )
     }],
 
     ['GET', /^\/admin\/notifications\/templates$/, () => page(db.templates)],
