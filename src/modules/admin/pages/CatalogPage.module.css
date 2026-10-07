@@ -87,8 +87,23 @@
 }
 
 @media (max-width: 1023px) {
+    /* ⚠️ تب‌ها از دو تا به پنج تا رسیدند و در عرض موبایل جا نمی‌شوند؛
+       بدون اسکرول افقی، دو تب آخر اصلاً قابل دسترسی نبودند. */
     .tabs {
         margin: 20px 0 16px;
+        gap: var(--spacing-sm);
+        overflow-x: auto;
+        /* نوار اسکرول زیر تب‌ها زشت است و لازم هم نیست */
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* تب نباید زیر فشار flex جمع شود، وگرنه متنش می‌شکند */
+    .tabs > * {
+        flex-shrink: 0;
     }
 
     .grid {
