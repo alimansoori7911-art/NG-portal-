@@ -165,3 +165,12 @@
         margin-top: 32px;
     }
 }
+
+/* فیلد الزامیِ خالی — برچسبش پیام خطا می‌شود */
+.fieldInvalid {
+    border-color: var(--status-error-border, #FF6369);
+}
+
+.fieldInvalid .fieldLabel {
+    color: var(--status-error, #FF6369);
+}

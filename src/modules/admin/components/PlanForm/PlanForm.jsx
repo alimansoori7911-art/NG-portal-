@@ -33,6 +33,7 @@ export default function PlanForm({
         ...initialValues,
         features: { ...(initialValues?.features ?? {}) },
     }))
+    const [fieldErrors, setFieldErrors] = useState({})
 
     const change = (key) => (e) =>
         setForm((prev) => ({ ...prev, [key]: e.target.value }))
@@ -45,8 +46,26 @@ export default function PlanForm({
         }))
     }
 
+    /* ⚠️ `CreatePlan` سه فیلد را **الزامی** می‌داند: `code`، `name` و
+       `external_plan_code`. `code` را خودمان می‌سازیم، ولی دو تای دیگر
+       از فرم می‌آیند و تا امروز هیچ بررسی‌ای نداشتند — فرم با شناسه‌ی
+       خالی ارسال می‌شد و سرور ۴۲۲ می‌داد بی‌آنکه معلوم باشد کدام فیلد
+       مقصر است. */
     const submit = (e) => {
         e.preventDefault()
+
+        const errs = {}
+        if (!String(form.name ?? '').trim()) errs.name = 'نام پلن الزامی است'
+        if (!String(form.external_plan_code ?? '').trim()) {
+            errs.external_plan_code = 'شناسه الزامی است'
+        }
+
+        if (Object.keys(errs).length > 0) {
+            setFieldErrors(errs)
+            return
+        }
+
+        setFieldErrors({})
         onSubmit?.(form)
     }
 
@@ -75,15 +94,17 @@ export default function PlanForm({
                     onChange={change('description')}
                 />
                 <Field
-                    label="نوع پلن"
+                    label={fieldErrors.name || 'نوع پلن'}
                     value={form.name}
                     onChange={change('name')}
+                    invalid={Boolean(fieldErrors.name)}
                     ltr
                 />
                 <Field
-                    label="شناسه"
+                    label={fieldErrors.external_plan_code || 'شناسه'}
                     value={form.external_plan_code}
                     onChange={change('external_plan_code')}
+                    invalid={Boolean(fieldErrors.external_plan_code)}
                     ltr
                 />
                 {/* مدت اعتبار روی خود پلن نیست؛ در BillingTerm تعریف شده
@@ -121,9 +142,9 @@ export default function PlanForm({
 }
 
 /* برچسب داخل کادر بالا سمت راست، مقدار زیرش — مطابق فیگما */
-function Field({ label, value, onChange, ltr = false }) {
+function Field({ label, value, onChange, ltr = false, invalid = false }) {
     return (
-        <label className={styles.field}>
+        <label className={`${styles.field} ${invalid ? styles.fieldInvalid : ''}`}>
             <span className={styles.fieldLabel}>{label}</span>
             <input
                 className={styles.fieldInput}

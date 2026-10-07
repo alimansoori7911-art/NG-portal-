@@ -51,6 +51,8 @@ const db = {
     categories: [],
     features: [],
     productVersions: [],
+    plans: [],
+    planFeatures: new Map(), // planId -> [{ feature_code, value }]
     nextCatalogId: 1,
     /* دپارتمان تیکت — قبلاً `/ticketing/departments` هر بار uuid تازه
        می‌ساخت، یعنی شناسه‌ی دپارتمان بین دو درخواست عوض می‌شد و هر
@@ -414,6 +416,23 @@ function seedCatalog() {
         { id: id++, product_id: ngc, version: '2.4.0', release_date: '2026-08-20', is_release: true, changelog: 'بهبود سرعت پایش و رفع چند باگ گزارش‌شده.', created_at: now(), updated_at: now() },
         { id: id++, product_id: ngc, version: '2.5.0-rc1', release_date: null, is_release: false, changelog: 'نسخه‌ی آزمایشی — هنوز منتشر نشده.', created_at: now(), updated_at: now() },
     ]
+
+    db.plans = [
+        {
+            id: id++,
+            product_id: db.products[0].id,
+            code: 'basic',
+            name: 'پایه',
+            description: 'برای تیم‌های کوچک',
+            external_plan_code: 'B1',
+            is_active: true,
+            is_public: true,
+            sort_order: 1,
+            created_at: now(),
+            updated_at: now(),
+        },
+    ]
+    db.planFeatures = new Map()
 
     db.nextCatalogId = id
 }
@@ -1513,10 +1532,18 @@ const routes = [
         const planId = Number(req.path.split('/')[3])
         const { code, name, term_code, currency = 'IRR', user_id } = req.body ?? {}
 
-        if (!term_code) {
-            return [422, fail('VALIDATION_ERROR', 'Input validation failed', [
-                { loc: "('body', 'term_code')", msg: 'term_code الزامی است' },
-            ])]
+        /* `CreatePlanPrice` چهار فیلد الزامی دارد؛ قبلاً فقط
+           `term_code` بررسی می‌شد و بقیه بی‌صدا رد می‌شدند — یعنی
+           درخواست ناقص اینجا ۲۰۱ می‌گرفت و روی سرور واقعی ۴۲۲. */
+        const missing = []
+        if (!term_code) missing.push('term_code')
+        if (!code) missing.push('code')
+        if (!name) missing.push('name')
+        if (req.body?.quoted_amount == null) missing.push('quoted_amount')
+
+        if (missing.length > 0) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed',
+                missing.map((f) => ({ loc: `('body', '${f}')`, msg: `${f} الزامی است` })))]
         }
 
         /* اسپک ۱۸: `user_id` اینجا UUID است نه عدد */
@@ -1916,9 +1943,116 @@ const routes = [
         return ok({ message: 'deleted' })
     }],
 
-    ['GET', /^\/admin\/plans$/, () => page([
-        { id: 1, code: 'basic', name: 'پایه', external_plan_code: 'B1', is_active: true, is_public: true, prices: [], features: [] },
-    ])],
+    /* ── پلن ──
+       قبلاً فهرست ثابت بود و ساخت/ویرایش/حذف اصلاً مسیر نداشت، پس
+       فرم پلن روی مک «کار می‌کرد» بی‌آنکه چیزی عوض شود. */
+
+    ['GET', /^\/admin\/plans$/, () =>
+        page(
+            db.plans.map((pl) => ({
+                ...pl,
+                prices: db.planPrices.filter((x) => x.plan_id === pl.id),
+                features: (db.planFeatures.get(pl.id) ?? []).map((f) => ({
+                    ...f,
+                    feature: db.features.find((x) => x.code === f.feature_code) ?? null,
+                })),
+            }))
+        )],
+
+    ['POST', /^\/admin\/products\/\d+\/plans$/, (req) => {
+        const productId = Number(req.path.split('/')[3])
+        if (!db.products.some((x) => x.id === productId)) {
+            return [404, fail('NOT_FOUND', 'محصول پیدا نشد')]
+        }
+
+        const b = req.body ?? {}
+        /* `CreatePlan` سه فیلد الزامی دارد */
+        const missing = []
+        if (!b.code) missing.push('code')
+        if (!b.name) missing.push('name')
+        if (!b.external_plan_code) missing.push('external_plan_code')
+        if (missing.length > 0) {
+            return [422, fail('VALIDATION_ERROR', 'Input validation failed',
+                missing.map((f) => ({ loc: `('body', '${f}')`, msg: `${f} الزامی است` })))]
+        }
+
+        if (db.plans.some((x) => x.code === b.code)) {
+            return [409, fail('CONFLICT', 'پلنی با این کد موجود است')]
+        }
+
+        const now = new Date().toISOString()
+        const pl = {
+            id: db.nextCatalogId++,
+            product_id: productId,
+            code: b.code,
+            name: b.name,
+            description: b.description ?? null,
+            external_plan_code: b.external_plan_code,
+            is_active: b.is_active ?? true,
+            is_public: b.is_public ?? true,
+            sort_order: b.sort_order ?? 0,
+            created_at: now,
+            updated_at: now,
+        }
+        db.plans.push(pl)
+        console.log(`   💠 پلن ${pl.name} ساخته شد`)
+        return [201, ok(pl)]
+    }],
+
+    ['PATCH', /^\/admin\/plans\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const pl = db.plans.find((x) => x.id === id)
+        if (!pl) return [404, fail('NOT_FOUND', 'پلن پیدا نشد')]
+
+        const b = req.body ?? {}
+        if (b.code && db.plans.some((x) => x.id !== id && x.code === b.code)) {
+            return [409, fail('CONFLICT', 'پلن دیگری این کد را دارد')]
+        }
+        for (const k of ['code', 'name', 'description', 'external_plan_code', 'is_active', 'is_public', 'sort_order']) {
+            if (b[k] != null) pl[k] = b[k]
+        }
+        pl.updated_at = new Date().toISOString()
+        return ok(pl)
+    }],
+
+    ['DELETE', /^\/admin\/plans\/\d+$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        const i = db.plans.findIndex((x) => x.id === id)
+        if (i === -1) return [404, fail('NOT_FOUND', 'پلن پیدا نشد')]
+
+        const [removed] = db.plans.splice(i, 1)
+        db.planFeatures.delete(id)
+        db.planPrices = db.planPrices.filter((x) => x.plan_id !== id)
+        console.log(`   🗑️  پلن ${removed.name} حذف شد`)
+        return ok({ message: 'deleted' })
+    }],
+
+    /* جایگزینی یک‌جای ویژگی‌های پلن */
+    ['PUT', /^\/admin\/plans\/\d+\/features$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        if (!db.plans.some((x) => x.id === id)) {
+            return [404, fail('NOT_FOUND', 'پلن پیدا نشد')]
+        }
+
+        const items = req.body?.items
+        if (!Array.isArray(items)) {
+            return [422, fail('VALIDATION_ERROR', 'items الزامی است')]
+        }
+        /* کد ویژگی‌ای که وجود ندارد نباید بی‌صدا قبول شود */
+        for (const it of items) {
+            if (it?.feature_code && !db.features.some((f) => f.code === it.feature_code)) {
+                return [422, fail('VALIDATION_ERROR', `ویژگی ${it.feature_code} پیدا نشد`)]
+            }
+        }
+
+        db.planFeatures.set(id, items)
+        return ok({ message: 'replaced' })
+    }],
+
+    ['GET', /^\/admin\/plans\/\d+\/features$/, (req) => {
+        const id = Number(req.path.split('/')[3])
+        return page(db.planFeatures.get(id) ?? [])
+    }],
     /* ── ویژگی ── */
 
     ['GET', /^\/admin\/features$/, () => page(db.features)],

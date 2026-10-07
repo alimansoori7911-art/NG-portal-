@@ -236,22 +236,22 @@ export function useCatalog() {
 
                 await adminCatalogService.replacePlanFeatures(planId, { items })
 
-                /* قیمت فقط وقتی ثبت می‌شود که مدت انتخاب شده باشد و
-                   با مدت فعلی فرق داشته باشد. */
-                const termChanged =
-                    editing === 'new' || editing.term_code !== values.term_code
+                /* ⚠️ اینجا عمداً قیمتی ساخته **نمی‌شود**.
 
-                if (values.term_code && termChanged) {
-                    await adminCatalogService.createPlanPrice(planId, {
-                        code: `${code}-${values.term_code}`,
-                        name: termName(values.term_code) || values.term_code,
-                        term_code: values.term_code,
-                        /* فرم فیگما فیلد مبلغ ندارد؛ قیمت‌گذاری واقعی
-                           هنگام صدور پیش‌فاکتور انجام می‌شود.
-                           (در BACKEND_NEEDS.md ثبت شده) */
-                        amount: '0',
-                    })
-                }
+                   `PlanPrice` قیمتِ کاتالوگ نیست — **قیمت یک مشتری
+                   مشخص** است: `user_id` در `CreatePlanPrice` الزامی
+                   است و یکتایی روی
+                   `(name, code, term_code, currency, user_id)` تعریف
+                   شده. ساختنش جای درستش فلوی پیش‌فاکتور است
+                   (`useAdminOrders`)، جایی که مشتری و مبلغ معلوم‌اند.
+
+                   قبلاً همین‌جا `amount: '0'` فرستاده می‌شد: فیلدی که
+                   در اسپک وجود ندارد، بدون `quoted_amount` و بدون
+                   `user_id` — یعنی روی سرور واقعی ۴۲۲ می‌گرفت و مک
+                   چون فقط `term_code` را بررسی می‌کرد، ۲۰۱ می‌داد.
+
+                   `term_code` پلن همچنان ذخیره می‌شود؛ فقط قیمتِ
+                   بی‌مشتری ساخته نمی‌شود. */
 
                 await load({ silent: true })
                 return true
@@ -262,7 +262,7 @@ export function useCatalog() {
                 setSaving(false)
             }
         },
-        [features, products, termName, load]
+        [features, products, load]
     )
 
     const deletePlan = useCallback(
