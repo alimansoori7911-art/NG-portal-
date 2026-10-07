@@ -111,9 +111,21 @@
     margin: 0 0 var(--spacing-md);
 }
 
+/* ⚠️ ریست سراسری `list-style: none` دارد (index.css). محتوای CMS
+   فهرست واقعی دارد و بدون نشانه، آیتم‌ها مثل خط‌های جدا دیده می‌شوند
+   — پس اینجا برگردانده می‌شود. */
 .content :is(ul, ol) {
     margin: 0 0 var(--spacing-md);
+    list-style-position: outside;
     padding-inline-start: var(--spacing-xl);
+}
+
+.content ul {
+    list-style-type: disc;
+}
+
+.content ol {
+    list-style-type: decimal;
 }
 
 .content li {
