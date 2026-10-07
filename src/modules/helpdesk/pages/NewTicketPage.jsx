@@ -191,7 +191,6 @@ function NewTicketPage() {
                         >
                             ثبت درخواست
                         </Button>
-                        {/* TODO: مسیر لیست تیکت‌ها بعداً مشخص می‌شود */}
                         <Button
                             type="button"
                             variant="outline"

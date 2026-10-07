@@ -32,7 +32,6 @@ function HelpdeskPage() {
                     >
                         ثبت تیکت
                     </button>
-                    {/* TODO: مسیر لیست تیکت‌ها بعداً مشخص می‌شود */}
                     <button
                         type="button"
                         className={styles.actionBtn}
