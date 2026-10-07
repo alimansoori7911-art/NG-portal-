@@ -172,3 +172,64 @@
     font-family: var(--font-family);
     font-size: var(--font-size-sm);
 }
+
+/* ── جستجو و فیلتر تیکت ──
+   هر دو پارامتر از اول در اسپک بودند (`q` و `status_code`) ولی
+   کنترلی برایشان وجود نداشت. */
+
+.filters {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.search {
+    flex: 1;
+    min-width: 220px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    transition: border-color var(--transition-fast);
+}
+
+.search::placeholder {
+    color: var(--text-faint);
+}
+
+.search:focus {
+    outline: none;
+    border-color: var(--color-primary-light);
+}
+
+.filterSelect {
+    height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.filterSelect option {
+    background: var(--surface-card);
+    color: var(--color-white);
+}
+
+@media (max-width: 767px) {
+    .search,
+    .filterSelect {
+        width: 100%;
+        flex: none;
+    }
+}

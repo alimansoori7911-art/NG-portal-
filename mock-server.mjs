@@ -649,6 +649,35 @@ const page = (items, p = 1, limit = 10) =>
    همه‌ی نقش‌ها `id: 1` می‌گرفتند، یعنی هر UIای که با شناسه‌ی نقش کار
    می‌کرد (مثل «کاربران این نقش») روی mock درست به‌نظر می‌رسید و روی
    سرور واقعی می‌شکست. */
+/* فیلتر مشترک فهرست تیکت — هر دو مسیر کاربر و ادمین همین
+   پارامترها را دارند (`q`, `status_code`, `department_id`, …). */
+function filterTickets(list, query) {
+    let rows = [...list]
+
+    const q = query.get('q')
+    if (q) {
+        const needle = q.trim().toLowerCase()
+        rows = rows.filter(
+            (t) =>
+                String(t.subject ?? '').toLowerCase().includes(needle) ||
+                String(t.ticket_number ?? '').toLowerCase().includes(needle)
+        )
+    }
+
+    const status = query.get('status_code')
+    if (status) rows = rows.filter((t) => t.status_code === status)
+
+    const dept = query.get('department_id')
+    if (dept) rows = rows.filter((t) => t.department_id === dept)
+
+    const locked = query.get('is_locked')
+    if (locked != null && locked !== '') {
+        rows = rows.filter((t) => Boolean(t.is_locked) === (locked === 'true'))
+    }
+
+    return rows
+}
+
 function makeAdminUser(u, index) {
     const idx = index ?? [...db.users.values()].indexOf(u) + 1
 
@@ -1187,9 +1216,13 @@ const routes = [
         const d = db.departments.find((x) => x.id === id)
         return d ? ok(d) : [404, fail('NOT_FOUND', 'دپارتمان پیدا نشد')]
     }],
-    ['GET', /^\/ticketing\/tickets$/, (req) =>
-        req.user ? page(db.tickets) : [401, fail('UNAUTHORIZED', 'no token')],
-    ],
+    /* ⚠️ فیلترها واقعاً اعمال می‌شوند. قبلاً همه‌ی تیکت‌ها برمی‌گشتند،
+       پس اشتباه بودنِ نام پارامتر (`status` به‌جای `status_code`) هیچ‌وقت
+       اینجا دیده نمی‌شد و فقط روی سرور واقعی خودش را نشان می‌داد. */
+    ['GET', /^\/ticketing\/tickets$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+        return page(filterTickets(db.tickets, req.query))
+    }],
     ['POST', /^\/ticketing\/tickets$/, (req) => {
         const t = {
             id: uuid(), ticket_number: `TK-${db.tickets.length + 1}`,
@@ -1651,7 +1684,8 @@ const routes = [
         const list = uid && !ignore
             ? db.tickets.filter((t) => String(t.user_id) === String(uid))
             : db.tickets
-        return page(list)
+        /* بقیه‌ی فیلترها (`q`, `status_code`, `department_id`, …) */
+        return page(filterTickets(list, req.query))
     }],
     /* ── دپارتمان تیکت (ادمین) ──
        ترتیب مهم است: `/members` قبل از `/{id}` بیاید. */

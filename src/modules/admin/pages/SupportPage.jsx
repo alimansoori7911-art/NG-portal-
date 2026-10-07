@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import DepartmentPanel from '../components/DepartmentPanel/DepartmentPanel'
@@ -54,8 +54,21 @@ export default function SupportPage() {
     const [selected, setSelected] = useState(null)
 
     const { nameOf } = useDepartments()
+
+    /* جستجو و فیلتر وضعیت — هوک از اول پشتیبانی‌شان می‌کرد ولی هیچ
+       کنترلی مقدارشان را عوض نمی‌کرد، پس عملاً خاموش بودند.
+       `q` با تأخیر فرستاده می‌شود تا هر حرف یک درخواست نزند. */
+    const [search, setSearch] = useState('')
+    const [q, setQ] = useState('')
+    const [status, setStatus] = useState('')
+
+    useEffect(() => {
+        const t = setTimeout(() => setQ(search.trim()), 400)
+        return () => clearTimeout(t)
+    }, [search])
+
     const { rows, page, pageCount, loading, error, setPage, reload } =
-        useAdminTickets(nameOf)
+        useAdminTickets(nameOf, { status: status || undefined, q: q || undefined })
 
     const chat = useAdminTicketChat(chatOpen ? selected?.id : null)
 
@@ -96,6 +109,31 @@ export default function SupportPage() {
             {tab === 'departments' ? (
                 <DepartmentPanel />
             ) : tab === 'list' ? (
+              <>
+                <div className={styles.filters}>
+                    <input
+                        className={styles.search}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="جستجو در موضوع یا شماره تیکت…"
+                        aria-label="جستجوی تیکت"
+                    />
+
+                    <select
+                        className={styles.filterSelect}
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        aria-label="فیلتر وضعیت"
+                    >
+                        <option value="">همه‌ی وضعیت‌ها</option>
+                        {STATUS_OPTIONS.map(([code, label]) => (
+                            <option key={code} value={code}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 <AdminTable
                     columns={TICKET_COLUMNS}
                     rows={rows}
@@ -107,9 +145,13 @@ export default function SupportPage() {
                     emptyMessage={
                         loading
                             ? 'در حال دریافت تیکت‌ها…'
-                            : error || 'تیکتی ثبت نشده است'
+                            : error ||
+                              (q || status
+                                  ? 'تیکتی با این فیلتر پیدا نشد'
+                                  : 'تیکتی ثبت نشده است')
                     }
                 />
+              </>
             ) : (
                 <>
                     {/* سه دکمه‌ی عملیات — در RTL اولین فرزند سمت راست است */}

@@ -95,7 +95,8 @@ export const ticketService = {
                     limit,
                     q,
                     department_id,
-                    status,
+                    /* اسپک این را `status_code` می‌نامد، نه `status` */
+                    status_code: status,
                     assigned_to_user_id,
                     include,
                 },
@@ -115,10 +116,13 @@ export const ticketService = {
        فرق دارد. بک‌اند گفته فیلتر صاحب تیکت را زده ولی هنوز در اسپک
        ۱۵ نیامده؛ پارامتر را می‌فرستیم چون تا وقتی پیاده نشده باشد
        بی‌اثر است و با آمدنش خودبه‌خود کار می‌کند. */
+    /* ⚠️ نام پارامتر وضعیت در اسپک `status_code` است نه `status`.
+       قبلاً `status` فرستاده می‌شد: سرور آن را نمی‌شناخت و بی‌صدا
+       نادیده می‌گرفت، یعنی فیلتر وضعیت هیچ‌وقت کار نمی‌کرد. */
     getAdminTickets({ page = 1, limit = 10, q, department_id, status, user_id, assigned_to_user_id, is_locked, include } = {}) {
         return api
             .get('/admin/tickets', {
-                params: { page, limit, q, department_id, status, user_id, assigned_to_user_id, is_locked, include },
+                params: { page, limit, q, department_id, status_code: status, user_id, assigned_to_user_id, is_locked, include },
             })
             .then((res) => ({
                 items: res.data?.data ?? [],
