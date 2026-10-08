@@ -1260,9 +1260,17 @@ const routes = [
             author_user_id: req.user
                 ? [...db.users.keys()].indexOf(req.user.username) + 1
                 : null,
-            /* نام نویسنده — اسپک فعلی این را روی پیام ندارد و بک‌اند
-               قرار است اضافه‌اش کند. mock آن را می‌فرستد تا نمایشِ
-               نام قابل آزمایش باشد. */
+            /* ✅ اسپک ۲۱ `author_full_name` و `user_fullname` را اضافه
+               کرد — همان چیزی که خواسته بودیم. */
+            author_full_name: (() => {
+                const u = db.users.get(req.user?.username)
+                const full = [u?.first_name, u?.last_name].filter(Boolean).join(' ')
+                return full || null
+            })(),
+            user_fullname: (() => {
+                const u = db.users.get(req.user?.username)
+                return [u?.first_name, u?.last_name].filter(Boolean).join(' ') || null
+            })(),
             author_username: req.user?.username ?? null,
             message_type: req.body.message_type ?? 'public',
             body: req.body.message,
@@ -1437,6 +1445,30 @@ const routes = [
         db.userPermissions.set(uid, keys)
         console.log(`   🔑 ${keys.size} دسترسی مستقیم به کاربر ${uid} داده شد`)
         return ok({ message: 'assigned' })
+    }],
+
+    /* ✅ اسپک ۲۱: grant/revoke نقش VIP.
+
+       توضیح اسپک می‌گوید نقش seedشده‌ی `vip` را می‌دهد/می‌گیرد و
+       **idempotent** است — تکرارش خطا نیست، no-op است. */
+    ['POST', /^\/admin\/auth\/users\/\d+\/vip$/, (req) => {
+        const uid = Number(req.path.split('/')[4])
+        const u = [...db.users.values()][uid - 1]
+        if (!u) return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+
+        u.roles = [...new Set([...(u.roles ?? []), 'vip'])]
+        console.log(`   ⭐ ${u.username} VIP شد`)
+        return ok({ id: uid, public_id: u.public_id, is_vip: true })
+    }],
+
+    ['DELETE', /^\/admin\/auth\/users\/\d+\/vip$/, (req) => {
+        const uid = Number(req.path.split('/')[4])
+        const u = [...db.users.values()][uid - 1]
+        if (!u) return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+
+        u.roles = (u.roles ?? []).filter((r) => r !== 'vip')
+        console.log(`   ☆ VIP از ${u.username} برداشته شد`)
+        return ok({ id: uid, public_id: u.public_id, is_vip: false })
     }],
 
     /* ساخت کاربر از پنل.
@@ -2748,6 +2780,66 @@ const routes = [
     }],
 
     ['GET', /^\/admin\/notifications\/templates$/, () => page(db.templates)],
+
+    /* ارسال اعلان — با قالب یا متن آزاد.
+
+       ⚠️ اسپک ۲۱: فیلدهای متن آزاد (`title`/`body`/`sms_body`/`type`/
+       `channels`) **فقط** وقتی مجازند که `template_key` نیامده باشد، و
+       در آن حالت `body` الزامی است. مک همین را سخت‌گیرانه بررسی
+       می‌کند تا فرانت نتواند ترکیب نامعتبر بفرستد. */
+    ['POST', /^\/admin\/notifications$/, (req) => {
+        const b = req.body ?? {}
+        const hasTemplate = Boolean(b.template_key)
+
+        if (!b.broadcast && (!Array.isArray(b.recipient_ids) || b.recipient_ids.length === 0)) {
+            return [422, fail('VALIDATION_ERROR', 'recipient_ids الزامی است مگر broadcast باشد')]
+        }
+
+        if (hasTemplate) {
+            const t = db.templates.find((x) => x.key === b.template_key)
+            if (!t) return [422, fail('VALIDATION_ERROR', 'قالب پیدا نشد')]
+            for (const f of ['title', 'body', 'sms_body', 'type', 'channels']) {
+                if (b[f] != null) {
+                    return [422, fail('VALIDATION_ERROR', `${f} با template_key قابل استفاده نیست`)]
+                }
+            }
+        } else {
+            if (!b.body) {
+                return [422, fail('VALIDATION_ERROR', 'body در ارسال بدون قالب الزامی است')]
+            }
+            const ch = b.channels ?? ['in_app']
+            if (!Array.isArray(ch) || ch.length === 0) {
+                return [422, fail('VALIDATION_ERROR', 'حداقل یک کانال لازم است')]
+            }
+            for (const c of ch) {
+                if (!['in_app', 'sms'].includes(c)) {
+                    return [422, fail('VALIDATION_ERROR', `کانال ناشناخته: ${c}`)]
+                }
+            }
+        }
+
+        const now = new Date().toISOString()
+        const made = (b.broadcast ? [...db.users.values()].map((_, i) => i + 1) : b.recipient_ids)
+            .map(() => {
+                const n = {
+                    id: cmsId(),
+                    title: hasTemplate
+                        ? db.templates.find((x) => x.key === b.template_key)?.title
+                        : (b.title ?? 'اعلان'),
+                    body: hasTemplate
+                        ? db.templates.find((x) => x.key === b.template_key)?.body
+                        : b.body,
+                    type: hasTemplate ? 'system' : (b.type ?? 'system'),
+                    read_at: null,
+                    created_at: now,
+                }
+                db.notifications.unshift(n)
+                return n
+            })
+
+        console.log(`   🔔 ${made.length} اعلان فرستاده شد (${hasTemplate ? 'قالب' : 'متن آزاد'})`)
+        return [201, ok({ sent: made.length })]
+    }],
 
     ['POST', /^\/admin\/notifications\/templates$/, (req) => {
         const b = req.body ?? {}

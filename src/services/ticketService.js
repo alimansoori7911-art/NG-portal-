@@ -42,7 +42,11 @@ export const messageAuthorName = (m = {}) => {
     const last = m.author_last_name?.trim()
     const full = [first, last].filter(Boolean).join(' ')
     return (
+        /* ✅ اسپک ۲۱ بالاخره `author_full_name` را داد — همان چیزی که
+           خواسته بودیم. `user_fullname` هم کنارش هست و وقتی اولی تهی
+           باشد به کار می‌آید. */
         m.author_full_name?.trim() ||
+        m.user_fullname?.trim() ||
         full ||
         m.author_username?.trim() ||
         m.author_name?.trim() ||

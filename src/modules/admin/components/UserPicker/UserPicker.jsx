@@ -41,6 +41,10 @@ export default function UserPicker({
     disabled = false,
     label = 'گیرندگان',
     placeholder = 'نام یا ایمیل کاربر را بنویسید…',
+    /* ✅ کد تخفیف `public_id` (UUID) می‌خواهد نه `id` عددی.
+       تا اسپک ۲۰ این فیلد روی فهرست کاربران نبود و ادمین مجبور بود
+       UUID را دستی بنویسد؛ اسپک ۲۱ اضافه‌اش کرد. */
+    idField = 'id',
 }) {
     const [query, setQuery] = useState('')
     const [users, setUsers] = useState([])
@@ -93,21 +97,25 @@ export default function UserPicker({
         return () => document.removeEventListener('mousedown', onDocClick)
     }, [open])
 
+    /* شناسه‌ای که به بیرون داده می‌شود — عددی یا UUID */
+    const keyOf = (u) => u?.[idField]
+
     const add = (user) => {
-        if (value.includes(user.id)) return
+        const k = keyOf(user)
+        if (k == null || value.includes(k)) return
         setPicked((prev) => [...prev, user])
-        onChange?.([...value, user.id])
+        onChange?.([...value, k])
         setQuery('')
     }
 
     const remove = (id) => {
-        setPicked((prev) => prev.filter((u) => u.id !== id))
+        setPicked((prev) => prev.filter((u) => keyOf(u) !== id))
         onChange?.(value.filter((v) => v !== id))
     }
 
     const q = query.trim().toLowerCase()
     const matches = users
-        .filter((u) => !value.includes(u.id))
+        .filter((u) => !value.includes(keyOf(u)))
         .filter((u) => {
             if (!q) return true
             return (
@@ -136,7 +144,7 @@ export default function UserPicker({
                                 <button
                                     type="button"
                                     className={styles.chipRemove}
-                                    onClick={() => remove(u.id)}
+                                    onClick={() => remove(keyOf(u))}
                                     disabled={disabled}
                                     aria-label={`حذف ${displayName(u)}`}
                                 >

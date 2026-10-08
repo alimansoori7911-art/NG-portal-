@@ -4,6 +4,7 @@ import {
     DISCOUNT_TYPE,
     DISCOUNT_TARGET,
 } from '../../../../services/discountService'
+import UserPicker from '../UserPicker/UserPicker'
 import { jalaliToISO, formatJalaliDateTime } from '../../../../utils/datetime'
 import styles from './DiscountForm.module.css'
 
@@ -38,7 +39,7 @@ export default function DiscountForm({
         comment: discount?.comment ?? '',
         send_notification: false,
     })
-    const [targetUsersText, setTargetUsersText] = useState('')
+    const [targetUserIds, setTargetUserIds] = useState([])
     const [fieldErrors, setFieldErrors] = useState({})
 
     const set = (key) => (e) => {
@@ -79,10 +80,7 @@ export default function DiscountForm({
 
         /* دامنه‌ی «کاربران مشخص» بدون کاربر یعنی کدی که به هیچ‌کس
            نمی‌رسد — بک‌اند خطا نمی‌دهد ولی نتیجه بی‌معناست. */
-        const targetIds = targetUsersText
-            .split(/[\s,،]+/)
-            .map((x) => x.trim())
-            .filter(Boolean)
+        const targetIds = targetUserIds
         if (needsUsers && targetIds.length === 0) errs.target = true
 
         if (Object.keys(errs).length > 0) {
@@ -249,40 +247,30 @@ export default function DiscountForm({
                     </label>
                 </div>
 
-                {/* دامنه‌ی «کاربران مشخص» فعلاً انتخابگر ندارد.
-
-                    `DiscountCreate.target_user_public_ids` شناسه‌ی
-                    **UUID عمومی** می‌خواهد، ولی `/admin/auth/users`
-                    فقط `id` عددی می‌دهد و هیچ مسیری در اسپک این دو را
-                    به هم وصل نمی‌کند. انتخابگرِ کاربر شناسه‌ی عددی
-                    برمی‌گرداند که بک‌اند نمی‌پذیرد.
-
-                    تا افزوده شدن `public_id` به فهرست کاربران، شناسه
-                    دستی گرفته می‌شود — در BACKEND_REQUESTS.md ثبت شد. */}
+                {/* ✅ اسپک ۲۱ `public_id` را به فهرست کاربران اضافه کرد،
+                    پس دیگر لازم نیست ادمین UUID را دستی رونویسی کند.
+                    `idField` به انتخابگر می‌گوید به‌جای `id` عددی،
+                    همان `public_id` را برگرداند — چیزی که
+                    `DiscountCreate.target_user_public_ids` می‌خواهد. */}
                 {needsUsers && (
-                    <label
-                        className={`${styles.field} ${
-                            fieldErrors.target ? styles.fieldError : ''
-                        }`}
+                    <div
+                        className={fieldErrors.target ? styles.pickerError : undefined}
                     >
-                        <span className={styles.label}>
-                            شناسه‌ی عمومی کاربران (با کاما جدا کنید)
-                        </span>
-                        <input
-                            className={styles.input}
-                            value={targetUsersText}
-                            onChange={(e) => {
-                                setTargetUsersText(e.target.value)
+                        <UserPicker
+                            value={targetUserIds}
+                            onChange={(ids) => {
+                                setTargetUserIds(ids)
                                 setFieldErrors((prev) => {
                                     const next = { ...prev }
                                     delete next.target
                                     return next
                                 })
                             }}
-                            placeholder="01a0a026-f2b8-701e-9144-68a35ac801a0"
-                            dir="ltr"
+                            idField="public_id"
+                            label="کاربران هدف"
+                            placeholder="نام یا ایمیل کاربر را بنویسید…"
                         />
-                    </label>
+                    </div>
                 )}
 
                 <label className={styles.field}>

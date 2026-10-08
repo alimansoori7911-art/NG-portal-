@@ -90,6 +90,7 @@ export default function UsersPage() {
         toggleActive,
         remove,
         assignRole,
+        setVip,
     } = useUserActions(reload)
 
     /* لاگ ممیزی فقط وقتی تب دومش باز است بارگذاری می‌شود */
@@ -195,6 +196,18 @@ export default function UsersPage() {
                 }}
             >
                 تغییر نقش
+            </button>
+
+            <button
+                type="button"
+                className={styles.rowActionBtn}
+                disabled={busy}
+                onClick={(e) => {
+                    e.stopPropagation()
+                    setVip(row.id, !row.isVip)
+                }}
+            >
+                {row.isVip ? 'برداشتن VIP' : 'ارتقا به VIP'}
             </button>
 
             <button

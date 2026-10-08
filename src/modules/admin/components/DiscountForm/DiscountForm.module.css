@@ -256,3 +256,10 @@
         width: 100%;
     }
 }
+
+/* انتخابگر کاربر وقتی خالی مانده ولی دامنه «کاربران مشخص» است */
+.pickerError {
+    border: 1px solid var(--status-error-border);
+    border-radius: 5.5px;
+    padding: 2px;
+}

@@ -14,8 +14,29 @@ import styles from './SendNotificationForm.module.css'
  * گیرنده‌ها یا فهرست شناسه‌های کاربر است یا ارسال همگانی.
  * ارسال همگانی چون برگشت‌پذیر نیست، تأیید جداگانه می‌خواهد.
  */
+/* دسته‌ی اعلان — enum `NotificationType`. فقط در حالت متن آزاد لازم
+   است؛ در حالت قالب، دسته از خودِ قالب می‌آید. */
+const NOTIFICATION_TYPES = {
+    system: 'سیستمی',
+    kyc: 'احراز هویت',
+    ticket: 'تیکت',
+    order: 'سفارش',
+    security: 'امنیتی',
+}
+
 export default function SendNotificationForm({ templates = [], onSent, onClose }) {
+    /* ✅ اسپک ۲۱ ارسال بدون قالب را اضافه کرد.
+       `mode` بین دو حالت سوئیچ می‌کند؛ اسپک صریح می‌گوید فیلدهای متن
+       آزاد فقط وقتی معنا دارند که `template_key` نیامده باشد. */
+    const [mode, setMode] = useState('template')
     const [templateKey, setTemplateKey] = useState('')
+    const [free, setFree] = useState({
+        type: 'system',
+        title: '',
+        body: '',
+        sms_body: '',
+        sms: false,
+    })
     const [recipientIds, setRecipientIds] = useState([])
     const [broadcast, setBroadcast] = useState(false)
     const [confirmed, setConfirmed] = useState(false)
@@ -23,6 +44,7 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
     const [sending, setSending] = useState(false)
     const [error, setError] = useState(null)
 
+    const isTemplate = mode === 'template'
     const selected = templates.find((t) => t.key === templateKey)
     const variables = selected?.variables ?? []
 
@@ -37,15 +59,27 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
         e.preventDefault()
         setError(null)
 
-        if (!templateKey) {
-            setError('انتخاب قالب الزامی است')
-            return
-        }
+        if (isTemplate) {
+            if (!templateKey) {
+                setError('انتخاب قالب الزامی است')
+                return
+            }
 
-        const missing = variables.filter((v) => !String(values[v] ?? '').trim())
-        if (missing.length > 0) {
-            setError(`مقدار این متغیرها لازم است: ${missing.join('، ')}`)
-            return
+            const missing = variables.filter((v) => !String(values[v] ?? '').trim())
+            if (missing.length > 0) {
+                setError(`مقدار این متغیرها لازم است: ${missing.join('، ')}`)
+                return
+            }
+        } else {
+            /* `body` در اسپک وقتی قالب نیامده **الزامی** است */
+            if (!free.body.trim()) {
+                setError('متن پیام الزامی است')
+                return
+            }
+            if (free.sms && !free.sms_body.trim()) {
+                setError('متن پیامک را بنویسید یا تیک پیامک را بردارید')
+                return
+            }
         }
 
         const ids = recipientIds
@@ -62,10 +96,17 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
         setSending(true)
         try {
             await notificationService.send({
-                template_key: templateKey,
                 recipient_ids: ids,
                 broadcast,
-                payload: values,
+                ...(isTemplate
+                    ? { template_key: templateKey, payload: values }
+                    : {
+                          type: free.type,
+                          title: free.title.trim() || null,
+                          body: free.body.trim(),
+                          sms_body: free.sms ? free.sms_body.trim() : null,
+                          channels: free.sms ? ['in_app', 'sms'] : ['in_app'],
+                      }),
             })
             onSent?.()
         } catch (err) {
@@ -90,25 +131,65 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
 
             <h2 className={styles.title}>ارسال نوتیفیکیشن</h2>
 
+            {/* انتخاب حالت — قالب در برابر متن آزاد */}
+            <div className={styles.modeRow}>
+                <button
+                    type="button"
+                    className={`${styles.modeBtn} ${isTemplate ? styles.modeBtnActive : ''}`}
+                    onClick={() => { setMode('template'); setError(null) }}
+                >
+                    ارسال با قالب
+                </button>
+                <button
+                    type="button"
+                    className={`${styles.modeBtn} ${!isTemplate ? styles.modeBtnActive : ''}`}
+                    onClick={() => { setMode('free'); setError(null) }}
+                >
+                    متن آزاد
+                </button>
+            </div>
+
             <div className={styles.topRow}>
-                <label className={styles.field}>
-                    <span className={styles.fieldLabel}>قالب پیام</span>
-                    <div className={styles.selectRow}>
-                        <select
-                            className={styles.select}
-                            value={templateKey}
-                            onChange={(e) => pickTemplate(e.target.value)}
-                        >
-                            <option value="">انتخاب کنید</option>
-                            {templates.map((t) => (
-                                <option key={t.id} value={t.key}>
-                                    {t.title} ({t.key})
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown size={18} className={styles.selectIcon} />
-                    </div>
-                </label>
+                {isTemplate ? (
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>قالب پیام</span>
+                        <div className={styles.selectRow}>
+                            <select
+                                className={styles.select}
+                                value={templateKey}
+                                onChange={(e) => pickTemplate(e.target.value)}
+                            >
+                                <option value="">انتخاب کنید</option>
+                                {templates.map((t) => (
+                                    <option key={t.id} value={t.key}>
+                                        {t.title} ({t.key})
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown size={18} className={styles.selectIcon} />
+                        </div>
+                    </label>
+                ) : (
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>دسته‌ی اعلان</span>
+                        <div className={styles.selectRow}>
+                            <select
+                                className={styles.select}
+                                value={free.type}
+                                onChange={(e) =>
+                                    setFree((f) => ({ ...f, type: e.target.value }))
+                                }
+                            >
+                                {Object.entries(NOTIFICATION_TYPES).map(([v, l]) => (
+                                    <option key={v} value={v}>
+                                        {l}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown size={18} className={styles.selectIcon} />
+                        </div>
+                    </label>
+                )}
 
                 <UserPicker
                     value={recipientIds}
@@ -119,7 +200,64 @@ export default function SendNotificationForm({ templates = [], onSent, onClose }
             </div>
 
             {/* متغیرهای قالب — فقط اگر قالب انتخاب‌شده متغیر داشته باشد */}
-            {variables.length > 0 && (
+            {/* فیلدهای متن آزاد — فقط در حالت بدون قالب */}
+            {!isTemplate && (
+                <div className={styles.freeBlock}>
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>عنوان (اختیاری)</span>
+                        <input
+                            className={styles.fieldInput}
+                            value={free.title}
+                            onChange={(e) =>
+                                setFree((f) => ({ ...f, title: e.target.value }))
+                            }
+                            placeholder="به‌روزرسانی سامانه"
+                        />
+                    </label>
+
+                    <label className={styles.field}>
+                        <span className={styles.fieldLabel}>متن پیام</span>
+                        <textarea
+                            className={styles.freeArea}
+                            value={free.body}
+                            onChange={(e) =>
+                                setFree((f) => ({ ...f, body: e.target.value }))
+                            }
+                            rows={4}
+                            placeholder="متنی که کاربر در اعلان‌هایش می‌بیند"
+                        />
+                    </label>
+
+                    <label className={styles.checkRow}>
+                        <input
+                            type="checkbox"
+                            checked={free.sms}
+                            onChange={(e) =>
+                                setFree((f) => ({ ...f, sms: e.target.checked }))
+                            }
+                        />
+                        <span>پیامک هم فرستاده شود</span>
+                    </label>
+
+                    {free.sms && (
+                        <label className={styles.field}>
+                            <span className={styles.fieldLabel}>
+                                متن پیامک (کوتاه‌تر از متن اعلان)
+                            </span>
+                            <textarea
+                                className={styles.freeArea}
+                                value={free.sms_body}
+                                onChange={(e) =>
+                                    setFree((f) => ({ ...f, sms_body: e.target.value }))
+                                }
+                                rows={2}
+                            />
+                        </label>
+                    )}
+                </div>
+            )}
+
+            {isTemplate && variables.length > 0 && (
                 <div className={styles.variables}>
                     <span className={styles.fieldLabel}>مقدار متغیرهای قالب</span>
                     <div className={styles.variableGrid}>

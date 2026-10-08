@@ -154,7 +154,17 @@ export const notificationService = {
         payload = {},
         dedup_key,
         dedup_window_seconds,
+        /* ✅ اسپک ۲۱ ارسال بدون قالب را اضافه کرد — همان چیزی که
+           خواسته بودیم. این چهار فیلد **فقط** وقتی معنا دارند که
+           `template_key` نیامده باشد؛ اسپک صریح می‌گوید در حالت قالب
+           نادیده گرفته می‌شوند. */
+        type,
+        title,
+        body,
+        sms_body,
+        channels,
     }) {
+        const freeText = !template_key
         /* نکته: اسپک recipient_ids را با minItems=1 اجباری کرده، ولی
            توضیح broadcast می‌گوید در آن حالت نادیده گرفته می‌شود.
            یعنی برای ارسال همگانی معلوم نیست چه باید فرستاد.
@@ -167,6 +177,17 @@ export const notificationService = {
                 payload,
                 dedup_key,
                 dedup_window_seconds,
+                /* فیلدهای متن آزاد فقط در نبودِ قالب فرستاده می‌شوند،
+                   وگرنه بک‌اند آن‌ها را نامعتبر می‌داند. */
+                ...(freeText
+                    ? {
+                          type,
+                          title,
+                          body,
+                          sms_body: sms_body || null,
+                          channels: channels?.length ? channels : ['in_app'],
+                      }
+                    : {}),
             })
             .then(unwrap)
     },

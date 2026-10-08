@@ -40,6 +40,9 @@ function toRow(user, i, offset) {
         role: roleNames.length > 0 ? roleNames.join('، ') : 'کاربر عادی',
         /* از روی نقش‌ها، نه یک فیلد جدا */
         vip: roleNames.some(isVipRole) ? 'VIP' : '—',
+        /* ✅ اسپک ۲۱ مسیر grant/revoke داد. خودِ وضعیت همچنان از
+           `roles` خوانده می‌شود چون `is_vip` روی فهرست کاربران نیست. */
+        isVip: roleNames.some(isVipRole),
         registeredAt: date || '—',
         /* داده‌ی خام برای نوار عملیات و مودال پروفایل */
         raw: user,
@@ -158,6 +161,15 @@ export function useUserActions(onDone) {
 
         assignRole: (userId, roleId) =>
             run(() => adminUserService.assignRole(userId, roleId)),
+
+        /* ✅ VIP — هر دو مسیر idempotent هستند، پس کلیک دوباره
+           بی‌خطر است. */
+        setVip: (userId, on) =>
+            run(() =>
+                on
+                    ? adminUserService.grantVip(userId)
+                    : adminUserService.revokeVip(userId)
+            ),
     }
 }
 

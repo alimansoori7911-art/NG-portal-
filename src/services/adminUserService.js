@@ -121,6 +121,19 @@ export const adminUserService = {
 
        هر دسترسی با سه‌تایی {module, resource, action} شناخته می‌شود،
        نه با شناسه. */
+    /* ✅ اسپک ۲۱ دو مسیر VIP داد. توضیح خودش می‌گوید نقش `vip` را
+       می‌دهد/می‌گیرد و **idempotent** است، پس تکرارش بی‌خطر است.
+
+       ⚠️ `is_vip` روی `UserResponseSchema` نیست — فقط در پاسخ همین دو
+       مسیر. پس فهرست کاربران همچنان VIP را از `roles` می‌خواند. */
+    grantVip(userId) {
+        return api.post(`/admin/auth/users/${userId}/vip`).then(unwrap)
+    },
+
+    revokeVip(userId) {
+        return api.delete(`/admin/auth/users/${userId}/vip`).then(unwrap)
+    },
+
     assignUserPermissions(userId, permissions) {
         return api
             .post(`/admin/auth/users/${userId}/permissions`, { permissions })

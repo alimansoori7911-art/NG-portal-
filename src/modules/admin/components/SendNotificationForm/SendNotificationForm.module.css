@@ -287,3 +287,75 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── انتخاب حالت: قالب یا متن آزاد ──
+   اسپک ۲۱ ارسال بدون قالب را اضافه کرد؛ این دو حالت هم‌زمان معنا
+   ندارند، پس به‌جای نمایش همه‌ی فیلدها، یکی انتخاب می‌شود. */
+
+/* ⚠️ `.wrapper` فرزندانش را وسط‌چین می‌کند (`align-items: center`)،
+   پس هر بلوک باید عرضش را مثل `.topRow` صریح بگیرد وگرنه به اندازه‌ی
+   محتوایش جمع می‌شود. */
+.modeRow {
+    width: 100%;
+    max-width: 883px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.modeBtn {
+    height: 36px;
+    padding: 0 18px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-muted-2);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast);
+}
+
+.modeBtn:hover {
+    color: var(--text-bright);
+}
+
+.modeBtnActive {
+    border-color: var(--color-primary-light);
+    background: rgba(20, 116, 255, 0.12);
+    color: var(--color-primary-light);
+}
+
+/* ── فیلدهای متن آزاد ── */
+
+.freeBlock {
+    width: 100%;
+    max-width: 883px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.freeArea {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    line-height: 1.9;
+    resize: vertical;
+}
+
+.freeArea::placeholder {
+    color: var(--text-faint);
+}
+
+@media (max-width: 767px) {
+    .modeBtn {
+        flex: 1;
+    }
+}
