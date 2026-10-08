@@ -467,6 +467,76 @@ function seedDepartments() {
     db.nextMemberId = 1
 }
 
+/* یک سفارش با دو رسید — یکی تأییدشده، یکی در انتظار.
+
+   بدون این، هم جدول تراکنش‌ها و هم گزارش فروش خالی‌اند و هیچ‌کدام
+   واقعاً تست نمی‌شوند؛ صفر بودنِ گزارش با «درست کار نکردن» یک شکل
+   است.
+
+   ⚠️ شکل سفارش عیناً از مسیر واقعیِ ساخت سفارش کپی شده
+   (`status` با حروف بزرگ، `user_public_id` و نه `user_id`،
+   `order_type`)؛ اگر دانه با آن مسیر فرق داشته باشد، مک چیزی را
+   تست می‌کند که روی بک‌اند واقعی وجود ندارد.
+
+   ⚠️ کاربر در زمانِ دانه هنوز ثبت‌نام نکرده، پس `user_public_id`
+   دیرهنگام و در اولین درخواست پر می‌شود. */
+function seedOrders() {
+    const now = new Date().toISOString()
+    const oid = cmsId()
+    const pay = (status, amount, payer, bank, trk) => ({
+        id: cmsId(), order_id: oid, status, method: 'bank_transfer',
+        amount, claimed_amount: amount, currency: 'IRR',
+        paid_at: now, verified_at: status === 'verified' ? now : null,
+        payer_name: payer, bank_name: bank, tracking_number: trk,
+        receipt_ref: null, payer_national_id: null, account_number: null,
+        note: null, verified_by_user_id: null, attachments: [],
+        created_at: now, updated_at: now,
+    })
+
+    db.orders.push({
+        id: oid,
+        order_number: `ORD-${db.nextOrderNum++}`,
+        order_type: 'purchase',
+        status: 'REQUESTED',
+        first_name: null, last_name: null,
+        user_public_id: null,
+        product_id: 1, plan_id: 1,
+        snapshot_product_name: 'NG Corion',
+        snapshot_plan_name: 'پایه',
+        quoted_amount: '4000000', payable_amount: '4000000',
+        customer_note: null,
+        created_at: now,
+        line_items: [], ticket_links: [],
+        payments: [
+            pay('verified', '2500000', 'سارا محمدی', 'ملت', 'TRK-2501'),
+            pay('pending', '1500000', 'رضا کریمی', 'سامان', 'TRK-2502'),
+        ],
+    })
+}
+
+/* سفارشِ دانه را به اولین کاربر غیرادمین می‌چسباند.
+
+   ⚠️ دو نکته‌ی ظریف:
+   • در زمان دانه هیچ کاربری وجود ندارد، پس این کار موکول می‌شود.
+   • اولین درخواستِ هر نشست معمولاً ثبت‌نامِ خودِ ادمین است و او
+     هنوز ارتقا نیافته؛ اگر همان‌جا بچسبانیم، سفارش به ادمین
+     می‌رسد. پس تا وقتی کاربر غیرادمینی پیدا نشود صبر می‌کنیم. */
+function attachSeededOrder() {
+    const orphan = db.orders.find((o) => o.user_public_id === null)
+    if (!orphan) return
+
+    const isAdmin = (x) => (x.roles ?? []).some(
+        (r) => (typeof r === 'string' ? r : r?.role?.name) === 'admin'
+    )
+    const u = [...db.users.values()].find((x) => !isAdmin(x))
+    if (!u) return
+
+    orphan.user_public_id = u.public_id
+    orphan.first_name = u.first_name ?? u.username ?? null
+    orphan.last_name = u.last_name ?? null
+}
+
+seedOrders()
 seedDepartments()
 seedCatalog()
 seedPermissions()
@@ -1578,6 +1648,74 @@ const routes = [
        `PaymentRecords` تودرتو می‌آیند؛ نام کاربر هم جدا
        (`first_name`/`last_name`) کنارش است. قبلاً این مسیر همیشه
        `[]` می‌داد و صفحه‌ی مالی اصلاً قابل ساخت نبود. */
+    /* ✅ اسپک ۲۱: گزارش تجمیعی فروش.
+
+       ⚠️ بازه **شامل هر دو سر** است و تاریخ می‌تواند شمسی
+       (`1404/06/01`) یا میلادی (`2025-08-23`) باشد. تبدیل شمسی اینجا
+       با `Intl` انجام می‌شود تا همان تقویمی باشد که فرانت نشان
+       می‌دهد. */
+    ['GET', /^\/admin\/reports\/sales$/, (req) => {
+        /* بدون این، گزارش مالی بی‌توکن هم ۲۰۰ می‌داد — مک سهل‌گیر
+           بود و فرانت هیچ‌وقت مسیر ۴۰۱ را تمرین نمی‌کرد. */
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+
+        const from = req.query.get('from')
+        const to = req.query.get('to')
+        if (!from || !to) {
+            return [422, fail('VALIDATION_ERROR', 'from و to الزامی‌اند')]
+        }
+
+        /* شمسی → میلادی. فقط برای مک؛ بک‌اند واقعی خودش می‌داند. */
+        const toGregorian = (v) => {
+            if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(v)) return new Date(v + 'T00:00:00Z')
+            const m = /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/.exec(v)
+            if (!m) return null
+            const [, jy, jm, jd] = m.map(Number)
+            /* جست‌وجوی خطی کوتاه: از یک تخمین شروع و تا تطابق جلو
+               می‌رویم. بازه‌ی جست‌وجو چند روز است، پس ارزان است. */
+            let guess = new Date(Date.UTC(jy + 621, 0, 1))
+            for (let i = 0; i < 800; i++) {
+                const parts = new Intl.DateTimeFormat('en-u-ca-persian', {
+                    year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC',
+                }).formatToParts(guess)
+                const g = (t) => Number(parts.find((p) => p.type === t)?.value)
+                if (g('year') === jy && g('month') === jm && g('day') === jd) return guess
+                guess = new Date(guess.getTime() + 86400000)
+            }
+            return null
+        }
+
+        const start = toGregorian(from)
+        const end = toGregorian(to)
+        if (!start || !end) {
+            return [422, fail('VALIDATION_ERROR', 'قالب تاریخ نامعتبر است')]
+        }
+        /* «تا» شامل خودِ روز است، پس تا پایان آن روز شمرده می‌شود */
+        const endMs = end.getTime() + 86400000 - 1
+
+        let verified = 0
+        let pending = 0
+        let count = 0
+
+        for (const o of db.orders) {
+            for (const p of o.payments ?? []) {
+                const when = new Date(p.paid_at ?? p.created_at ?? 0).getTime()
+                if (when < start.getTime() || when > endMs) continue
+                count++
+                const amount = Number(p.amount ?? p.claimed_amount) || 0
+                if (p.verified_at) verified += amount
+                else pending += amount
+            }
+        }
+
+        return ok({
+            total_verified: String(verified),
+            total_pending: String(pending),
+            count,
+            currency: 'IRR',
+        })
+    }],
+
     ['GET', /^\/admin\/orders\/payments$/, () => {
         const rows = db.orders
             .filter((o) => (o.payments ?? []).length > 0)
@@ -3199,6 +3337,9 @@ const server = createServer((req, res) => {
             res.end(JSON.stringify(fail('FORCED', 'خطای آزمایشی')))
             return
         }
+
+        /* سفارشِ دانه تا وقتی کاربری نباشد مالک ندارد */
+        attachSeededOrder()
 
         for (const [method, re, handler] of routes) {
             if (req.method === method && re.test(path)) {

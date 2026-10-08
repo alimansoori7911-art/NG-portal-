@@ -265,3 +265,91 @@
         width: 100%;
     }
 }
+
+/* ── نوار بازه‌ی گزارش فروش ──
+   ✅ اسپک ۲۱ اندپوینت تجمیعی داد. درخواست فقط با دکمه می‌رود، نه با
+   هر تغییر فیلد: بازه‌ی نیمه‌تایپ‌شده یعنی درخواست بی‌معنا. */
+
+.reportBar {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.reportField {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    min-height: 56px;
+    padding: 8px 14px;
+    border: 1px solid var(--text-body);
+    border-radius: 5.5px;
+    cursor: text;
+    transition: border-color var(--transition-fast);
+}
+
+.reportField:focus-within {
+    border-color: var(--color-primary-light);
+}
+
+.reportLabel {
+    color: var(--text-body);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.reportInput {
+    width: 120px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.reportInput::placeholder {
+    color: var(--text-faint);
+}
+
+.reportBtn {
+    height: 40px;
+    min-width: 126px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: var(--color-action);
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.reportBtn:hover:not(:disabled) {
+    background: var(--color-action-hover);
+}
+
+.reportBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 767px) {
+    .reportField {
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .reportInput {
+        width: 100%;
+    }
+
+    .reportBtn {
+        width: 100%;
+    }
+}

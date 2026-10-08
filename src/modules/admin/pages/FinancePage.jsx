@@ -4,6 +4,7 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
 import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import { useAdminPayments } from '../hooks/useAdminPayments'
+import { useSalesReport } from '../hooks/useSalesReport'
 import DiscountForm from '../components/DiscountForm/DiscountForm'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
 import { useDiscounts, useDiscountActions } from '../hooks/useDiscounts'
@@ -73,6 +74,7 @@ export default function FinancePage() {
     const [tab, setTab] = useState('transactions')
     const [page, setPage] = useState(1)
     const payments = useAdminPayments()
+    const sales = useSalesReport()
 
     /* کد تخفیف — `discountForm` حالت فرم است: null بسته،
        'new' صدور، و یک شیء یعنی ویرایش همان کد. */
@@ -321,39 +323,81 @@ export default function FinancePage() {
                         </p>
                     )}
 
-                    {/* خلاصه‌ی مالی.
+                    {/* ✅ گزارش فروش — اسپک ۲۱ اندپوینت تجمیعی داد.
 
-                        ⚠️ مبلغ‌ها جمعِ **همین صفحه**‌اند نه کل سیستم،
-                        چون اندپوینت تجمیعی وجود ندارد و این مسیر
-                        صفحه‌بندی‌شده است. برچسب صریح گذاشته شده تا کسی
-                        این عدد را «کل فروش» نخواند. تنها عددِ واقعاً
-                        سیستمی «تعداد سفارش‌های دارای رسید» است که از
-                        meta.pagination می‌آید. */}
+                        تا پیش از این، کارت‌ها جمعِ **یک صفحه** را نشان
+                        می‌دادند و برچسبشان همین را می‌گفت. حالا عدد
+                        واقعیِ کل سیستم در یک بازه است. */}
+                    <div className={styles.reportBar}>
+                        <label className={styles.reportField}>
+                            <span className={styles.reportLabel}>از تاریخ</span>
+                            <input
+                                className={styles.reportInput}
+                                value={sales.range.from}
+                                onChange={(e) => sales.setField('from', e.target.value)}
+                                placeholder="۱۴۰۴/۰۶/۰۱"
+                                dir="ltr"
+                            />
+                        </label>
+
+                        <label className={styles.reportField}>
+                            <span className={styles.reportLabel}>تا تاریخ</span>
+                            <input
+                                className={styles.reportInput}
+                                value={sales.range.to}
+                                onChange={(e) => sales.setField('to', e.target.value)}
+                                placeholder="۱۴۰۴/۰۶/۳۱"
+                                dir="ltr"
+                            />
+                        </label>
+
+                        <button
+                            type="button"
+                            className={styles.reportBtn}
+                            onClick={sales.run}
+                            disabled={sales.loading}
+                        >
+                            {sales.loading ? 'در حال محاسبه…' : 'نمایش گزارش'}
+                        </button>
+                    </div>
+
+                    {sales.error && (
+                        <p className={styles.error} role="alert">
+                            {sales.error}
+                        </p>
+                    )}
+
                     <div className={styles.summary}>
                         <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                                تأییدشده (این صفحه)
+                                تأییدشده در این بازه
                             </span>
                             <span className={styles.summaryValueOk}>
-                                {formatToman(payments.summary.verified)}
+                                {sales.data
+                                    ? formatToman(sales.data.total_verified)
+                                    : '—'}
                             </span>
                         </div>
 
                         <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                                در انتظار بررسی (این صفحه)
+                                در انتظار بررسی در این بازه
                             </span>
                             <span className={styles.summaryValueWarn}>
-                                {formatToman(payments.summary.pending)}
+                                {sales.data
+                                    ? formatToman(sales.data.total_pending)
+                                    : '—'}
                             </span>
                         </div>
 
                         <div className={styles.summaryCard}>
                             <span className={styles.summaryLabel}>
-                                رسیدهای این صفحه
+                                تعداد رسید در این بازه
                             </span>
                             <span className={styles.summaryValue}>
-                                {payments.summary.count.toLocaleString('fa-IR')}
+                                {sales.data
+                                    ? Number(sales.data.count).toLocaleString('fa-IR')
+                                    : '—'}
                             </span>
                         </div>
 
