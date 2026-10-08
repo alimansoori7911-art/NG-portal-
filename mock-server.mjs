@@ -38,6 +38,8 @@ const db = {
     cmsPages: [],
     cmsVersions: [],   // { ...snapshot, page_id, version }
     cmsRedirects: [],
+    /* صف صدور لایسنس — اسپک ۲۱ */
+    issuances: [],
     /* دسترسی‌ها و نگاشت نقش→دسترسی.
 
        قبلاً `/admin/auth/permissions` همیشه `[]` می‌داد، یعنی هر UIای
@@ -876,11 +878,45 @@ const MOCK_PLANS = [
         external_plan_code: 'NGC-LIC-unlimited-1Y',
         is_pilot: false, is_active: true, is_public: true, sort_order: 5,
         prices: [{ id: 5, term_code: 'perpetual', quoted_amount: '5000000000', final_amount: '5000000000', currency: 'IRR', is_active: true }],
-        features: planFeatures('Unlimited', 'Unlimited', 'Unlimited'),
-    },
+    features: planFeatures('Unlimited', 'Unlimited', 'Unlimited'),
+},
 ]
 
 /* ─── مسیرها ─── */
+/* ✅ اسپک ۲۱: صدور لایسنس از پرتال.
+
+   ⚠️ عمداً **ناهمگام** شبیه‌سازی شده. اگر مک بلافاصله
+   `issued` با کلید برگرداند، حالتِ انتظار و poll در فرانت هرگز
+   اجرا نمی‌شود و اولین باری که روی بک‌اند واقعی می‌رود، ادمین
+   صفحه‌ای می‌بیند که برای «در حال صدور» طراحی نشده. پس:
+   pending → issuing → issued با گذشت زمان. */
+const ISSUE_PLANS = ['pilot', 'basic1', 'basic2', 'basic3', 'enterprise']
+
+/* وضعیت بر اساس زمانِ سپری‌شده حساب می‌شود، نه با تایمر: مک
+   بدون state ماندگار ساده‌تر و قابل‌پیش‌بینی‌تر است. */
+const issuanceView = (it) => {
+    if (it.status === 'failed' || it.status === 'issued') return it
+    const age = Date.now() - it._queued_at
+    if (age > 9000) {
+        it.status = 'issued'
+        it.issued_at = new Date().toISOString()
+        it.license_id = it.license_id ?? cmsId()
+        it.external_license_id = it.external_license_id ?? 5000 + db.issuances.length
+    } else if (age > 3000) {
+        it.status = 'issuing'
+    }
+    return it
+}
+
+/* ابزار تست: یک درخواست را ناموفق کن — /__mock/fail-issuance/<id>
+   بدون این، مسیر «تلاش دوباره» در فرانت اصلاً قابل آزمایش نیست چون
+   مک همیشه موفق می‌شود. */
+
+const publicIssuance = (it) => {
+    const { _queued_at, ...rest } = issuanceView(it)
+    return rest
+}
+
 const routes = [
     /* سلامت */
     ['GET', /^\/health\/(live|ready)$/, () =>
@@ -1654,6 +1690,100 @@ const routes = [
        (`1404/06/01`) یا میلادی (`2025-08-23`) باشد. تبدیل شمسی اینجا
        با `Intl` انجام می‌شود تا همان تقویمی باشد که فرانت نشان
        می‌دهد. */
+    ['POST', /^\/admin\/license\/$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+
+        const b = req.body ?? {}
+        /* `ManualLicenseCreate`: فقط دو فیلد الزامی است. قبلاً هر
+           چیزی قبول می‌شد و درخواست ناقص اینجا ۲۰۲ می‌گرفت. */
+        const missing = []
+        if (b.user_id == null) missing.push('user_id')
+        if (!b.plan_type) missing.push('plan_type')
+        if (missing.length) {
+            return [422, fail('VALIDATION_ERROR', `الزامی: ${missing.join('، ')}`)]
+        }
+
+        if (!ISSUE_PLANS.includes(b.plan_type)) {
+            return [422, fail('VALIDATION_ERROR', 'plan_type نامعتبر است')]
+        }
+
+        /* ⚠️ `user_id` عددی است نه UUID — اگر فرانت public_id بفرستد
+           باید همین‌جا بترکد، نه اینکه بی‌صدا قبول شود. */
+        const target = [...db.users.values()].find((u) => u.id === Number(b.user_id))
+        if (!target) return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+
+        /* «حداکثر یک لایسنس برای هر سفارش» — اسپک صریح گفته */
+        if (b.order_id && db.issuances.some(
+            (i) => i.order_id === b.order_id && i.status !== 'failed'
+        )) {
+            return [409, fail('CONFLICT', 'برای این سفارش لایسنس وجود دارد')]
+        }
+
+        const it = {
+            id: cmsId(),
+            status: 'pending',
+            source: b.order_id ? 'order' : 'manual',
+            user_id: target.id,
+            user_public_id: target.public_id,
+            order_id: b.order_id ?? null,
+            plan_type: b.plan_type,
+            visible_to_user: b.visible_to_user ?? true,
+            license_id: null,
+            external_license_id: null,
+            attempts: 1,
+            last_error: null,
+            issued_at: null,
+            created_at: new Date().toISOString(),
+            _queued_at: Date.now(),
+        }
+        db.issuances.push(it)
+        console.log(`   🔑 صدور لایسنس در صف — ${b.plan_type} برای کاربر ${target.id}`)
+        /* اسپک ۲۰۲ می‌دهد نه ۲۰۱ */
+        return [202, ok(publicIssuance(it))]
+    }],
+
+    ['GET', /^\/admin\/license\/issuances$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+        let rows = db.issuances.map(publicIssuance)
+
+        const st = req.query.get('status')
+        const src = req.query.get('source')
+        const oid = req.query.get('order_id')
+        /* فیلترها واقعاً اعمال می‌شوند؛ پارامتر نادیده‌گرفته‌شده یعنی
+           فیلتری که در UI کار می‌کند ولی روی سرور واقعی نه. */
+        if (st) rows = rows.filter((r) => r.status === st)
+        if (src) rows = rows.filter((r) => r.source === src)
+        if (oid) rows = rows.filter((r) => r.order_id === oid)
+
+        return page(rows.slice().reverse())
+    }],
+
+    ['GET', /^\/admin\/license\/issuances\/[^/]+$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+        const id = req.path.split('/').pop()
+        const it = db.issuances.find((x) => x.id === id)
+        if (!it) return [404, fail('NOT_FOUND', 'درخواست صدور پیدا نشد')]
+        return ok(publicIssuance(it))
+    }],
+
+    ['POST', /^\/admin\/license\/issuances\/[^/]+\/retry$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
+        const id = req.path.split('/')[4]
+        const it = db.issuances.find((x) => x.id === id)
+        if (!it) return [404, fail('NOT_FOUND', 'درخواست صدور پیدا نشد')]
+
+        /* اسپک: فقط چیزی که `issued` نیست دوباره صف می‌شود */
+        if (issuanceView(it).status === 'issued') {
+            return [409, fail('CONFLICT', 'این لایسنس صادر شده است')]
+        }
+
+        it.status = 'pending'
+        it.last_error = null
+        it.attempts += 1
+        it._queued_at = Date.now()
+        return [202, ok(publicIssuance(it))]
+    }],
+
     ['GET', /^\/admin\/reports\/sales$/, (req) => {
         /* بدون این، گزارش مالی بی‌توکن هم ۲۰۰ می‌داد — مک سهل‌گیر
            بود و فرانت هیچ‌وقت مسیر ۴۰۱ را تمرین نمی‌کرد. */
@@ -3255,6 +3385,18 @@ const server = createServer((req, res) => {
         console.log('🔄 داده پاک شد')
         return
     }
+    const fi = path.match(/^\/__mock\/fail-issuance\/([^/]+)$/)
+    if (fi) {
+        const it = db.issuances.find((x) => x.id === fi[1])
+        if (it) {
+            it.status = 'failed'
+            it.last_error = 'لایسنس‌سرور پاسخ نداد (timeout)'
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ failed: fi[1], found: !!it }))
+        return
+    }
+
     /* ابزار تست: کاربر را ادمین کن — /__mock/promote/<username> */
     const pr = path.match(/^\/__mock\/promote\/([^/]+)$/)
     if (pr) {

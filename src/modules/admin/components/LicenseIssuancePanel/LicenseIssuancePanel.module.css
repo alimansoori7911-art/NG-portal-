@@ -1,0 +1,295 @@
+/* صف صدور لایسنس — توکن‌ها و اندازه‌ها همان بخش مالی و فروش است
+   تا تب جدید وصله به‌نظر نرسد. */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+/* ── نوار ابزار: دکمه‌ی صدور + فیلترها ── */
+.toolbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    margin-bottom: 24px;
+}
+
+.primaryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 10px;
+    background: #1474FF;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.primaryBtn:hover {
+    background: #2A82FF;
+}
+
+.filterSelect {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #1B2A44;
+    border-radius: 10px;
+    background: #0D1726;
+    color: #8CABD9;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: #1474FF;
+}
+
+/* نشانه‌ی «در حال پیگیری» — چون جدول خودش تازه می‌شود، کاربر باید
+   بداند چرا اعداد بدون دست‌زدن او عوض می‌شوند. */
+.polling {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #E8A33D;
+    font-size: var(--font-size-xs);
+}
+
+.spin {
+    animation: spin 1.4s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* کاربرانی که حرکت برایشان آزاردهنده یا خطرناک است */
+@media (prefers-reduced-motion: reduce) {
+    .spin {
+        animation: none;
+    }
+}
+
+/* ── فرم صدور ── */
+.form {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 24px;
+    padding: 20px;
+    border: 1px solid #1B2A44;
+    border-radius: 12px;
+    background: #0D1726;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: #8CABD9;
+    font-size: var(--font-size-xs);
+}
+
+.select {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid #1B2A44;
+    border-radius: 10px;
+    background: #0A1220;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.select:focus {
+    outline: none;
+    border-color: #1474FF;
+}
+
+.checkRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #C8D8F0;
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+}
+
+.checkText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.hint {
+    color: #668FCC;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.note {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(20, 116, 255, 0.08);
+    color: #8CABD9;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+.error {
+    margin: 0;
+    color: #FF6B6B;
+    font-size: var(--font-size-xs);
+}
+
+.submitBtn {
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #1474FF;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #2A82FF;
+}
+
+.submitBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ── نشان وضعیت ──
+   چهار وضعیت با رنگ جدا: «در صف» و «در حال صدور» هر دو ناتمام‌اند
+   ولی یکی نیستند، و ادمین باید تفاوتشان را از یک نگاه ببیند. */
+.badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.s_pending {
+    background: rgba(140, 171, 217, 0.15);
+    color: #8CABD9;
+}
+
+.s_issuing {
+    background: rgba(232, 163, 61, 0.15);
+    color: #E8A33D;
+}
+
+.s_issued {
+    background: rgba(61, 200, 120, 0.15);
+    color: #3DC878;
+}
+
+.s_failed {
+    background: rgba(255, 107, 107, 0.15);
+    color: #FF6B6B;
+}
+
+/* ── نوار عملیات ردیف ──
+   ⚠️ بدون `flex-wrap`: سلولِ نوار عملیات در AdminTable ارتفاع ثابت
+   ۴۹ پیکسل دارد، پس محتوای شکسته بریده می‌شود و روی موبایل فقط یک
+   بلوکِ آبیِ خالی دیده می‌شد. متن بلند به‌جای شکستن، کوتاه می‌شود. */
+.rowActions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    min-width: 0;
+}
+
+.retryBtn {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 6px;
+    height: 34px;
+    padding: 0 16px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-radius: 10.5px;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.retryBtn:hover:not(:disabled) {
+    background: var(--color-white);
+    color: #1474FF;
+}
+
+.retryBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.issuedNote {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #3DC878;
+    font-size: var(--font-size-xs);
+}
+
+.rowError {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #FF6B6B;
+    font-size: var(--font-size-xs);
+}
+
+@media (max-width: 1023px) {
+    .toolbar {
+        gap: var(--spacing-sm);
+        margin-bottom: 16px;
+    }
+
+    .primaryBtn,
+    .filterSelect {
+        height: 36px;
+        font-size: var(--font-size-xs);
+    }
+
+    .form {
+        max-width: none;
+        padding: 16px;
+    }
+
+    .retryBtn {
+        padding: 0 10px;
+    }
+}

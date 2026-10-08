@@ -4,6 +4,7 @@ import AdminTable from '../components/AdminTable/AdminTable'
 import QuoteForm from '../components/QuoteForm/QuoteForm'
 import PaymentVerifyPanel from '../components/PaymentVerifyPanel/PaymentVerifyPanel'
 import LinkTicketForm from '../components/LinkTicketForm/LinkTicketForm'
+import LicenseIssuancePanel from '../components/LicenseIssuancePanel/LicenseIssuancePanel'
 import { useAdminOrders, useOrderActions } from '../hooks/useAdminOrders'
 import { useBillingTerms } from '../hooks/useBillingTerms'
 import { ORDER_STATUS, relationTypeLabel } from '../../../services/orderService'
@@ -36,15 +37,18 @@ const MANUAL_STATUSES = [
 /* در کدام وضعیت‌ها صدور پیش‌فاکتور معنا دارد */
 const QUOTABLE = new Set(['REQUESTED', 'AWAITING_ADMIN_REVIEW', 'QUOTATION_ISSUED'])
 
-/* تب «مدیریت لایسنس‌ها» حذف شد: بک‌اند گفت پنل ادمینِ لایسنس در
-   سیستم ما نیست و لایسنس‌سرور ابزار بهتری برایش دارد. لایسنس‌های هر
-   کاربر در «پروفایل جامع کاربر» دیده می‌شوند. */
-const TABS = [{ id: 'orders', label: 'پیگیری سفارش‌ها / خریدها' }]
+/* تب لایسنس یک‌بار حذف شده بود (بک‌اند گفته بود پنل ادمینِ لایسنس در
+   سیستم ما نیست و لایسنس‌سرور ابزار خودش را دارد). اسپک ۲۱
+   `/admin/license/*` را اضافه کرد، پس صدور از پرتال دوباره ممکن است
+   و تب برگشت. لایسنس‌های هر کاربر همچنان در «پروفایل جامع کاربر»
+   هم دیده می‌شوند. */
+const TABS = [
+    { id: 'orders', label: 'پیگیری سفارش‌ها / خریدها' },
+    { id: 'licenses', label: 'صدور لایسنس' },
+]
 
 /**
- * فروش و مشتریان — پیگیری سفارش‌ها و صدور پیش‌فاکتور.
- *
- * تب لایسنس حذف شد (بک‌اند: پنل ادمینِ لایسنس در این سیستم نیست).
+ * فروش و مشتریان — پیگیری سفارش‌ها، صدور پیش‌فاکتور و صدور لایسنس.
  *
  * الگوی جدول + نوار عملیات کشویی همان چیزی است که در «کاربران و
  * دسترسی‌ها» ساخته شد، پس AdminTable بدون تغییر استفاده می‌شود.
@@ -233,7 +237,9 @@ export default function SalesPage() {
                 ))}
             </div>
 
-            {quoting ? (
+            {tab === 'licenses' ? (
+                <LicenseIssuancePanel />
+            ) : quoting ? (
                 <QuoteForm
                     order={quoting}
                     termList={billingTerms.terms}
