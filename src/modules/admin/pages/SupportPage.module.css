@@ -233,3 +233,41 @@
         flex: none;
     }
 }
+
+/* ── بج اولویت تیکت ──
+   چهار مقدار hierarchy دارند، پس رنگ باید همان ترتیب را نشان بدهد:
+   فوری قرمز، زیاد نارنجی، عادی خنثی، کم کم‌رنگ. */
+
+.priority {
+    display: inline-grid;
+    place-items: center;
+    min-width: 54px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}
+
+.priority_urgent {
+    border: 1px solid rgba(255, 99, 105, 0.45);
+    background: rgba(255, 99, 105, 0.14);
+    color: var(--status-error);
+}
+
+.priority_high {
+    border: 1px solid rgba(232, 93, 4, 0.4);
+    background: rgba(232, 93, 4, 0.12);
+    color: var(--status-warning);
+}
+
+.priority_normal {
+    border: 1px solid var(--line-strong);
+    background: var(--surface-raised);
+    color: var(--text-body);
+}
+
+.priority_low {
+    border: 1px solid var(--line-default);
+    background: transparent;
+    color: var(--text-muted-2);
+}

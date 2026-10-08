@@ -15,6 +15,20 @@ export const TICKET_STATUS = {
 
 export const ticketStatusLabel = (status) => TICKET_STATUS[status] ?? status ?? ''
 
+/* ✅ اسپک ۲۱ اولویت تیکت را اضافه کرد — enum `TicketPriority`.
+
+   ⚠️ اولویت فقط هنگام **ساخت** تیکت و در **فیلتر** قابل استفاده است؛
+   `TicketUpdateSchema` آن را ندارد، پس ادمین نمی‌تواند بعداً عوضش
+   کند. در BACKEND_REQUESTS.md ثبت شد. */
+export const TICKET_PRIORITY = {
+    low: 'کم',
+    normal: 'عادی',
+    high: 'زیاد',
+    urgent: 'فوری',
+}
+
+export const ticketPriorityLabel = (p) => TICKET_PRIORITY[p] ?? p ?? ''
+
 /* وضعیت‌هایی که یعنی تیکت هنوز باز است و کاربر می‌تواند پیام بفرستد */
 const OPEN_STATUSES = new Set(['open', 'in_progress', 'waiting_for_customer'])
 export const isTicketOpen = (status) => OPEN_STATUSES.has(status)
@@ -89,6 +103,7 @@ export const ticketService = {
         q,
         department_id,
         status,
+        priority,
         assigned_to_user_id,
         include,
     } = {}) {
@@ -101,6 +116,7 @@ export const ticketService = {
                     department_id,
                     /* اسپک این را `status_code` می‌نامد، نه `status` */
                     status_code: status,
+                    priority,
                     assigned_to_user_id,
                     include,
                 },
@@ -123,10 +139,10 @@ export const ticketService = {
     /* ⚠️ نام پارامتر وضعیت در اسپک `status_code` است نه `status`.
        قبلاً `status` فرستاده می‌شد: سرور آن را نمی‌شناخت و بی‌صدا
        نادیده می‌گرفت، یعنی فیلتر وضعیت هیچ‌وقت کار نمی‌کرد. */
-    getAdminTickets({ page = 1, limit = 10, q, department_id, status, user_id, assigned_to_user_id, is_locked, include } = {}) {
+    getAdminTickets({ page = 1, limit = 10, q, department_id, status, priority, user_id, assigned_to_user_id, is_locked, include } = {}) {
         return api
             .get('/admin/tickets', {
-                params: { page, limit, q, department_id, status_code: status, user_id, assigned_to_user_id, is_locked, include },
+                params: { page, limit, q, department_id, status_code: status, priority, user_id, assigned_to_user_id, is_locked, include },
             })
             .then((res) => ({
                 items: res.data?.data ?? [],
@@ -147,9 +163,15 @@ export const ticketService = {
 
     /* POST /ticketing/tickets — ثبت تیکت جدید.
        subject حداقل ۳ و حداکثر ۲۵۵ کاراکتر. */
-    createTicket({ department_id, subject }) {
+    /* `priority` اختیاری است: نیامدنش یعنی بک‌اند بر اساس وضعیت
+       کاربر خودش تصمیم می‌گیرد (مثلاً VIP اولویت بالاتر). */
+    createTicket({ department_id, subject, priority }) {
         return api
-            .post('/ticketing/tickets', { department_id, subject })
+            .post('/ticketing/tickets', {
+                department_id,
+                subject,
+                ...(priority ? { priority } : {}),
+            })
             .then(unwrap)
     },
 

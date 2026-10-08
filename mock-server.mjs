@@ -667,6 +667,9 @@ function filterTickets(list, query) {
     const status = query.get('status_code')
     if (status) rows = rows.filter((t) => t.status_code === status)
 
+    const priority = query.get('priority')
+    if (priority) rows = rows.filter((t) => t.priority === priority)
+
     const dept = query.get('department_id')
     if (dept) rows = rows.filter((t) => t.department_id === dept)
 
@@ -1227,6 +1230,11 @@ const routes = [
         const t = {
             id: uuid(), ticket_number: `TK-${db.tickets.length + 1}`,
             subject: req.body.subject, status_code: 'open',
+            /* ✅ اسپک ۲۱: اولویت. نیامدنش یعنی بک‌اند خودش تصمیم
+               می‌گیرد — اینجا VIP اولویت بالاتر می‌گیرد تا آن قاعده
+               قابل آزمایش باشد. */
+            priority: req.body.priority
+                ?? ((req.user?.roles ?? []).includes('vip') ? 'high' : 'normal'),
             department_id: req.body.department_id,
             /* شناسه‌ی صاحب تیکت از کاربر توکن می‌آید تا فیلتر
                `user_id` قابل تست باشد. */

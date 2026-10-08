@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
     ticketService,
     ticketStatusLabel,
+    ticketPriorityLabel,
 } from '../../../services/ticketService'
 import { formatJalaliDateTime } from '../../../utils/datetime'
 import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
@@ -24,6 +25,9 @@ function toRow(ticket, i, offset, nameOf) {
         username: ticket.user_id != null ? `#${ticket.user_id}` : '—',
         status: ticketStatusLabel(ticket.status_code),
         rawStatus: ticket.status_code,
+        /* ✅ اسپک ۲۱ اولویت را اضافه کرد */
+        priority: ticketPriorityLabel(ticket.priority),
+        rawPriority: ticket.priority,
         department: nameOf?.(ticket.department_id) || '—',
         date,
         agent:
@@ -41,7 +45,7 @@ function toRow(ticket, i, offset, nameOf) {
  *
  * برخلاف useTickets کاربر، این‌جا فیلتر وضعیت و جستجو هم لازم است.
  */
-export function useAdminTickets(nameOf, { status, q } = {}) {
+export function useAdminTickets(nameOf, { status, q, priority } = {}) {
     const [rows, setRows] = useState([])
     const [page, setPage] = useState(1)
     const [pageCount, setPageCount] = useState(1)
@@ -55,7 +59,7 @@ export function useAdminTickets(nameOf, { status, q } = {}) {
        روی صفحه‌ای بمانیم که در نتیجه‌ی جدید وجود ندارد. */
     useEffect(() => {
         setPage(1)
-    }, [status, q])
+    }, [status, q, priority])
 
     useEffect(() => {
         let cancelled = false
@@ -69,6 +73,7 @@ export function useAdminTickets(nameOf, { status, q } = {}) {
                     limit: ROWS_PER_PAGE,
                     status,
                     q,
+                    priority,
                 })
                 if (cancelled) return
 
@@ -86,7 +91,7 @@ export function useAdminTickets(nameOf, { status, q } = {}) {
         return () => {
             cancelled = true
         }
-    }, [page, attempt, status, q, nameOf])
+    }, [page, attempt, status, q, priority, nameOf])
 
     return { rows, page, pageCount, loading, error, setPage, reload }
 }

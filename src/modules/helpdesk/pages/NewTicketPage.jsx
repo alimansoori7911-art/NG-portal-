@@ -7,6 +7,7 @@ import { z } from 'zod'
 import Header from '../../../components/layout/Header/Header'
 import Input from '../../../components/ui/Input/Input'
 import Select from '../../../components/ui/Select/Select'
+import { TICKET_PRIORITY } from '../../../services/ticketService'
 import Textarea from '../../../components/ui/Textarea/Textarea'
 import Button from '../../../components/ui/Button/Button'
 import Alert from '../../../components/ui/Alert/Alert'
@@ -14,6 +15,13 @@ import { useAuthStore, getIdentifier } from '../../../store/authStore'
 import { useDepartments } from '../hooks/useDepartments'
 import { ticketService } from '../../../services/ticketService'
 import styles from './NewTicketPage.module.css'
+
+/* `Select` با برچسب فارسی کار می‌کند نه کد، پس نگاشت برعکس هم لازم
+   است تا هنگام ارسال، کدِ enum فرستاده شود. */
+const PRIORITY_NAMES = Object.values(TICKET_PRIORITY)
+const PRIORITY_CODES = Object.fromEntries(
+    Object.entries(TICKET_PRIORITY).map(([code, label]) => [label, code])
+)
 
 const schema = z.object({
     username: z.string().min(1, 'نام کاربری الزامی است'),
@@ -27,6 +35,8 @@ const schema = z.object({
         .regex(/^(\+98|0)?9\d{9}$/, 'شماره تماس معتبر نیست'),
     email: z.string().min(1, 'ایمیل الزامی است').email('ایمیل معتبر نیست'),
     department: z.string().min(1, 'انتخاب دپارتمان الزامی است'),
+    /* اولویت اختیاری است — نیامدنش یعنی بک‌اند خودش تصمیم بگیرد */
+    priority: z.string().optional(),
     description: z.string().min(10, 'توضیحات حداقل ۱۰ کاراکتر باشد'),
 })
 
@@ -70,6 +80,7 @@ function NewTicketPage() {
             phone: '',
             email: '',
             department: '',
+            priority: '',
             description: '',
         },
     })
@@ -104,6 +115,7 @@ function NewTicketPage() {
             ticket = await ticketService.createTicket({
                 department_id: departmentId,
                 subject: makeSubject(data.description),
+                priority: PRIORITY_CODES[data.priority],
             })
         } catch (err) {
             setSubmitError(err?.message || 'ثبت تیکت ناموفق بود')
@@ -167,8 +179,23 @@ function NewTicketPage() {
                                 />
                             )}
                         />
-                        {/* ستون خالی کنار دپارتمان — مطابق فیگما */}
-                        <span aria-hidden="true" />
+                        {/* ✅ اسپک ۲۱ اولویت را به ساخت تیکت اضافه کرد؛
+                            جای ستون خالیِ فیگما را می‌گیرد.
+
+                            خالی گذاشتنش مجاز است: بک‌اند می‌گوید در آن
+                            حالت بر اساس وضعیت کاربر تصمیم می‌گیرد. */}
+                        <Controller
+                            name="priority"
+                            control={control}
+                            render={({ field }) => (
+                                <Select
+                                    label="اولویت (اختیاری)"
+                                    options={PRIORITY_NAMES}
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                />
+                            )}
+                        />
 
                         <div className={styles.fullWidth}>
                             <Textarea

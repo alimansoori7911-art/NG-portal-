@@ -6,18 +6,34 @@ import TicketChatModal from '../components/TicketChatModal/TicketChatModal'
 import { useDepartments } from '../../helpdesk/hooks/useDepartments'
 import { useAdminTickets } from '../hooks/useAdminTickets'
 import { useAdminTicketChat } from '../hooks/useAdminTicketChat'
-import { TICKET_STATUS } from '../../../services/ticketService'
+import { TICKET_STATUS, TICKET_PRIORITY } from '../../../services/ticketService'
 import styles from './SupportPage.module.css'
 
 /* عرض ستون‌ها از SVG (از راست): 133.4 | 189 | 181.4 | 177.5 | 216 | 146.8
    از مجموع ۱۰۴۴ (جدول از x=72.5 تا x=1116.5) */
 const TICKET_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '12.77%' },
-    { key: 'username', label: 'نام کاربری', width: '18.10%', ltr: true },
-    { key: 'status', label: 'وضعیت', width: '17.38%' },
-    { key: 'department', label: 'دپارتمان', width: '17.00%' },
-    { key: 'date', label: 'تاریخ', width: '20.69%', ltr: true },
-    { key: 'agent', label: 'کارشناس تخصیص یافته', width: '14.06%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '9%' },
+    { key: 'username', label: 'نام کاربری', width: '16%', ltr: true },
+    { key: 'status', label: 'وضعیت', width: '15%' },
+    {
+        key: 'priority',
+        label: 'اولویت',
+        width: '12%',
+        /* فوری و زیاد باید از یک نگاه پیدا باشند، وگرنه ستون اولویت
+           فقط چهار کلمه‌ی هم‌شکل است. */
+        render: (row) => (
+            <span
+                className={`${styles.priority} ${
+                    styles['priority_' + (row.rawPriority ?? 'normal')] ?? ''
+                }`}
+            >
+                {row.priority || '—'}
+            </span>
+        ),
+    },
+    { key: 'department', label: 'دپارتمان', width: '15%' },
+    { key: 'date', label: 'تاریخ', width: '18%', ltr: true },
+    { key: 'agent', label: 'کارشناس تخصیص یافته', width: '15%', ltr: true },
 ]
 
 /* ستون‌های مشخصات کاربر — از tab22.
@@ -40,6 +56,7 @@ const TABS = [
 
 /* گزینه‌های تغییر وضعیت — همان enum بک‌اند با برچسب فارسی */
 const STATUS_OPTIONS = Object.entries(TICKET_STATUS)
+const PRIORITY_OPTIONS = Object.entries(TICKET_PRIORITY)
 
 /**
  * پشتیبانی و تیکتینگ — دو تب: لیست تیکت‌ها و جزئیات تیکت.
@@ -61,6 +78,7 @@ export default function SupportPage() {
     const [search, setSearch] = useState('')
     const [q, setQ] = useState('')
     const [status, setStatus] = useState('')
+    const [priority, setPriority] = useState('')
 
     useEffect(() => {
         const t = setTimeout(() => setQ(search.trim()), 400)
@@ -68,7 +86,11 @@ export default function SupportPage() {
     }, [search])
 
     const { rows, page, pageCount, loading, error, setPage, reload } =
-        useAdminTickets(nameOf, { status: status || undefined, q: q || undefined })
+        useAdminTickets(nameOf, {
+            status: status || undefined,
+            q: q || undefined,
+            priority: priority || undefined,
+        })
 
     const chat = useAdminTicketChat(chatOpen ? selected?.id : null)
 
@@ -132,6 +154,20 @@ export default function SupportPage() {
                             </option>
                         ))}
                     </select>
+
+                    <select
+                        className={styles.filterSelect}
+                        value={priority}
+                        onChange={(e) => setPriority(e.target.value)}
+                        aria-label="فیلتر اولویت"
+                    >
+                        <option value="">همه‌ی اولویت‌ها</option>
+                        {PRIORITY_OPTIONS.map(([code, label]) => (
+                            <option key={code} value={code}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <AdminTable
@@ -146,7 +182,7 @@ export default function SupportPage() {
                         loading
                             ? 'در حال دریافت تیکت‌ها…'
                             : error ||
-                              (q || status
+                              (q || status || priority
                                   ? 'تیکتی با این فیلتر پیدا نشد'
                                   : 'تیکتی ثبت نشده است')
                     }
