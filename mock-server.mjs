@@ -703,17 +703,47 @@ const fail = (code, message, details = null) => ({
     data: { error: { code, message, details } },
     meta: { request_id: uuid() },
 })
-const page = (items, p = 1, limit = 10) =>
-    ok(items, {
+/* صفحه‌بندی.
+
+   ⚠️ قبلاً این تابع **هیچ‌وقت برش نمی‌زد**: همه‌ی آیتم‌ها را برمی‌گرداند،
+   `has_next` را همیشه `false` می‌گذاشت و پارامتر `page` درخواست را
+   اصلاً نمی‌خواند. یعنی صفحه‌بندی در کل پروژه روی مک هرگز آزمایش
+   نشده بود — دکمه‌ی «صفحه‌ی بعد» همان ردیف‌ها را دوباره نشان می‌داد
+   و روی سرور واقعی تازه معلوم می‌شد.
+
+   حالا `req` را می‌گیرد تا `page`/`limit` را از query بخواند؛ برای
+   سازگاری با ۳۵ فراخوانیِ موجود، آرگومان دوم می‌تواند عدد هم باشد. */
+const page = (items, reqOrPage, limitArg = 10) => {
+    let p = 1
+    let limit = limitArg
+
+    if (typeof reqOrPage === 'number') {
+        p = reqOrPage
+    } else if (reqOrPage?.query) {
+        p = Number(reqOrPage.query.get('page')) || 1
+        limit = Number(reqOrPage.query.get('limit')) || limitArg
+    }
+
+    /* ورودی بی‌معنا نباید آرایه را خالی کند */
+    if (!Number.isFinite(p) || p < 1) p = 1
+    if (!Number.isFinite(limit) || limit < 1) limit = limitArg
+
+    const total = items.length
+    const total_pages = Math.max(1, Math.ceil(total / limit))
+    const start = (p - 1) * limit
+    const slice = items.slice(start, start + limit)
+
+    return ok(slice, {
         pagination: {
             page: p,
             limit,
-            total: items.length,
-            total_pages: Math.max(1, Math.ceil(items.length / limit)),
+            total,
+            total_pages,
             has_previous: p > 1,
-            has_next: false,
+            has_next: start + limit < total,
         },
     })
+}
 
 /* شکل `UserResponseSchema` برای پنل ادمین.
 
@@ -897,12 +927,14 @@ const ISSUE_PLANS = ['pilot', 'basic1', 'basic2', 'basic3', 'enterprise']
 const issuanceView = (it) => {
     if (it.status === 'failed' || it.status === 'issued') return it
     const age = Date.now() - it._queued_at
-    if (age > 9000) {
+    /* برای تست می‌توان کندش کرد: /__mock/issue-speed/<ms> */
+    const SLOW = globalThis.__issueSlow ?? 1
+    if (age > 9000 * SLOW) {
         it.status = 'issued'
         it.issued_at = new Date().toISOString()
         it.license_id = it.license_id ?? cmsId()
         it.external_license_id = it.external_license_id ?? 5000 + db.issuances.length
-    } else if (age > 3000) {
+    } else if (age > 3000 * SLOW) {
         it.status = 'issuing'
     }
     return it
@@ -1330,7 +1362,7 @@ const routes = [
        اینجا دیده نمی‌شد و فقط روی سرور واقعی خودش را نشان می‌داد. */
     ['GET', /^\/ticketing\/tickets$/, (req) => {
         if (!req.user) return [401, fail('UNAUTHORIZED', 'no token')]
-        return page(filterTickets(db.tickets, req.query))
+        return page(filterTickets(db.tickets, req.query), req)
     }],
     ['POST', /^\/ticketing\/tickets$/, (req) => {
         const t = {
@@ -1476,7 +1508,7 @@ const routes = [
         const users = [...db.users.values()]
             .filter((u) => (u.roles ?? []).includes(role.name))
             .map((u) => makeAdminUser(u))
-        return page(users)
+        return page(users, req)
     }],
 
     ['PATCH', /^\/admin\/auth\/roles\/\d+$/, (req) => {
@@ -1755,7 +1787,7 @@ const routes = [
         if (src) rows = rows.filter((r) => r.source === src)
         if (oid) rows = rows.filter((r) => r.order_id === oid)
 
-        return page(rows.slice().reverse())
+        return page(rows.slice().reverse(), req)
     }],
 
     ['GET', /^\/admin\/license\/issuances\/[^/]+$/, (req) => {
@@ -1820,6 +1852,12 @@ const routes = [
         if (!start || !end) {
             return [422, fail('VALIDATION_ERROR', 'قالب تاریخ نامعتبر است')]
         }
+        /* بازه‌ی وارونه (from > to) قبلاً بی‌صدا صفر می‌داد و از
+           «هیچ فروشی نبوده» قابل تشخیص نبود. */
+        if (start.getTime() > end.getTime()) {
+            return [422, fail('VALIDATION_ERROR', '«از تاریخ» نباید بعد از «تا تاریخ» باشد')]
+        }
+
         /* «تا» شامل خودِ روز است، پس تا پایان آن روز شمرده می‌شود */
         const endMs = end.getTime() + 86400000 - 1
 
@@ -1846,7 +1884,7 @@ const routes = [
         })
     }],
 
-    ['GET', /^\/admin\/orders\/payments$/, () => {
+    ['GET', /^\/admin\/orders\/payments$/, (req) => {
         const rows = db.orders
             .filter((o) => (o.payments ?? []).length > 0)
             .map((o) => {
@@ -1861,9 +1899,9 @@ const routes = [
                     PaymentRecords: o.payments,
                 }
             })
-        return page(rows)
+        return page(rows, req)
     }],
-    ['GET', /^\/admin\/orders\/$/, () => page(db.orders)],
+    ['GET', /^\/admin\/orders\/$/, (req) => page(db.orders, req)],
     /* ساخت قیمت برای یک پلن.
 
        یکتایی روی (name, code, term_code, currency, user_id) است —
@@ -1993,7 +2031,7 @@ const routes = [
             ? db.tickets.filter((t) => String(t.user_id) === String(uid))
             : db.tickets
         /* بقیه‌ی فیلترها (`q`, `status_code`, `department_id`, …) */
-        return page(filterTickets(list, req.query))
+        return page(filterTickets(list, req.query), req)
     }],
     /* ── دپارتمان تیکت (ادمین) ──
        ترتیب مهم است: `/members` قبل از `/{id}` بیاید. */
@@ -2540,7 +2578,7 @@ const routes = [
             const now = Date.now()
             rows = rows.filter((d) => new Date(d.valid_until).getTime() >= now)
         }
-        return page(rows)
+        return page(rows, req)
     }],
 
     ['POST', /^\/admin\/discount\/$/, (req) => {
@@ -3385,6 +3423,14 @@ const server = createServer((req, res) => {
         console.log('🔄 داده پاک شد')
         return
     }
+    const sp = path.match(/^\/__mock\/issue-speed\/(\d+)$/)
+    if (sp) {
+        globalThis.__issueSlow = Number(sp[1])
+        res.writeHead(200, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ slowFactor: globalThis.__issueSlow }))
+        return
+    }
+
     const fi = path.match(/^\/__mock\/fail-issuance\/([^/]+)$/)
     if (fi) {
         const it = db.issuances.find((x) => x.id === fi[1])
