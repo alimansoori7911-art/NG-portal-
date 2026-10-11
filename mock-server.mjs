@@ -40,6 +40,8 @@ const db = {
     cmsRedirects: [],
     /* صف صدور لایسنس — اسپک ۲۱ */
     issuances: [],
+    /* درخواست‌های تماس — اسپک ۲۲ خواندنشان را اضافه کرد */
+    contactRequests: [],
     /* دسترسی‌ها و نگاشت نقش→دسترسی.
 
        قبلاً `/admin/auth/permissions` همیشه `[]` می‌داد، یعنی هر UIای
@@ -3352,7 +3354,56 @@ const routes = [
     }],
 
     /* لندینگ */
-    ['POST', /^\/landing\/(contact|subscribe)$/, () => ok({ message: 'ثبت شد' })],
+
+    /* فرم تماس واقعاً ذخیره می‌شود، وگرنه فهرست ادمین همیشه
+       خالی می‌ماند و باگ‌هایش دیده نمی‌شود. */
+    ['POST', /^\/landing\/contact$/, (req) => {
+        const b = req.body || {}
+        for (const f of ['name', 'email', 'phone_number', 'message']) {
+            if (!String(b[f] ?? '').trim()) {
+                return [422, fail('VALIDATION_ERROR', 'فیلد ' + f + ' اجباری است')]
+            }
+        }
+        db.contactRequests.unshift({
+            id: db.contactRequests.length + 1,
+            name: String(b.name),
+            email: String(b.email),
+            phone_number: String(b.phone_number),
+            message: String(b.message),
+            created_at: new Date().toISOString(),
+        })
+        return ok({ message: 'ثبت شد' })
+    }],
+
+    ['POST', /^\/landing\/subscribe$/, () => ok({ message: 'ثبت شد' })],
+
+    /* خواندن درخواست‌ها — اسپک ۲۲. فقط read-only است و
+       `q` عمومی ندارد؛ فیلتر فقط `name` و `email`. */
+    ['GET', /^\/admin\/landing\/contacts$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+
+        const name = (req.query.get('name') || '').trim().toLowerCase()
+        const email = (req.query.get('email') || '').trim().toLowerCase()
+
+        let rows = db.contactRequests
+        if (name) rows = rows.filter((r) => r.name.toLowerCase().includes(name))
+        if (email) rows = rows.filter((r) => r.email.toLowerCase().includes(email))
+
+        return page(rows, req)
+    }],
+
+    ['GET', /^\/admin\/landing\/contacts\/(\d+)$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+        const id = Number(req.path.split('/')[4])
+        const row = db.contactRequests.find((r) => r.id === id)
+        return row ? ok(row) : [404, fail('NOT_FOUND', 'درخواست پیدا نشد')]
+    }],
 
     /* دانلود فایل — `POST /dl/{file_id}` لینک presigned می‌دهد.
 

@@ -28,6 +28,28 @@ export const contactService = {
             .then(unwrap)
     },
 
-    // TODO: اندپوینت لیست درخواست‌ها هنوز در بک‌اند وجود ندارد.
-    // getMyRequests() { ... }
+    /**
+     * GET /admin/landing/contacts — فهرست درخواست‌های تماس (ادمین).
+     *
+     * ✅ اسپک ۲۲ این را اضافه کرد. پیش از آن فقط نوشتن ممکن بود و
+     * درخواست‌های ثبت‌شده از فرانت قابل خواندن نبود.
+     *
+     * ⚠️ فیلتر `q` عمومی ندارد؛ جستجو روی `name` و `email` جداگانه
+     * است. شماره و متن پیام قابل جستجو نیستند.
+     */
+    listRequests({ page = 1, limit = 20, name, email } = {}) {
+        return api
+            .get('/admin/landing/contacts', {
+                params: { page, limit, name: name || undefined, email: email || undefined },
+            })
+            .then((res) => ({
+                items: res.data?.data ?? [],
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    // GET /admin/landing/contacts/{id} — یک درخواست
+    getRequest(contactId) {
+        return api.get(`/admin/landing/contacts/${contactId}`).then(unwrap)
+    },
 }
