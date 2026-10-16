@@ -4,15 +4,19 @@
  * ⚠️ نکته‌ی مهم درباره‌ی این صفحه:
  *
  * اسپک دیزاین برای هر دسته یک لینک داشت («مشاهده مستندات»، «مشاهده
- * نسخه‌ها» و …) ولی **هیچ‌کدام از آن مقصدها وجود ندارند** — نه صفحه‌ای
- * در فرانت، نه اندپوینتی در اسپک بک‌اند (نسخه ۱۹). مستندات، پایگاه
- * دانش، Release Notes و فایل‌های PDF هنوز ساخته نشده‌اند.
+ * نسخه‌ها» و …) و قبلاً هیچ‌کدام مقصد واقعی نداشتند، پس برچسب
+ * «به‌زودی» می‌گرفتند.
  *
- * پس `ready` روی هر آیتم می‌گوید مقصدش آماده است یا نه. آیتم‌های
- * ناآماده به‌جای لینکِ ۴۰۴، برچسب «به‌زودی» می‌گیرند — همان قاعده‌ای که
- * هدر برای «منابع» و «خدمات» داشت.
+ * حالا همه مقصد دارند: `GET /cms/pages` پارامتر `tag` دارد و
+ * صفحه‌ی مقالات فیلتر برچسب را از قبل پشتیبانی می‌کند، پس هر دسته
+ * به `/resources/articles?tag=…` می‌رود. برچسب‌ها در CMS مدیریت
+ * می‌شوند، پس افزودن مقاله به یک دسته کار محتواست نه کد.
  *
- * وقتی هر بخش ساخته شد، کافی است `to` پر و `ready: true` شود.
+ * اگر دسته‌ای هنوز مقاله‌ای نداشته باشد، صفحه‌ی مقالات پیام
+ * «مقاله‌ای یافت نشد» می‌دهد نه خطا — همان چیزی که می‌خواهیم،
+ * چون دسته واقعی است و فقط هنوز خالی است.
+ *
+ * `ready: false` هنوز پشتیبانی می‌شود برای دسته‌های بعدی.
  */
 import {
     FileText,
@@ -21,9 +25,6 @@ import {
     ShieldCheck,
     RefreshCw,
     CloudDownload,
-    Clock,
-    Target,
-    Package,
 } from 'lucide-react'
 
 /* دسته‌بندی منابع — شش کارت اصلی */
@@ -34,7 +35,8 @@ export const CATEGORIES = [
         title: 'مستندات',
         description: 'راهنمای جامع استفاده، پیکربندی و مدیریت NGCorion.',
         linkLabel: 'مشاهده مستندات',
-        ready: false,
+        ready: true,
+        to: '/resources/articles?tag=مستندات',
     },
     {
         id: 'getting-started',
@@ -42,7 +44,8 @@ export const CATEGORIES = [
         title: 'شروع کار',
         description: 'راهنمای گام‌به‌گام برای شروع سریع و آسان.',
         linkLabel: 'مشاهده راهنما',
-        ready: false,
+        ready: true,
+        to: '/resources/articles?tag=شروع-کار',
     },
     {
         id: 'knowledge-base',
@@ -61,7 +64,8 @@ export const CATEGORIES = [
         title: 'امنیت و انطباق',
         description: 'منابع تخصصی امنیت زیرساخت و استانداردهای معتبر.',
         linkLabel: 'مشاهده منابع',
-        ready: false,
+        ready: true,
+        to: '/resources/articles?tag=امنیت',
     },
     {
         id: 'releases',
@@ -69,7 +73,8 @@ export const CATEGORIES = [
         title: 'نسخه‌ها',
         description: 'اطلاع از جدیدترین نسخه‌ها و تغییرات محصول.',
         linkLabel: 'مشاهده نسخه‌ها',
-        ready: false,
+        ready: true,
+        to: '/resources/articles?tag=نسخه‌ها',
     },
     {
         id: 'downloads',
@@ -77,42 +82,8 @@ export const CATEGORIES = [
         title: 'دانلودها',
         description: 'فایل‌ها، بروشورها و منابع قابل دانلود NGCorion.',
         linkLabel: 'مشاهده دانلودها',
-        ready: false,
-    },
-]
-
-/* منابع پیشنهادی — فایل‌های PDF که هنوز وجود ندارند.
-
-   ⚠️ تعداد صفحه‌ها عمداً **حذف** شده‌اند. اسپک «PDF ۱۲ صفحه» داشت،
-   ولی وقتی فایلی وجود ندارد، نوشتن تعداد صفحه‌اش ادعای دروغ است. */
-export const FEATURED = [
-    {
-        id: 'install-guide',
-        icon: FileText,
-        badge: 'مستندات',
-        title: 'راهنمای نصب و راه‌اندازی',
-        description: 'مراحل نصب و پیکربندی اولیه NGCorion',
-    },
-    {
-        id: 'quick-start',
-        icon: Clock,
-        badge: 'راهنما',
-        title: 'شروع سریع',
-        description: 'از نصب تا اولین ارزیابی امنیتی',
-    },
-    {
-        id: 'hardening',
-        icon: Target,
-        badge: 'امنیت',
-        title: 'بهترین روش‌های Hardening',
-        description: 'نکات کلیدی برای ایمن‌سازی دارایی‌ها',
-    },
-    {
-        id: 'product-overview',
-        icon: Package,
-        badge: 'معرفی محصول',
-        title: 'معرفی قابلیت‌های NGCorion',
-        description: 'نمای کلی محصول و کاربردها',
+        ready: true,
+        to: '/resources/articles?tag=دانلودها',
     },
 ]
 

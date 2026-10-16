@@ -76,4 +76,39 @@ export const invoiceService = {
        اگر فاکتور هنوز PDF ندارد (pdf_file_id تهی است) null می‌دهد تا
        صفحه بتواند دکمه را غیرفعال کند به‌جای باز کردن تب خالی. */
     getPdfUrl: fileService.getDownloadUrl,
+
+    /* ───── ادمین — اسپک ۲۲ ─────
+       تا پیش از این، ساخت فاکتور اصلاً مسیری نداشت و تبش زیر
+       پوشش «به‌زودی» بود. */
+
+    /* GET /admin/invoice/ — فهرست همه‌ی فاکتورها */
+    getAdminInvoices({ page = 1, limit = 10, status, invoice_type, user_id } = {}) {
+        return api
+            .get('/admin/invoice/', {
+                params: {
+                    page,
+                    limit,
+                    status: status || undefined,
+                    invoice_type: invoice_type || undefined,
+                    user_id: user_id || undefined,
+                },
+            })
+            .then((res) => ({
+                items: flatten(res.data?.data),
+                pagination: res.data?.meta?.pagination ?? null,
+            }))
+    },
+
+    /* POST /admin/invoice/ — صدور فاکتور دستی.
+
+       ⚠️ سریال و شناسه‌ی پرداخت فرستاده نمی‌شوند: در
+       `InvoiceAdminCreate` نیستند و سرور خودش می‌سازد. */
+    createInvoice(payload) {
+        return api.post('/admin/invoice/', payload).then(unwrap)
+    },
+
+    /* GET /admin/invoice/{id} */
+    getAdminInvoice(invoiceId) {
+        return api.get(`/admin/invoice/${invoiceId}`).then(unwrap)
+    },
 }

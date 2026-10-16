@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import AdminTable from '../components/AdminTable/AdminTable'
-import SystemAlertList from '../components/SystemAlertList/SystemAlertList'
 import ContentForm from '../components/ContentForm/ContentForm'
 import SendNotificationForm from '../components/SendNotificationForm/SendNotificationForm'
 import TemplateForm from '../components/TemplateForm/TemplateForm'
@@ -10,7 +9,6 @@ import {
     useTemplateActions,
 } from '../hooks/useNotificationTemplates'
 import { useReleaseNotes } from '../hooks/useReleaseNotes'
-import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import styles from './SettingsPage.module.css'
 
 /* عرض ستون‌ها از tab1.svg (نوتیفیکیشن) */
@@ -31,7 +29,6 @@ const RELEASE_COLUMNS = [
 
 const TABS = [
     { id: 'notifications', label: 'ارسال نوتیفیکیشن / پیام' },
-    { id: 'alerts', label: 'اعلان‌های سیستمی' },
     { id: 'releases', label: 'ریلیز نوت‌ها (Release Notes)' },
 ]
 
@@ -142,14 +139,7 @@ export default function SettingsPage() {
                 ))}
             </div>
 
-            {/* تب اعلان‌های سیستمی فرم و جدول ندارد — فقط فهرست کارت‌ها */}
-            {tab === 'alerts' ? (
-                /* اعلان‌های سیستمی از خود سیستم می‌آیند و هنوز
-                   اندپوینتی ندارند — فهرست خالی زیر پوشش. */
-                <ComingSoon note="اعلان‌های سیستمی در فاز توسعه اضافه می‌شوند.">
-                    <SystemAlertList items={[]} />
-                </ComingSoon>
-            ) : templateForm ? (
+            {templateForm ? (
                 <TemplateForm
                     template={templateForm === 'new' ? null : templateForm}
                     busy={templateActions.busy}

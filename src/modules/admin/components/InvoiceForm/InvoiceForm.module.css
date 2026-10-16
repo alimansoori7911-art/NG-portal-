@@ -162,3 +162,129 @@
         margin-top: 32px;
     }
 }
+
+/* ═══════════ اقلام فاکتور ═══════════
+   اسپک `items` را اجباری می‌داند، پس فرم باید چند ردیفی باشد. */
+
+.itemsHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.itemsTitle {
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.addBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+}
+
+.addBtn:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.items {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.item {
+    display: grid;
+    grid-template-columns: 1fr 90px 160px 36px;
+    gap: 10px;
+    align-items: end;
+}
+
+.itemField,
+.itemQty,
+.itemPrice {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.itemField:focus-within,
+.itemQty:focus-within,
+.itemPrice:focus-within {
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.removeBtn {
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: transparent;
+    color: #FF6369;
+    cursor: pointer;
+}
+
+.removeBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* ═══════════ جمع‌ها ═══════════
+   محاسبه‌شده‌اند نه ورودی — وگرنه جمع با اقلام نمی‌خواند. */
+
+.totals {
+    margin: 20px 0 0;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.totalRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.totalRow dt,
+.totalRow dd {
+    margin: 0;
+}
+
+.totalFinal {
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--color-white);
+    font-size: var(--font-size-md);
+}
+
+@media (max-width: 768px) {
+    .item {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .itemField {
+        grid-column: 1 / -1;
+    }
+}

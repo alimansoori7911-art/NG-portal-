@@ -14,13 +14,13 @@ import styles from './TermsPage.module.css'
 
 /* چیپ‌های «لینک‌های مرتبط».
 
-   دو تای اول به همین صفحه می‌روند (تب دیگر)، بقیه هنوز صفحه ندارند و
-   `to: null` می‌گیرند تا به‌جای لینک شکسته، غیرفعال نشان داده شوند —
-   همان قاعده‌ای که هدر برای آیتم‌های «به‌زودی» دارد. */
+   دو تای اول به همین صفحه می‌روند (تب دیگر) و بقیه مقصد واقعی
+   دارند. `to: null` هنوز پشتیبانی می‌شود: چیپ بی‌مقصد به‌جای لینک
+   شکسته غیرفعال نشان داده می‌شود. */
 const RELATED_LINKS = [
     { icon: Shield, label: 'حریم خصوصی', docId: 'privacy' },
     { icon: FileText, label: 'قوانین و مقررات', docId: 'terms' },
-    { icon: Lock, label: 'امنیت', to: null },
+    { icon: Lock, label: 'امنیت', to: '/resources/articles?tag=امنیت' },
     { icon: Headset, label: 'پشتیبانی', to: '/helpdesk' },
 ]
 

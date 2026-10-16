@@ -3325,7 +3325,89 @@ const routes = [
         db.notifications = db.notifications.filter((x) => x.id !== id)
         return ok({ message: 'deleted' })
     }],
-    ['GET', /^\/invoice\/$/, () => page(db.invoices)],
+    ['GET', /^\/invoice\/$/, (req) => page(db.invoices, req)],
+
+    /* فاکتور — ادمین (اسپک ۲۲).
+
+       اعتبارسنجی عمداً سختگیرانه است: مکِ سهل‌گیر باعث می‌شود
+       فرمی که اینجا کار می‌کند روی سرور واقعی ۴۲۲ بگیرد. */
+    ['GET', /^\/admin\/invoice\/$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+
+        let rows = db.invoices
+        const type = req.query.get('invoice_type')
+        const status = req.query.get('status')
+        if (type) rows = rows.filter((i) => i.invoice_type === type)
+        if (status) rows = rows.filter((i) => i.status === status)
+
+        return page(rows, req)
+    }],
+
+    ['POST', /^\/admin\/invoice\/$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+
+        const b = req.body || {}
+
+        if (!Number.isFinite(Number(b.user_id)) || Number(b.user_id) < 1) {
+            return [422, fail('VALIDATION_ERROR', 'کاربر نامعتبر است')]
+        }
+        if (!['proforma', 'invoice'].includes(b.invoice_type)) {
+            return [422, fail('VALIDATION_ERROR', 'نوع فاکتور نامعتبر است')]
+        }
+        if (!Array.isArray(b.items) || b.items.length === 0) {
+            return [422, fail('VALIDATION_ERROR', 'دست‌کم یک قلم لازم است')]
+        }
+        for (const it of b.items) {
+            if (!String(it.title ?? '').trim()) {
+                return [422, fail('VALIDATION_ERROR', 'عنوان قلم اجباری است')]
+            }
+            if (!Number.isFinite(Number(it.quantity)) || Number(it.quantity) < 1) {
+                return [422, fail('VALIDATION_ERROR', 'تعداد قلم نامعتبر است')]
+            }
+        }
+        if (b.total_amount == null) {
+            return [422, fail('VALIDATION_ERROR', 'مبلغ نهایی اجباری است')]
+        }
+
+        const seq = 1000 + db.invoices.length + 1
+        const row = {
+            id: uuid(),
+            invoice_number: `INV-${seq}`,
+            invoice_type: b.invoice_type,
+            status: 'issued',
+            user_id: Number(b.user_id),
+            snapshot_plan_name: b.snapshot_plan_name ?? null,
+            snapshot_product_name: b.snapshot_product_name ?? null,
+            note: b.note ?? null,
+            items: b.items,
+            subtotal_amount: String(b.subtotal_amount ?? '0'),
+            discount_amount: String(b.discount_amount ?? '0'),
+            tax_amount: String(b.tax_amount ?? '0'),
+            total_amount: String(b.total_amount),
+            currency: b.currency || 'IRR',
+            issued_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            pdf_file_id: null,
+        }
+        db.invoices.unshift(row)
+        return [201, ok(row)]
+    }],
+
+    ['GET', /^\/admin\/invoice\/[^/]+$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+        const id = req.path.split('/')[3]
+        const row = db.invoices.find((i) => i.id === id)
+        return row ? ok(row) : [404, fail('NOT_FOUND', 'فاکتور پیدا نشد')]
+    }],
     ['GET', /^\/audit\/$/, () => page([])],
 
     /* لایسنس — اسپک ۱۷.

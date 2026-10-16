@@ -8,7 +8,6 @@ import SectionHeader from '../../marketing/components/SectionHeader/SectionHeade
 import heroImage from '../../../assets/images/illustrations/resources-hero.svg'
 import {
     CATEGORIES,
-    FEATURED,
     POPULAR,
     TOPICS,
 } from '../content/resourcesContent'
@@ -104,30 +103,6 @@ export default function ResourcesPage() {
                                     </li>
                                 )
                             )}
-                        </ul>
-                    </section>
-
-                    <section className={styles.section}>
-                        <SectionHeader
-                            title="منابع پیشنهادی"
-                            subtitle="مهم‌ترین و پرکاربردترین منابع برای شروع کار یا عمیق‌تر شدن در موضوعات مختلف."
-                        />
-
-                        <ul className={styles.featuredGrid}>
-                            {FEATURED.map(({ id, icon: Icon, badge, title, description }) => (
-                                <li key={id} className={styles.featured}>
-                                    <div className={styles.featuredTop}>
-                                        <span className={styles.featuredIcon} aria-hidden="true">
-                                            <Icon size={18} />
-                                        </span>
-                                        <span className={styles.featuredBadge}>{badge}</span>
-                                    </div>
-
-                                    <h3 className={styles.featuredTitle}>{title}</h3>
-                                    <p className={styles.featuredText}>{description}</p>
-                                    <span className={styles.featuredSoon}>به‌زودی منتشر می‌شود</span>
-                                </li>
-                            ))}
                         </ul>
                     </section>
 

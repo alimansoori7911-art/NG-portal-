@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { X } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import InvoiceForm from '../components/InvoiceForm/InvoiceForm'
-import ComingSoon from '../../../components/ui/ComingSoon/ComingSoon'
 import { useAdminPayments } from '../hooks/useAdminPayments'
+import { useAdminInvoices, useInvoiceActions } from '../hooks/useAdminInvoices'
+import { useAdminUsers } from '../hooks/useAdminUsers'
 import { useSalesReport } from '../hooks/useSalesReport'
 import DiscountForm from '../components/DiscountForm/DiscountForm'
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog'
@@ -25,12 +26,20 @@ const TRANSACTION_COLUMNS = [
     { key: 'date', label: 'تاریخ', width: '11.00%', ltr: true },
 ]
 
-/* ستون‌های فاکتورها — از tab2.svg */
+/* ستون‌های فاکتورها — از tab2.svg
+
+   ⚠️ ستون «نام کاربر» که در فیگما بود حذف شد: خروجی
+   `GET /admin/invoice/` از نوع `PublicInvoiceListItemSchema` است که
+   نه `user_id` دارد نه نام کاربر — حتی `AdminInvoiceDetailSchema`
+   هم ندارد. پس این ستون همیشه '—' می‌شد.
+   به‌جایش نوع و مبلغ را نشان می‌دهیم که واقعاً می‌آیند.
+   از بک‌اند خواسته شد (بند ۱.۴ در BACKEND_REQUESTS.md). */
 const INVOICE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '17.95%' },
-    { key: 'user', label: 'نام کاربر', width: '31.24%', ltr: true },
-    { key: 'serial', label: 'شماره سریال فاکتور', width: '31.19%', ltr: true },
-    { key: 'issuedAt', label: 'تاریخ صدور', width: '19.62%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '10%' },
+    { key: 'serial', label: 'شماره سریال فاکتور', width: '28%', ltr: true },
+    { key: 'type', label: 'نوع', width: '16%' },
+    { key: 'amount', label: 'مبلغ', width: '24%', ltr: true },
+    { key: 'issuedAt', label: 'تاریخ صدور', width: '22%', ltr: true },
 ]
 
 const TABS = [
@@ -68,11 +77,11 @@ const DISCOUNT_COLUMNS = [
  * رسیدهای پرداخت سیستم. تا پیش از این تنها راه دیدن رسید، باز کردن
  * تک‌تک سفارش‌ها در صفحه‌ی فروش بود.
  *
- * «صدور فاکتور» هنوز اندپوینت ندارد و `ComingSoon` می‌ماند.
+ * «مدیریت و صدور فاکتور» از اسپک ۲۲ به `/admin/invoice/` وصل شد
+ * (قبلاً زیر پوشش «به‌زودی» با جدول خالی هاردکد بود).
  */
 export default function FinancePage() {
     const [tab, setTab] = useState('transactions')
-    const [page, setPage] = useState(1)
     const payments = useAdminPayments()
     const sales = useSalesReport()
 
@@ -110,11 +119,23 @@ export default function FinancePage() {
     }
     const [selectedId, setSelectedId] = useState(null)
     const [creating, setCreating] = useState(false)
+
+    /* فاکتورها — اسپک ۲۲.
+       فهرست کاربران برای انتخاب گیرنده‌ی فاکتور لازم است؛
+       `user_id` در `InvoiceAdminCreate` اجباری است. */
+    const invoices = useAdminInvoices()
+    const invoiceActions = useInvoiceActions(() => {
+        setCreating(false)
+        invoices.reload()
+    })
+    const adminUsers = useAdminUsers()
     const [fieldErrors, setFieldErrors] = useState({})
 
     const switchTab = (id) => {
         setTab(id)
-        setPage(1)
+        /* هر تب صفحه‌بندی خودش را دارد؛ فاکتور باید به صفحه‌ی ۱
+           برگردد وگرنه با بازگشت به تب، صفحه‌ی قبلی باز می‌ماند. */
+        invoices.setPage(1)
         setSelectedId(null)
         setCreating(false)
         setFieldErrors({})
@@ -154,19 +175,28 @@ export default function FinancePage() {
         </div>
     )
 
-    const handleCreateInvoice = (values) => {
-        /* TODO: اندپوینت صدور فاکتور وجود ندارد.
-           فعلاً فقط اعتبارسنجی خالی نبودن. */
+    /* اعتبارسنجی مطابق `InvoiceAdminCreate`: کاربر و دست‌کم یک قلمِ
+       معتبر اجباری‌اند. جلوی ارسال نامعتبر را همینجا می‌گیریم تا
+       کاربر پیام فارسی ببیند نه ۴۲۲ی که فیلدش معلوم نیست. */
+    const handleCreateInvoice = async (payload) => {
         const errors = {}
-        if (!values.serial.trim()) errors.serial = 'شماره سریال فاکتور الزامی است'
-        if (!values.paymentId.trim()) errors.paymentId = 'شناسه پرداخت الزامی است'
+
+        if (!payload.user_id) errors.user_id = 'کاربر را انتخاب کنید'
+
+        const valid = payload.items.filter(
+            (it) => it.title && it.quantity > 0 && it.unit_price > 0
+        )
+        if (valid.length === 0) {
+            errors.items = 'دست‌کم یک قلم با عنوان، تعداد و قیمت لازم است'
+        }
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors)
             return
         }
+
         setFieldErrors({})
-        setCreating(false)
+        await invoiceActions.create({ ...payload, items: valid })
     }
 
     return (
@@ -185,8 +215,7 @@ export default function FinancePage() {
                 ))}
             </div>
 
-            {/* تراکنش‌ها و کد تخفیف داده‌ی واقعی دارند؛ فاکتور هنوز
-                اندپوینت ندارد پس فقط آن تب زیر ComingSoon می‌ماند. */}
+            {/* هر سه تب حالا داده‌ی واقعی دارند */}
             {isDiscounts ? (
                 discountForm ? (
                     <DiscountForm
@@ -274,47 +303,61 @@ export default function FinancePage() {
                     </>
                 )
             ) : isInvoices ? (
-                <ComingSoon note="صدور فاکتور در فاز توسعه اضافه می‌شود.">
-                    {creating ? (
-                        <InvoiceForm
-                            fieldErrors={fieldErrors}
-                            onSubmit={handleCreateInvoice}
-                            onFieldChange={(key) =>
-                                setFieldErrors((prev) => {
-                                    const next = { ...prev }
-                                    delete next[key]
-                                    return next
-                                })
-                            }
-                            onClose={() => {
-                                setCreating(false)
-                                setFieldErrors({})
-                            }}
-                        />
-                    ) : (
-                        <>
-                            <div className={styles.toolbar}>
-                                <button
-                                    type="button"
-                                    className={styles.createBtn}
-                                    onClick={() => setCreating(true)}
-                                >
-                                    صدور فاکتور
-                                </button>
-                            </div>
+                creating ? (
+                    <InvoiceForm
+                        users={adminUsers.rows}
+                        usersLoading={adminUsers.loading}
+                        saving={invoiceActions.busy}
+                        fieldErrors={fieldErrors}
+                        onSubmit={handleCreateInvoice}
+                        onFieldChange={(key) =>
+                            setFieldErrors((prev) => {
+                                const next = { ...prev }
+                                delete next[key]
+                                return next
+                            })
+                        }
+                        onClose={() => {
+                            setCreating(false)
+                            setFieldErrors({})
+                            invoiceActions.clearError()
+                        }}
+                    />
+                ) : (
+                    <>
+                        {invoiceActions.error && (
+                            <p className={styles.error} role="alert">
+                                {invoiceActions.error}
+                            </p>
+                        )}
 
-                            <AdminTable
-                                columns={INVOICE_COLUMNS}
-                                rows={[]}
-                                page={page}
-                                onPageChange={setPage}
-                                selectedId={selectedId}
-                                onRowClick={toggleRow}
-                                renderRowActions={rowActions}
-                            />
-                        </>
-                    )}
-                </ComingSoon>
+                        <div className={styles.toolbar}>
+                            <button
+                                type="button"
+                                className={styles.createBtn}
+                                onClick={() => setCreating(true)}
+                            >
+                                صدور فاکتور
+                            </button>
+                        </div>
+
+                        <AdminTable
+                            columns={INVOICE_COLUMNS}
+                            rows={invoices.rows}
+                            page={invoices.page}
+                            pageCount={invoices.pageCount}
+                            onPageChange={invoices.setPage}
+                            selectedId={selectedId}
+                            onRowClick={toggleRow}
+                            renderRowActions={rowActions}
+                            emptyMessage={
+                                invoices.loading
+                                    ? 'در حال دریافت فاکتورها…'
+                                    : invoices.error || 'فاکتوری صادر نشده است'
+                            }
+                        />
+                    </>
+                )
             ) : (
                 <>
                     {payments.error && (
