@@ -206,3 +206,12 @@
         width: calc(100vw - 22px);
     }
 }
+/* دکمه‌ی پنل مدیریت — فقط برای ادمین دیده می‌شود.
+   کمی متمایز است چون خروج از فضای داشبورد کاربر است. */
+.adminBtn {
+    color: var(--color-primary, #2F6BFF);
+}
+
+.adminBtn .actionIcon {
+    color: inherit;
+}

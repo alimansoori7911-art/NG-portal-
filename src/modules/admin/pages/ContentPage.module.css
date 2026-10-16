@@ -19,6 +19,7 @@
 }
 
 .tab {
+    flex-shrink: 0;
     height: 40px;
     padding: 0 20px;
     border: none;
@@ -124,6 +125,19 @@
         gap: var(--spacing-sm);
         margin: 20px 0 16px;
         overflow-x: auto;
+        /* بدون این‌ها آخرین تب به لبه می‌چسبد و بریده به‌نظر
+           می‌رسد؛ پد انتهایی نشان می‌دهد که جای بیشتری هست. */
+        padding-inline-end: 16px;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        scroll-snap-align: start;
     }
 
     .tab {
@@ -464,4 +478,18 @@
     .cardActions .rowActionBtn {
         flex: 1;
     }
+}
+
+/* هشدار صادقانه: صفحه‌های ساختاریافته هنوز روی سایت نمی‌روند.
+   بدون این، ادمین محتوا می‌نویسد و منتظر می‌ماند ظاهر شود. */
+.warnNote {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    background: rgb(255 176 32 / 10%);
+    border: 1px solid rgb(255 176 32 / 35%);
+    border-radius: 12px;
+    color: #FFB020;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    line-height: 1.9;
 }

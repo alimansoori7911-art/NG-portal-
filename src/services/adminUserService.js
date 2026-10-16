@@ -54,12 +54,38 @@ export const adminUserService = {
         return api.get(`/admin/auth/users/${userId}`).then(unwrap)
     },
 
-    /* PATCH /admin/auth/users/{id} — فقط فعال/مسدود کردن */
-    updateUser(userId, { is_active, is_blocked } = {}) {
+    /* فیلدهایی که `UserUpdateSchema` می‌پذیرد.
+
+       ⚠️ قبلاً فقط `is_active`/`is_blocked` بود و دکمه‌ی «ویرایش
+       اطلاعات» به همین دلیل پیاده نشده بود. اسپک فعلی همه‌ی
+       این‌ها را می‌پذیرد.
+
+       ⚠️ `is_verifed` غلط املایی خودِ اسپک است (نه `is_verified`).
+       عمداً همان‌طور نوشته شده تا درخواست رد نشود؛ از بک‌اند
+       خواسته شده درستش کنند (BACKEND_REQUESTS.md). */
+    USER_PATCH_FIELDS: [
+        'is_active',
+        'is_verifed',
+        'is_blocked',
+        'username',
+        'email',
+        'phone',
+        'national_id',
+        'first_name',
+        'last_name',
+        'birth_date',
+        'company_name',
+        'position',
+        'company_address',
+    ],
+
+    /* PATCH /admin/auth/users/{id} */
+    updateUser(userId, changes = {}) {
         const body = {}
         /* فیلد نافرستاده یعنی «تغییر نده»؛ فرستادن null آن را پاک می‌کند */
-        if (is_active != null) body.is_active = is_active
-        if (is_blocked != null) body.is_blocked = is_blocked
+        for (const key of adminUserService.USER_PATCH_FIELDS) {
+            if (changes[key] != null) body[key] = changes[key]
+        }
 
         return api.patch(`/admin/auth/users/${userId}`, body).then(unwrap)
     },

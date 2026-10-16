@@ -91,6 +91,7 @@ export default function UsersPage() {
         remove,
         assignRole,
         setVip,
+        updateUser,
     } = useUserActions(reload)
 
     /* لاگ ممیزی فقط وقتی تب دومش باز است بارگذاری می‌شود */
@@ -495,7 +496,25 @@ export default function UsersPage() {
             <UserProfileModal
                 open={profileUser !== null}
                 user={profileUser}
-                onClose={() => setProfileUser(null)}
+                saving={busy}
+                saveError={actionError}
+                onSave={async (u, changes) => {
+                    if (Object.keys(changes).length === 0) return true
+                    const ok = await updateUser(u.id, changes)
+                    /* مودال از روی `profileUser` رندر می‌شود و بعد از
+                       ذخیره باید داده‌ی تازه را نشان بدهد؛ `reload` فهرست
+                       را تازه می‌کند ولی این شیء را نه. */
+                    if (ok) {
+                        setProfileUser((prev) =>
+                            prev ? { ...prev, ...changes } : prev
+                        )
+                    }
+                    return ok
+                }}
+                onClose={() => {
+                    setProfileUser(null)
+                    clearError()
+                }}
             />
 
             {permsFor && (

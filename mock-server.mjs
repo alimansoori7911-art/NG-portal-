@@ -813,7 +813,21 @@ function makeAdminUser(u, index) {
             assigned_by: null,
         })),
         permissions: [],
-        kyc_profile: null,
+        /* نام و تاریخ تولد در `kyc_profile` می‌آیند نه روی خودِ کاربر —
+           `UserResponseSchema` این فیلدها را ندارد. قبلاً همیشه null بود و
+           بعد از ویرایش، نام ذخیره‌شده جایی دیده نمی‌شد. */
+        kyc_profile:
+            u.first_name || u.last_name || u.national_id
+                ? {
+                      id: u.id,
+                      first_name: u.first_name ?? null,
+                      last_name: u.last_name ?? null,
+                      national_id: u.national_id ?? null,
+                      birth_date: u.birth_date ?? null,
+                      status: u.is_verified ? 'verified' : 'pending',
+                      verified_at: null,
+                  }
+                : null,
     }
 }
 
@@ -1709,7 +1723,57 @@ const routes = [
         console.log(`   🏷️  نقش ${role.name} به ${u.username} داده شد`)
         return ok({ message: 'assigned' })
     }],
-    ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'updated' })],
+    /* PATCH /admin/auth/users/{id}
+
+       قبلاً فقط `{message:'updated'}` می‌داد و هیچ چیزی ذخیره
+       نمی‌کرد: فرم ویرایش موفق به‌نظر می‌رسید ولی داده عوض
+       نمی‌شد و هیچ باگی دیده نمی‌شد. */
+    ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+
+        const id = Number(req.path.split('/')[4])
+        const target = [...db.users.values()].find((x) => x.id === id)
+        if (!target) return [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+
+        const b = req.body || {}
+
+        /* یکتایی نام کاربری — سرور واقعی هم کنترلش می‌کند */
+        if (b.username != null && b.username !== target.username) {
+            if (db.users.has(b.username)) {
+                return [409, fail('CONFLICT', 'این نام کاربری قبلاً گرفته شده است')]
+            }
+        }
+
+        if (b.email != null && b.email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) {
+            return [422, fail('VALIDATION_ERROR', 'ایمیل معتبر نیست')]
+        }
+        if (b.national_id != null && b.national_id !== '' && !/^\d{10}$/.test(b.national_id)) {
+            return [422, fail('VALIDATION_ERROR', 'کد ملی باید ۱۰ رقم باشد')]
+        }
+
+        const oldUsername = target.username
+
+        for (const k of ['email', 'national_id', 'first_name', 'last_name',
+                         'birth_date', 'company_name', 'position', 'company_address']) {
+            if (b[k] != null) target[k] = b[k]
+        }
+        if (b.phone != null) target.phone = b.phone
+        if (b.is_active != null) target.is_active = b.is_active
+        if (b.is_blocked != null) target.is_blocked = b.is_blocked
+        if (b.is_verifed != null) target.is_verified = b.is_verifed
+
+        /* کلید مپ خودِ username است، پس تغییرش یعنی جابه‌جایی رکورد */
+        if (b.username != null && b.username !== oldUsername) {
+            target.username = b.username
+            db.users.delete(oldUsername)
+            db.users.set(b.username, target)
+        }
+
+        return ok({ message: 'updated' })
+    }],
     ['DELETE', /^\/admin\/auth\/users\/[^/]+$/, () => ok({ message: 'deleted' })],
 
     /* همه‌ی پرداخت‌های سیستم — شکل `PaymentRecordOutputAdmin`.

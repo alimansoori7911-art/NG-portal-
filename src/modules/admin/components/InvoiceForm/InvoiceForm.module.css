@@ -280,11 +280,33 @@
 }
 
 @media (max-width: 768px) {
+    /* چهار ستون در عرض کم جا نمی‌شوند: عنوان یک ردیف
+       کامل، تعداد و قیمت کنار هم، دکمه‌ی حذف هم‌ردیف آن‌ها.
+       قبلاً دکمه زیر فیلدها می‌افتاد و نصفه بریده می‌شد. */
     .item {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
     }
 
     .itemField {
         grid-column: 1 / -1;
+    }
+
+    .removeBtn {
+        width: 44px;
+    }
+}
+
+@media (max-width: 420px) {
+    /* در عرض‌های خیلی کم، دکمه‌ی حذف ردیف خودش را می‌گیرد
+       تا فیلدهای عددی له نشوند. */
+    .item {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .removeBtn {
+        grid-column: 1 / -1;
+        width: 100%;
+        height: 38px;
     }
 }

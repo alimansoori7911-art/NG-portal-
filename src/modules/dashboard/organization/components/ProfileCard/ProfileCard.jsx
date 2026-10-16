@@ -107,6 +107,15 @@ export default function ProfileCard({ user, onEdit }) {
                 <TextRow label="سمت" value={user?.position} />
                 <TextRow label="آدرس شرکت" value={user?.company_address} />
             </dl>
+
+            {/* بدون این جمله، کاربر دنبال دکمه‌ی ویرایش ایمیل
+                می‌گردد و پیدا نمی‌کند: `UserProfilePatchSchema` فقط نام،
+                تاریخ تولد و اطلاعات شرکت را می‌پذیرد. */}
+            <p className={styles.hint}>
+                نام کاربری، ایمیل و شماره‌ی تماس شناسه‌ی حساب شمایند و
+                از این صفحه قابل تغییر نیستند. برای تغییرشان با پشتیبانی
+                تماس بگیرید.
+            </p>
         </section>
     )
 }

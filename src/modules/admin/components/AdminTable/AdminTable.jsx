@@ -1,3 +1,4 @@
+import { MousePointerClick } from 'lucide-react'
 import styles from './AdminTable.module.css'
 
 /**
@@ -59,8 +60,21 @@ export default function AdminTable({
             ? rows.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage)
             : rows
 
+    /* بدون این خط، دکمه‌های ویرایش/حذف نامرئی‌اند: فقط بعد از
+       کلیک روی ردیف باز می‌شوند و هیچ نشانه‌ای هم نیست. بعد از
+       انتخاب اولین ردیف دیگر لازم نیست و محو می‌شود. */
+    const showRowHint =
+        Boolean(onRowClick) && Boolean(renderRowActions) && visibleRows.length > 0
+
     return (
         <div className={styles.wrapper}>
+            {showRowHint && (
+                <p className={styles.rowHint}>
+                    <MousePointerClick size={14} aria-hidden="true" />
+                    برای دیدن دکمه‌های ویرایش و حذف، روی ردیف کلیک کنید
+                </p>
+            )}
+
             <div className={styles.card}>
                 <div className={styles.scroll}>
                     <table className={styles.table}>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import AdminSidebar from '../AdminSidebar/AdminSidebar'
 import AdminTopbar from '../AdminTopbar/AdminTopbar'
+import AdminHelpModal from '../AdminHelpModal/AdminHelpModal'
 import { ADMIN_MENU_ITEMS } from '../../constants/menuItems'
 import styles from './AdminLayout.module.css'
 
@@ -14,6 +15,7 @@ import styles from './AdminLayout.module.css'
  */
 export default function AdminLayout() {
     const [menuOpen, setMenuOpen] = useState(false)
+    const [helpOpen, setHelpOpen] = useState(false)
     const location = useLocation()
 
     /* با تغییر مسیر منوی کشویی بسته می‌شود — تنظیم state حین رندر
@@ -22,6 +24,7 @@ export default function AdminLayout() {
     if (lastPath !== location.pathname) {
         setLastPath(location.pathname)
         setMenuOpen(false)
+        setHelpOpen(false)
     }
 
     const current = ADMIN_MENU_ITEMS.find((item) =>
@@ -37,11 +40,18 @@ export default function AdminLayout() {
                 <AdminTopbar
                     title={current?.label ?? 'پنل مدیریت'}
                     onMenuClick={() => setMenuOpen(true)}
+                    onHelpClick={() => setHelpOpen(true)}
                 />
 
                 <main className={styles.main}>
                     <Outlet />
                 </main>
+
+                <AdminHelpModal
+                    open={helpOpen}
+                    path={current?.path ?? location.pathname}
+                    onClose={() => setHelpOpen(false)}
+                />
             </div>
         </div>
     )

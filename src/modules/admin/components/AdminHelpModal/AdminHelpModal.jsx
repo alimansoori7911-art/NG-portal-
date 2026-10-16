@@ -1,0 +1,136 @@
+import { useEffect } from 'react'
+import { X, MousePointerClick } from 'lucide-react'
+import styles from './AdminHelpModal.module.css'
+
+/**
+ * راهنمای هر صفحه‌ی پنل.
+ *
+ * دکمه‌ی «؟» بالای پنل قبلاً هیچ کاری نمی‌کرد. این مودال جایش را
+ * پر می‌کند و مهم‌تر از آن، نکته‌ای را توضیح می‌دهد که بدون راهنما
+ * قابل حدس نیست: **برای دیدن دکمه‌های ویرایش و حذف باید اول روی
+ * ردیف کلیک کرد**.
+ */
+const COMMON = [
+    'برای دیدن دکمه‌های «ویرایش»، «حذف» و بقیه‌ی عملیات، اول روی ردیف جدول کلیک کنید؛ نوار عملیات پایین همان ردیف باز می‌شود.',
+    'برای بستن نوار عملیات، دوباره روی همان ردیف کلیک کنید یا دکمه‌ی ضربدر آن را بزنید.',
+]
+
+const PAGES = {
+    '/admin/users': {
+        title: 'کاربران و دسترسی‌ها',
+        lines: [
+            'در «لیست کاربران» می‌توانید کاربر بسازید، فعال/غیرفعال کنید و نقش بدهید.',
+            'نقش VIP یک نقش معمولی است: اول در تب «نقش‌ها و دسترسی‌ها» ساخته می‌شود، بعد به کاربر داده می‌شود.',
+            'تیک «فقط مدیران» فهرست را به کاربران دارای نقش ادمین محدود می‌کند.',
+        ],
+    },
+    '/admin/support': {
+        title: 'پشتیبانی و تیکتینگ',
+        lines: [
+            'برای پاسخ دادن به یک تیکت، روی ردیفش کلیک کنید و «جزئیات» را بزنید.',
+            'در تب «دپارتمان‌ها» می‌توانید دپارتمان بسازید و کارشناس به آن اضافه کنید.',
+        ],
+    },
+    '/admin/sales': {
+        title: 'فروش و مشتریان',
+        lines: [
+            'در «صدور لایسنس»، بعد از ثبت درخواست وضعیت «در حال صدور» می‌ماند و خودکار تازه می‌شود؛ لازم نیست صفحه را رفرش کنید.',
+            'اگر صدور ناموفق شد، دکمه‌ی «تلاش دوباره» روی همان ردیف ظاهر می‌شود.',
+        ],
+    },
+    '/admin/finance': {
+        title: 'مدیریت مالی',
+        lines: [
+            'در «تراکنش‌ها» رسیدهای پرداخت را می‌بینید و می‌توانید تأییدشان کنید.',
+            'در «مدیریت و صدور فاکتور»، مبلغ نهایی از روی اقلام محاسبه می‌شود؛ لازم نیست دستی وارد کنید.',
+            'گزارش فروش بالای صفحه، جمع کل سیستم در بازه‌ی انتخابی است نه فقط این صفحه.',
+        ],
+    },
+    '/admin/catalog': {
+        title: 'محصولات و کاتالوگ',
+        lines: [
+            'ترتیب درست ساخت: دسته‌بندی ← محصول ← پلن ← قیمت.',
+            'ویژگی‌ها جدا ساخته می‌شوند و بعد به پلن وصل می‌شوند.',
+        ],
+    },
+    '/admin/content': {
+        title: 'مدیریت محتوا',
+        lines: [
+            '«ذخیره» صفحه را منتشر نمی‌کند؛ فقط یک نسخه‌ی تازه می‌سازد. برای دیده شدن روی سایت باید «انتشار» را بزنید.',
+            'صفحه‌ای که دسترسی‌اش «خصوصی» است حتی بعد از انتشار روی سایت دیده نمی‌شود. در فرم ویرایش تیک «صفحه برای همه قابل دیدن باشد» را بزنید.',
+            'در «صفحه‌های ساختاریافته» فقط محتوای بلوک‌ها قابل تغییر است؛ چیدمان ثابت است.',
+        ],
+    },
+    '/admin/settings': {
+        title: 'ابزارها و تنظیمات',
+        lines: [
+            'با «فرم ارسال نوتیفیکیشن» می‌توانید به یک کاربر یا همه‌ی کاربران پیام بفرستید.',
+            'قالب‌های اعلان برای پیام‌های تکراری‌اند تا هر بار از نو ننویسید.',
+        ],
+    },
+}
+
+export default function AdminHelpModal({ open, path, onClose }) {
+    useEffect(() => {
+        if (!open) return
+        const onKey = (e) => e.key === 'Escape' && onClose?.()
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+    }, [open, onClose])
+
+    if (!open) return null
+
+    const page = PAGES[path] ?? {
+        title: 'راهنمای پنل',
+        lines: [],
+    }
+
+    return (
+        <div className={styles.backdrop} onClick={onClose}>
+            <div
+                className={styles.modal}
+                role="dialog"
+                aria-modal="true"
+                aria-label={`راهنمای ${page.title}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button
+                    type="button"
+                    className={styles.close}
+                    onClick={onClose}
+                    aria-label="بستن راهنما"
+                >
+                    <X size={16} strokeWidth={3} />
+                </button>
+
+                <h2 className={styles.title}>راهنمای «{page.title}»</h2>
+
+                {page.lines.length > 0 && (
+                    <ul className={styles.list}>
+                        {page.lines.map((t, i) => (
+                            <li key={i} className={styles.item}>
+                                {t}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                <div className={styles.tip}>
+                    <span className={styles.tipIcon} aria-hidden="true">
+                        <MousePointerClick size={16} />
+                    </span>
+                    <div>
+                        <p className={styles.tipTitle}>نکته‌ی مشترک همه‌ی جدول‌ها</p>
+                        <ul className={styles.list}>
+                            {COMMON.map((t, i) => (
+                                <li key={i} className={styles.item}>
+                                    {t}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}

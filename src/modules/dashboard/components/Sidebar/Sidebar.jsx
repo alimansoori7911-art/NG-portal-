@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Circle, House, LogOut, ShoppingCart, User } from 'lucide-react'
+import { Circle, House, LogOut, Shield, ShoppingCart, User } from 'lucide-react'
 import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
-import { useAuthStore, getDisplayName } from '../../../../store/authStore'
+import { useAuthStore, getDisplayName, hasRole } from '../../../../store/authStore'
 import styles from './Sidebar.module.css'
 
 /**
@@ -17,6 +17,10 @@ export default function Sidebar({ items = [], open = false, onClose }) {
     const navigate = useNavigate()
     const user = useAuthStore((s) => s.user)
     const logout = useAuthStore((s) => s.logout)
+
+    /* ادمین با همین فرم وارد می‌شود و در داشبورد کاربر می‌افتد؛
+       بدون این لینک باید آدرس /admin را دستی تایپ کند. */
+    const isAdmin = hasRole(user, 'admin')
 
     const [logoutOpen, setLogoutOpen] = useState(false)
     const [loggingOut, setLoggingOut] = useState(false)
@@ -77,6 +81,17 @@ export default function Sidebar({ items = [], open = false, onClose }) {
 
                 {/* ── دکمه‌های پایین — در RTL اولین فرزند سمت راست است ── */}
                 <div className={styles.actions}>
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.adminBtn}`}
+                            onClick={() => go('/admin')}
+                        >
+                            <Shield size={24} className={styles.actionIcon} />
+                            <span className={styles.actionLabel}>پنل مدیریت</span>
+                        </button>
+                    )}
+
                     <button
                         type="button"
                         className={styles.actionBtn}

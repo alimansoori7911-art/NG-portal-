@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import AdminTable from '../AdminTable/AdminTable'
+import UserEditForm from '../UserEditForm/UserEditForm'
 import { useUserOrders } from '../../hooks/useUserOrders'
 import { useUserTickets } from '../../hooks/useUserTickets'
 import { identifierOf, kycStatusLabel } from '../../../../services/adminUserService'
@@ -95,7 +96,26 @@ function SectionTitle({ children }) {
  * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
  *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
  */
-export default function UserProfileModal({ open, user, onClose }) {
+export default function UserProfileModal({
+    open,
+    user,
+    onClose,
+    onSave,
+    saving = false,
+    saveError = null,
+}) {
+    /* فرم ویرایش داخل همین مودال باز می‌شود؛ مودال روی مودال
+       در موبایل غیرقابل‌استفاده می‌شود. */
+    const [editing, setEditing] = useState(false)
+
+    /* با بسته شدن مودال یا عوض شدن کاربر، فرم باید بسته شود —
+       تنظیم حین رندر تا رندر آبشاری ایجاد نشود (مثل AdminLayout). */
+    const [lastKey, setLastKey] = useState(`${open}:${user?.id ?? ''}`)
+    const key = `${open}:${user?.id ?? ''}`
+    if (lastKey !== key) {
+        setLastKey(key)
+        setEditing(false)
+    }
     /* فقط وقتی مودال باز است درخواست می‌رود؛ با بسته بودن userId تهی
        می‌ماند و هوک چیزی نمی‌خواند. */
     const orders = useUserOrders(open ? user?.id : null)
@@ -140,14 +160,32 @@ export default function UserProfileModal({ open, user, onClose }) {
                     {/* ── اطلاعات شخصی و احراز هویت ── */}
                     <SectionTitle>اطلاعات شخصی و احراز هویت</SectionTitle>
 
-                    <div className={styles.actions}>
-                        <button type="button" className={styles.actionBtn}>
-                            ویرایش اطلاعات
-                        </button>
-                        <button type="button" className={styles.actionBtn}>
-                            احراز هویت دستی
-                        </button>
-                    </div>
+                    {/* «احراز هویت دستی» برداشته شد: هیچ اندپوینتی برای
+                        تأیید دستی KYC در اسپک نیست و دکمه کاری نمی‌کرد. */}
+                    {!editing && (
+                        <div className={styles.actions}>
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setEditing(true)}
+                            >
+                                ویرایش اطلاعات
+                            </button>
+                        </div>
+                    )}
+
+                    {editing && (
+                        <UserEditForm
+                            user={user}
+                            saving={saving}
+                            error={saveError}
+                            onSubmit={async (changes) => {
+                                const ok = await onSave?.(user, changes)
+                                if (ok) setEditing(false)
+                            }}
+                            onClose={() => setEditing(false)}
+                        />
+                    )}
 
                     <div className={styles.fields}>
                         {profileFieldsOf(user).map(({ key, label, required, ltr, value }) => {

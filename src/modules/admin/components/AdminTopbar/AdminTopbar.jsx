@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, ChevronDown, CircleHelp, Menu, Search, User } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Bell, ChevronDown, CircleHelp, LogOut, Menu, User } from 'lucide-react'
+import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
 import { useAuthStore, getDisplayName } from '../../../../store/authStore'
 import { useNotifications } from '../../../dashboard/organization/hooks/useNotifications'
 import styles from './AdminTopbar.module.css'
@@ -7,20 +9,42 @@ import styles from './AdminTopbar.module.css'
 /**
  * نوار بالای پنل ادمین.
  *
- * چیدمان از SVG (در RTL، از راست به چپ):
- *   عنوان صفحه → جستجو (x=516، ۳۴۶×۴۰) → آواتار و نام → اعلان → راهنما
+ * چیدمان (در RTL، از راست به چپ):
+ *   عنوان صفحه → منوی کاربر → اعلان → راهنما
  *
  * دکمه‌ی همبرگر فقط زیر ۱۰۲۴px دیده می‌شود.
  *
- * TODO: جستجو هنوز اندپوینت ندارد — فعلاً فقط ظاهر است.
- * TODO: راهنما صفحه‌ای ندارد.
+ * ⚠️ کادر جستجو برداشته شد: نه `value`/`onChange` داشت نه
+ * اندپوینت جستجوی سراسری وجود دارد (حتی
+ * `GET /admin/auth/users` پارامتر `q` ندارد — بند ۱.۳ در
+ * BACKEND_REQUESTS.md). کادری که تایپ می‌پذیرد ولی کاری
+ * نمی‌کند بدتر از نبودنش است.
  */
-export default function AdminTopbar({ title, onMenuClick }) {
+export default function AdminTopbar({ title, onMenuClick, onHelpClick }) {
+    const navigate = useNavigate()
     const user = useAuthStore((s) => s.user)
+    const logout = useAuthStore((s) => s.logout)
 
     const { items, unreadCount, markRead, markAllRead } = useNotifications()
     const [open, setOpen] = useState(false)
     const bellRef = useRef(null)
+
+    /* منوی کاربر — دکمه‌اش قبلاً فلش داشت ولی باز نمی‌شد */
+    const [userOpen, setUserOpen] = useState(false)
+    const userRef = useRef(null)
+    const [logoutOpen, setLogoutOpen] = useState(false)
+    const [loggingOut, setLoggingOut] = useState(false)
+
+    const handleLogout = async () => {
+        setLoggingOut(true)
+        try {
+            await logout()
+            navigate('/', { replace: true })
+        } finally {
+            setLoggingOut(false)
+            setLogoutOpen(false)
+        }
+    }
 
     /* بستن پنل با کلیک بیرون */
     useEffect(() => {
@@ -35,6 +59,29 @@ export default function AdminTopbar({ title, onMenuClick }) {
         return () => document.removeEventListener('mousedown', onClickOutside)
     }, [open])
 
+    useEffect(() => {
+        if (!userOpen) return
+
+        const onClickOutside = (e) => {
+            if (userRef.current && !userRef.current.contains(e.target)) {
+                setUserOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', onClickOutside)
+        return () => document.removeEventListener('mousedown', onClickOutside)
+    }, [userOpen])
+
+    /* Esc هر دو منو را می‌بندد */
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key !== 'Escape') return
+            setUserOpen(false)
+            setOpen(false)
+        }
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+    }, [])
+
     return (
         <header className={styles.topbar}>
             <button
@@ -48,25 +95,58 @@ export default function AdminTopbar({ title, onMenuClick }) {
 
             <h1 className={styles.title}>{title}</h1>
 
-            <div className={styles.searchBox}>
-                <input
-                    type="search"
-                    className={styles.searchInput}
-                    placeholder="Search type of keywords"
-                    aria-label="جستجو"
-                />
-                <Search size={18} className={styles.searchIcon} aria-hidden="true" />
-            </div>
-
             {/* در RTL اولین فرزند سمت راست می‌نشیند */}
             <div className={styles.actions}>
-                <button type="button" className={styles.user}>
-                    <span className={styles.avatar}>
-                        <User size={18} />
-                    </span>
-                    <span className={styles.userName}>{getDisplayName(user)}</span>
-                    <ChevronDown size={16} className={styles.userChevron} />
-                </button>
+                <div className={styles.userWrap} ref={userRef}>
+                    <button
+                        type="button"
+                        className={styles.user}
+                        onClick={() => setUserOpen((v) => !v)}
+                        aria-expanded={userOpen}
+                        aria-haspopup="menu"
+                    >
+                        <span className={styles.avatar}>
+                            <User size={18} />
+                        </span>
+                        <span className={styles.userName}>{getDisplayName(user)}</span>
+                        <ChevronDown
+                            size={16}
+                            className={`${styles.userChevron} ${
+                                userOpen ? styles.userChevronOpen : ''
+                            }`}
+                        />
+                    </button>
+
+                    {userOpen && (
+                        <div className={styles.userMenu} role="menu">
+                            <button
+                                type="button"
+                                className={styles.userMenuItem}
+                                role="menuitem"
+                                onClick={() => {
+                                    setUserOpen(false)
+                                    navigate('/dashboard/account')
+                                }}
+                            >
+                                <User size={16} />
+                                حساب کاربری من
+                            </button>
+
+                            <button
+                                type="button"
+                                className={`${styles.userMenuItem} ${styles.userMenuDanger}`}
+                                role="menuitem"
+                                onClick={() => {
+                                    setUserOpen(false)
+                                    setLogoutOpen(true)
+                                }}
+                            >
+                                <LogOut size={16} />
+                                خروج از حساب
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 <div className={styles.bellWrap} ref={bellRef}>
                     <button
@@ -134,10 +214,27 @@ export default function AdminTopbar({ title, onMenuClick }) {
                     )}
                 </div>
 
-                <button type="button" className={styles.iconBtn} aria-label="راهنما">
+                <button
+                    type="button"
+                    className={styles.iconBtn}
+                    aria-label="راهنمای این صفحه"
+                    title="راهنمای این صفحه"
+                    onClick={onHelpClick}
+                >
                     <CircleHelp size={18} />
                 </button>
             </div>
+
+            <ConfirmDialog
+                open={logoutOpen}
+                title="خروج از حساب کاربری"
+                message="آیا قصد خارج شدن از حساب کاربری پرتال را دارید؟"
+                confirmLabel="خروج از حساب کاربری"
+                cancelLabel="بستن"
+                loading={loggingOut}
+                onConfirm={handleLogout}
+                onClose={() => setLogoutOpen(false)}
+            />
         </header>
     )
 }

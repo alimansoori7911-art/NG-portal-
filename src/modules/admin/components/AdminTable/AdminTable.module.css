@@ -27,6 +27,15 @@
     overflow-x: auto;
     overflow-y: hidden;
     padding: 0 32px;
+    /* روی موبایل جدول از عرض صفحه بیشتر است و ستون‌های
+       آخر بیرون می‌مانند. این سایه‌ی لبه نشان می‌دهد که
+       محتوای بیشتری هست — بدونش کاربر فکر می‌کند همین همه است. */
+    background:
+        linear-gradient(to left, #0B1422 30%, rgb(11 20 34 / 0%)) left center / 28px 100% no-repeat,
+        linear-gradient(to right, #0B1422 30%, rgb(11 20 34 / 0%)) right center / 28px 100% no-repeat,
+        linear-gradient(to left, rgb(0 0 0 / 35%), rgb(0 0 0 / 0%)) left center / 14px 100% no-repeat,
+        linear-gradient(to right, rgb(0 0 0 / 35%), rgb(0 0 0 / 0%)) right center / 14px 100% no-repeat;
+    background-attachment: local, local, scroll, scroll;
 }
 
 .scroll::-webkit-scrollbar {
@@ -207,4 +216,17 @@
     .cell {
         font-size: var(--font-size-xs);
     }
+}
+
+/* راهنمای کلیک روی ردیف.
+   نوار عملیات فقط بعد از کلیک باز می‌شود و تا قبلش هیچ نشانه‌ای
+   نبود که ردیف تعاملی است. */
+.rowHint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 10px;
+    color: rgb(255 255 255 / 55%);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
 }

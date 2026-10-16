@@ -1,0 +1,170 @@
+/* فرم ویرایش کاربر — داخل مودال پروفایل باز می‌شود،
+   پس زبان بصری‌اش همان کارت تیره‌ی پنل است. */
+
+.wrapper {
+    position: relative;
+    padding: 20px 18px 16px;
+    background: #101D31;
+    border: 1px solid #203A60;
+    border-radius: 14px;
+}
+
+.close {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 8px;
+    background: #16243A;
+    color: var(--color-white);
+    cursor: pointer;
+}
+
+.close:hover {
+    background: #1E3254;
+}
+
+.title {
+    margin: 0 0 14px;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+}
+
+.error {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    background: rgb(255 99 105 / 12%);
+    border: 1px solid rgb(255 99 105 / 35%);
+    border-radius: 10px;
+    color: #FF6369;
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.fieldWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid rgb(255 255 255 / 20%);
+    border-radius: 10px;
+}
+
+.field:focus-within {
+    border-color: rgb(255 255 255 / 45%);
+}
+
+.fieldError {
+    border-color: #FF6369;
+}
+
+.fieldLabel {
+    color: rgb(255 255 255 / 60%);
+    font-family: var(--font-family);
+    font-size: 11px;
+    line-height: 1;
+}
+
+.fieldInput {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+}
+
+.errorText {
+    margin: 0;
+    color: #FF6369;
+    font-size: var(--font-size-xs);
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+.changeNote {
+    color: rgb(255 255 255 / 55%);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cancelBtn,
+.submitBtn {
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+}
+
+.cancelBtn {
+    border: 1px solid rgb(255 255 255 / 25%);
+    background: transparent;
+    color: var(--color-white);
+}
+
+.cancelBtn:hover {
+    border-color: rgb(255 255 255 / 50%);
+}
+
+.submitBtn {
+    border: none;
+    background: var(--color-primary, #2F6BFF);
+    color: #fff;
+}
+
+.submitBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actions {
+        justify-content: stretch;
+    }
+
+    .cancelBtn,
+    .submitBtn {
+        flex: 1;
+    }
+}

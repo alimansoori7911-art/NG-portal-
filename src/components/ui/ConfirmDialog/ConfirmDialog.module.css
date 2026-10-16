@@ -71,6 +71,8 @@
     line-height: 1.8;
     color: var(--color-primary-pale);
     text-align: center;
+    /* پیام‌های چندبندی (مثل هشدار «صفحه خصوصی است») خط جدید دارند */
+    white-space: pre-line;
 }
 
 /* ═══════════ دکمه‌ها ═══════════ */

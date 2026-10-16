@@ -31,45 +31,10 @@
 /* ── جستجو ── */
 /* از جریان flex خارج است تا موقعیتش دقیقاً همان فیگما بماند و
    با طول عنوان یا نام کاربر جابه‌جا نشود. */
-.searchBox {
-    position: absolute;
-    top: 50%;
-    right: 42.1%;
-    transform: translate(50%, -50%);
-    display: flex;
-    align-items: center;
-    width: 346px;
-    height: 40px;
-    border-radius: 10px;
-    background: #0D1726;
-}
 
-.searchInput {
-    flex: 1;
-    height: 100%;
-    padding: 0 40px 0 16px;
-    border: none;
-    outline: none;
-    border-radius: 10px;
-    background: transparent;
-    color: var(--color-white);
-    font-family: var(--font-family);
-    font-size: var(--font-size-sm);
-    direction: ltr;
-    text-align: left;
-}
 
-.searchInput::placeholder {
-    color: #47597A;
-}
 
 /* آیکون سمت راست باکس چون placeholder انگلیسی و چپ‌چین است */
-.searchIcon {
-    position: absolute;
-    right: 14px;
-    color: #47597A;
-    pointer-events: none;
-}
 
 /* ── سمت چپ: کاربر و دکمه‌ها ── */
 /* جستجو absolute است، پس دکمه‌ها با auto به لبه‌ی چپ می‌روند */
@@ -155,7 +120,6 @@
         display: grid;
     }
 
-    .searchBox,
     .userName,
     .userChevron {
         display: none;
@@ -298,4 +262,59 @@
     font-family: var(--font-family);
     font-size: var(--font-size-sm);
     text-align: center;
+}
+
+/* ═══ منوی کاربر ═══
+   قبلاً دکمه‌اش فلش داشت ولی `onClick` نداشت؛ کاربر کلیک
+   می‌کرد و هیچ اتفاقی نمی‌افتاد. */
+.userWrap {
+    position: relative;
+}
+
+.userChevron {
+    transition: transform 0.18s ease;
+}
+
+.userChevronOpen {
+    transform: rotate(180deg);
+}
+
+.userMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 40;
+    width: min(220px, calc(100vw - 32px));
+    padding: 6px;
+    background: #0D1726;
+    border: 1px solid #203A60;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.userMenuItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-align: right;
+    cursor: pointer;
+}
+
+.userMenuItem:hover {
+    background: #16243A;
+}
+
+.userMenuDanger {
+    color: #FF6369;
 }

@@ -150,3 +150,14 @@
     border-color: var(--color-primary-ghost);
     color: var(--color-white);
 }
+
+/* توضیح اینکه چرا ایمیل/شماره ویرایش‌پذیر نیستند */
+.hint {
+    margin: 14px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+    color: rgb(255 255 255 / 55%);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    line-height: 1.9;
+}

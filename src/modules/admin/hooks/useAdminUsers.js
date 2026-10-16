@@ -159,6 +159,11 @@ export function useUserActions(onDone) {
 
         remove: (userId) => run(() => adminUserService.deleteUser(userId)),
 
+        /* ویرایش اطلاعات کاربر — فیلدهای `UserUpdateSchema`.
+           قبلاً نبود چون اسپک قدیم فقط فعال/مسدود را می‌پذیرفت. */
+        updateUser: (userId, changes) =>
+            run(() => adminUserService.updateUser(userId, changes)),
+
         assignRole: (userId, roleId) =>
             run(() => adminUserService.assignRole(userId, roleId)),
 

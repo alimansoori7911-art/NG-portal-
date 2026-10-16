@@ -20,6 +20,13 @@ function toRow(p, i, offset) {
            ویرایش شده، چون هر ویرایش یک نسخه‌ی برگشت‌پذیر می‌سازد. */
         version: `v${Number(p.version_counter ?? 1).toLocaleString('fa-IR')}`,
         visibility: p.is_public ? 'عمومی' : 'خصوصی',
+        /* نشانی واقعی روی سایت.
+
+           قبلاً فقط `slug` خام نشان داده می‌شد (مثلاً `about-us`) و
+           ادمین نمی‌دانست کجا ببیندش. مقاله مسیر واقعی دارد؛
+           صفحه‌ی ساختاریافته هنوز ندارد چون مسیر عمومی‌اش
+           (`GET /landing/pages/{schema_key}`) از بک‌اند نیامده. */
+        publicUrl: p.kind === 'ARTICLE' ? `/resources/articles/${p.slug}` : null,
         status: pageState(p),
         updatedAt: date || '—',
         raw: p,
