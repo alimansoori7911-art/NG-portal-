@@ -45,8 +45,14 @@ function PlanCard({ plan, large }) {
     )
 }
 
-function Plans() {
+function Plans({ cms }) {
     const { plans, loading, error } = usePlans()
+
+    /* فقط عنوان بخش از CMS می‌آید؛ خود پلن‌ها عمداً نه
+       (CMS_CONTRACT.md بند ۳ — یک منبع حقیقت برای قیمت). */
+    const head = cms?.fields?.('plans_intro', {
+        section_title: 'پلن های فروش',
+    }) ?? { section_title: 'پلن های فروش' }
 
     // موقع لود یا خطا، بخش پلن‌ها در صفحه‌ی اصلی رندر نمی‌شود
     // تا پرش چیدمانی ایجاد نکند. خطا فقط در کنسول لاگ می‌شود.
@@ -63,7 +69,7 @@ function Plans() {
 
     return (
         <section className={styles.section}>
-            <h2 className={styles.mainTitle}>پلن های فروش</h2>
+            <h2 className={styles.mainTitle}>{head.section_title}</h2>
 
             {/* ردیف اول — pilot */}
             <div className={styles.pilotRow}>

@@ -1,6 +1,7 @@
 import { Users, BadgeCheck, Handshake, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCmsContent } from '../../../hooks/useCmsContent'
+import { resolveIcon } from '../../../utils/iconMap'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Clients from '../../home/components/Clients/Clients'
@@ -31,10 +32,31 @@ export default function ServicesPage() {
             'مجموعه‌ای از خدمات تخصصی برای استقرار، بهره‌برداری و بهبود NGCorion؛ همراه شما در مسیر ساخت زیرساختی امن‌تر و پایدارتر.',
     }) ?? {}
 
-    /* نکات سربرگ: آیکون در کد می‌ماند چون کامپوننت است؛
-       از CMS فقط متن می‌آید و آیکون به ترتیب نگاشت می‌شود. */
-    const points = (cms?.items?.('hero_points', HERO_POINTS) ?? HERO_POINTS).map(
-        (it, i) => ({ ...it, icon: it.icon ?? HERO_POINTS[i]?.icon })
+    /* کارت‌ها از CMS؛ `icon` آنجا اسم است (مثلاً `settings`) و
+       با `resolveIcon` به کامپوننت تبدیل می‌شود. اسم ناشناخته یا
+       خالی آیکون همان ردیف در متن پیش‌فرض را می‌گیرد. */
+    const withIcons = (list, defaults) =>
+        list.map((it, i) => ({
+            ...it,
+            icon: resolveIcon(it.icon, defaults[i]?.icon ?? defaults[0]?.icon),
+        }))
+
+    const points = withIcons(cms?.items?.('hero_points', HERO_POINTS) ?? HERO_POINTS, HERO_POINTS)
+
+    const servicesHead = cms?.fields?.('services', { section_title: 'خدمات ما' }) ?? {}
+    const services = withIcons(cms?.items?.('services', SERVICES) ?? SERVICES, SERVICES)
+
+    const lifecycleHead = cms?.fields?.('lifecycle', {
+        section_title: 'چرخه خدمات NGCorion',
+    }) ?? {}
+    const lifecycle = withIcons(cms?.items?.('lifecycle', LIFECYCLE) ?? LIFECYCLE, LIFECYCLE)
+
+    const advantagesHead = cms?.fields?.('advantages', {
+        section_title: 'چرا خدمات NGCorion؟',
+    }) ?? {}
+    const advantages = withIcons(
+        cms?.items?.('advantages', ADVANTAGES) ?? ADVANTAGES,
+        ADVANTAGES
     )
     return (
         <div className={styles.page}>
@@ -70,9 +92,7 @@ export default function ServicesPage() {
                             <ul className={styles.heroPoints}>
                                 {points.map(({ icon: Icon, label }, i) => (
                                     <li key={`${label}-${i}`} className={styles.heroPoint}>
-                                        {typeof Icon === 'function' && (
-                                            <Icon size={18} aria-hidden="true" />
-                                        )}
+                                        {Icon && <Icon size={18} aria-hidden="true" />}
                                         {label}
                                     </li>
                                 ))}
@@ -90,7 +110,7 @@ export default function ServicesPage() {
                     <section className={styles.section}>
                         <SectionHeader
                             align="center"
-                            title="خدمات ما"
+                            title={servicesHead.section_title}
                             subtitle="خدمات NGCorion متناسب با نیازهای سازمان شما در تمام مراحل چرخه امنیت زیرساخت."
                         />
 
@@ -99,8 +119,8 @@ export default function ServicesPage() {
                             شکسته بدتر از نبودنش است، پس کارت‌ها ساده‌اند
                             و راه ارتباط، همان CTA پایین صفحه است. */}
                         <ul className={styles.grid}>
-                            {SERVICES.map(({ id, icon: Icon, title, description }) => (
-                                <li key={id} className={styles.card}>
+                            {services.map(({ id, icon: Icon, title, description }, i) => (
+                                <li key={id ?? `${title}-${i}`} className={styles.card}>
                                     <span className={styles.cardIcon} aria-hidden="true">
                                         <Icon size={32} />
                                     </span>
@@ -114,7 +134,7 @@ export default function ServicesPage() {
                     <section className={styles.section}>
                         <SectionHeader
                             align="center"
-                            title="چرخه خدمات NGCorion"
+                            title={lifecycleHead.section_title}
                             subtitle="یک مسیر پیوسته برای ساخت، حفظ و بهبود امنیت زیرساخت."
                         />
 
@@ -122,8 +142,8 @@ export default function ServicesPage() {
                             شود؛ اسپک هشدار داده بود جهت فلش‌ها در تصویرِ
                             مرجع ناسازگار است. */}
                         <ol className={styles.lifecycle}>
-                            {LIFECYCLE.map(({ id, icon: Icon, title, subtitle }, i) => (
-                                <li key={id} className={styles.stage}>
+                            {lifecycle.map(({ id, icon: Icon, title, subtitle }, i) => (
+                                <li key={id ?? `${title}-${i}`} className={styles.stage}>
                                     <span className={styles.stageDisc}>
                                         <Icon size={34} aria-hidden="true" />
                                         <span className={styles.stageNum}>{i + 1}</span>
@@ -136,11 +156,11 @@ export default function ServicesPage() {
                     </section>
 
                     <section className={styles.advantages}>
-                        <SectionHeader align="center" title="چرا خدمات NGCorion؟" />
+                        <SectionHeader align="center" title={advantagesHead.section_title} />
 
                         <ul className={styles.advantageGrid}>
-                            {ADVANTAGES.map(({ id, icon: Icon, title, description }) => (
-                                <li key={id} className={styles.advantage}>
+                            {advantages.map(({ id, icon: Icon, title, description }, i) => (
+                                <li key={id ?? `${title}-${i}`} className={styles.advantage}>
                                     <span className={styles.advantageIcon} aria-hidden="true">
                                         <Icon size={28} />
                                     </span>

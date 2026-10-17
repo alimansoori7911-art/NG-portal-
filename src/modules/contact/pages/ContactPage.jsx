@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Phone, Mail, Check, LifeBuoy, Briefcase } from 'lucide-react'
 import { useCmsContent } from '../../../hooks/useCmsContent'
+import { resolveIcon } from '../../../utils/iconMap'
+import InstagramIcon from '../../../components/ui/icons/InstagramIcon'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Input from '../../../components/ui/Input/Input'
@@ -13,27 +15,6 @@ import { useAuthStore, getDisplayName, getIdentifier } from '../../../store/auth
 import { HTTP, MSG, CAPTCHA_ERROR_CODE } from '../../../constants/auth'
 import { useCaptcha } from '../../../hooks/useCaptcha'
 import styles from './ContactPage.module.css'
-
-// آیکون اینستاگرام به‌صورت SVG دستی — مستقل از نسخه‌ی نصب‌شده‌ی lucide-react
-function InstagramIcon({ size = 22, className }) {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-            <circle cx="12" cy="12" r="4" />
-            <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-        </svg>
-    )
-}
 
 const REQUEST_TYPES = ['درخواست دمو', 'دریافت پیش فاکتور', 'دریافت کاتالوگ', 'مشاوره فنی']
 const ASSET_COUNTS = ['کمتر از 15', 'کمتر از 50', 'کمتر از 150', 'بیشتر از 150']
@@ -73,15 +54,23 @@ function ContactPage() {
 
     /* متن و راه‌های ارتباط از CMS؛ مقادیر فعلی پیش‌فرض‌اند.
 
-       ⚠️ آیکون کامپوننت ریکت است و از CMS نمی‌آید؛ از روی ترتیب
-       نگاشت می‌شود تا کارتِ آمده از CMS بدون آیکون نماند. */
+       `icon` در CMS اسم است (`phone`, `mail`, ...) و با `resolveIcon`
+       به کامپوننت تبدیل می‌شود؛ اسم ناشناخته یا خالی آیکون همان
+       ردیف پیش‌فرض را می‌گیرد تا کارت بی‌آیکون نماند. */
     const hero = cms?.fields?.('hero', {
         heading: 'ارتباط با تیم NG CORION',
     }) ?? {}
 
     const channels = (cms?.items?.('channels', CONTACT_CARDS) ?? CONTACT_CARDS).map(
-        (it, i) => ({ ...it, icon: it.icon ?? CONTACT_CARDS[i]?.icon })
+        (it, i) => ({
+            ...it,
+            icon: resolveIcon(it.icon, CONTACT_CARDS[i]?.icon ?? Phone),
+        })
     )
+
+    /* متن بالای فرم. پیش‌فرض ندارد: تا CMS چیزی نداده، چیدمان فعلی
+       دست نمی‌خورد. برچسب‌ها و پیام‌های فرم عمداً در کد می‌مانند. */
+    const formIntro = cms?.fields?.('form_intro', { heading: '', body: '' }) ?? {}
 
     const user = useAuthStore((s) => s.user)
     const status = useAuthStore((s) => s.status)
@@ -189,8 +178,8 @@ function ContactPage() {
                 {/* ستون کناری — برچسب صفحه + کارت‌های اطلاعات تماس */}
                 <aside className={styles.sidebar}>
                     <span className={styles.pageLabel}>تماس با ما</span>
-                    {channels.map(({ icon: Icon, label, value }) => (
-                        <div key={label} className={styles.infoCard}>
+                    {channels.map(({ icon: Icon, label, value }, i) => (
+                        <div key={`${label}-${i}`} className={styles.infoCard}>
                             <Icon size={22} className={styles.infoIcon} />
                             <span className={styles.infoLabel}>{label}</span>
                             <span className={styles.infoValue}>{value}</span>
@@ -204,6 +193,18 @@ function ContactPage() {
                     {view === 'form' && (
                         <>
                             <h1 className={styles.title}>{hero.heading}</h1>
+                            {(formIntro.heading || formIntro.body) && (
+                                <div className={styles.formIntro}>
+                                    {formIntro.heading && (
+                                        <h2 className={styles.formIntroTitle}>
+                                            {formIntro.heading}
+                                        </h2>
+                                    )}
+                                    {formIntro.body && (
+                                        <p className={styles.formIntroBody}>{formIntro.body}</p>
+                                    )}
+                                </div>
+                            )}
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
                                 <div className={styles.grid}>
                                     <Input

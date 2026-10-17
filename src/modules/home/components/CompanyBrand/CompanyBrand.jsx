@@ -1,30 +1,42 @@
 import styles from './CompanyBrand.module.css'
 import logoMotion from '../../../../assets/images/sections/logo-motion.png'
 
-const LEFT_ITEMS = [
-    { id: 1, label: 'چشم انداز و ماموریت' },
-    { id: 2, label: 'تیم مدیریتی' },
-    { id: 3, label: 'افتخارات' },
+/* برچسب‌های دو طرف لوگو — نیمه‌ی اول ستون راست، نیمه‌ی دوم ستون چپ
+   (ترتیب خواندن RTL). از CMS یک فهرست می‌آید و همین‌جا نصف می‌شود. */
+const ITEMS = [
+    { label: 'NGCORION' },
+    { label: 'معرفی شرکت' },
+    { label: 'تاریخچه' },
+    { label: 'چشم انداز و ماموریت' },
+    { label: 'تیم مدیریتی' },
+    { label: 'افتخارات' },
 ]
 
-const RIGHT_ITEMS = [
-    { id: 1, label: 'NGCORION' },
-    { id: 2, label: 'معرفی شرکت' },
-    { id: 3, label: 'تاریخچه' },
-]
+function CompanyBrand({ cms }) {
+    /* متن و برچسب‌ها از CMS؛ متن فعلی پیش‌فرض می‌ماند */
+    const head = cms?.fields?.('company_brand', {
+        section_title: 'معرفی شرکت و برند',
+        heading: 'امنیت زیرساخت باید ساده، قابل مشاهده و قابل کنترل باشد',
+        body:
+            'NGCorion با این نگاه طراحی شده که مدیریت امنیت زیرساخت نباید فقط به ابزارهای پیچیده، فایل‌های اکسل، ممیزی‌های دستی و گزارش‌های پراکنده وابسته باشد.',
+    }) ?? {}
+    const labels = cms?.items?.('company_brand', ITEMS) ?? ITEMS
 
-function CompanyBrand() {
+    const half = Math.ceil(labels.length / 2)
+    const rightItems = labels.slice(0, half)
+    const leftItems = labels.slice(half)
+
     return (
         <section className={styles.section}>
-            <h2 className={styles.mainTitle}>معرفی شرکت و برند</h2>
+            <h2 className={styles.mainTitle}>{head.section_title}</h2>
 
             {/* بخش بالا — لوگو و باتن‌ها */}
             <div className={styles.topWrapper}>
 
                 {/* ستون چپ */}
                 <div className={styles.leftItems}>
-                    {LEFT_ITEMS.map(item => (
-                        <button key={item.id} className={styles.itemBtn}>
+                    {leftItems.map((item, i) => (
+                        <button key={`${item.label}-${i}`} className={styles.itemBtn}>
                             {item.label}
                         </button>
                     ))}
@@ -39,8 +51,8 @@ function CompanyBrand() {
 
                 {/* ستون راست */}
                 <div className={styles.rightItems}>
-                    {RIGHT_ITEMS.map(item => (
-                        <button key={item.id} className={styles.itemBtn}>
+                    {rightItems.map((item, i) => (
+                        <button key={`${item.label}-${i}`} className={styles.itemBtn}>
                             {item.label}
                         </button>
                     ))}
@@ -50,14 +62,8 @@ function CompanyBrand() {
 
             {/* بخش پایین — متن */}
             <div className={styles.bottomWrapper}>
-                <h3 className={styles.subtitle}>
-                    امنیت زیرساخت باید ساده، قابل مشاهده و قابل کنترل باشد
-                </h3>
-                <p className={styles.description}>
-                    NGCorion با این نگاه طراحی شده که مدیریت امنیت زیرساخت نباید فقط به
-                    ابزارهای پیچیده، فایل‌های اکسل، ممیزی‌های دستی و گزارش‌های پراکنده وابسته
-                    باشد.
-                </p>
+                <h3 className={styles.subtitle}>{head.heading}</h3>
+                <p className={styles.description}>{head.body}</p>
                 <button className={styles.ctaBtn}>مشاهده صفحه درباره ما</button>
             </div>
 

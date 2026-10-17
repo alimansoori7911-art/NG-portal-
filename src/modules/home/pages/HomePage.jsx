@@ -44,13 +44,13 @@ function HomePage() {
                     <WhyNG cms={cms} />
                 </div>
                 <div className={styles.section}>
-                    <Plans />
+                    <Plans cms={cms} />
                 </div>
                 <div className={styles.section}>
-                    <CompanyBrand />
+                    <CompanyBrand cms={cms} />
                 </div>
                 <div className={styles.section}>
-                    <Clients />
+                    <Clients cms={cms} />
                 </div>
             </main>
             <Footer />

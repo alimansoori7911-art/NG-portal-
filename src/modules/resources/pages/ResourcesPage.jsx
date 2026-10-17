@@ -1,6 +1,7 @@
 import { Flame, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCmsContent } from '../../../hooks/useCmsContent'
+import { resolveIcon } from '../../../utils/iconMap'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Clients from '../../home/components/Clients/Clients'
@@ -37,6 +38,29 @@ export default function ResourcesPage() {
         subheading:
             'به مستندات، راهنماها، مقالات، نسخه‌ها و منابع موردنیاز برای استفاده بهتر از NGCorion دسترسی داشته باشید.',
     }) ?? {}
+
+    const topics = cms?.items?.('topics', TOPICS) ?? TOPICS
+
+    /* از CMS فقط متن و اسم آیکون می‌آید. مقصد کارت (`to`, `ready`,
+       `linkLabel`) وضعیت راوتر است و طبق CMS_CONTRACT.md در کد
+       می‌ماند؛ با عنوان به کارت CMS وصل می‌شود. دسته‌ای که در کد
+       نیست لینک ندارد و «به‌زودی» می‌گیرد، نه لینکی حدسی. */
+    const categories = (cms?.items?.('categories', CATEGORIES) ?? CATEGORIES).map(
+        (it, i) => {
+            const known = CATEGORIES.find((c) => c.title === it.title?.trim())
+            return {
+                ...it,
+                id: known?.id ?? `${it.title}-${i}`,
+                icon: resolveIcon(it.icon, known?.icon ?? CATEGORIES[i]?.icon ?? CATEGORIES[0].icon),
+                linkLabel: known?.linkLabel,
+                ready: known?.ready ?? false,
+                to: known?.to,
+            }
+        }
+    )
+
+    const popularHead = cms?.fields?.('popular', { section_title: 'منابع پرطرفدار' }) ?? {}
+    const popular = cms?.items?.('popular', POPULAR) ?? POPULAR
     return (
         <div className={styles.page}>
             <Header />
@@ -72,9 +96,9 @@ export default function ResourcesPage() {
                                 <span className={styles.topicsLabel}>
                                     موضوعات پربحث:
                                 </span>
-                                {TOPICS.map((topic) => (
-                                    <span key={topic} className={styles.topic}>
-                                        {topic}
+                                {topics.map(({ label }, i) => (
+                                    <span key={`${label}-${i}`} className={styles.topic}>
+                                        {label}
                                     </span>
                                 ))}
                             </div>
@@ -95,7 +119,7 @@ export default function ResourcesPage() {
                         />
 
                         <ul className={styles.grid}>
-                            {CATEGORIES.map(
+                            {categories.map(
                                 ({ id, icon: Icon, title, description, linkLabel, ready, to }) => (
                                     <li key={id} className={styles.card}>
                                         <span className={styles.cardIcon} aria-hidden="true">
@@ -122,16 +146,16 @@ export default function ResourcesPage() {
                         <aside className={styles.popular}>
                             <h2 className={styles.popularTitle}>
                                 <Flame size={20} aria-hidden="true" />
-                                منابع پرطرفدار
+                                {popularHead.section_title}
                             </h2>
 
                             <ol className={styles.popularList}>
-                                {POPULAR.map((item, i) => (
-                                    <li key={item} className={styles.popularItem}>
+                                {popular.map(({ label }, i) => (
+                                    <li key={`${label}-${i}`} className={styles.popularItem}>
                                         <span className={styles.popularNum}>
                                             {String(i + 1).padStart(2, '0')}
                                         </span>
-                                        {item}
+                                        {label}
                                     </li>
                                 ))}
                             </ol>

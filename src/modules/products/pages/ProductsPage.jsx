@@ -16,6 +16,11 @@ function ProductsPage() {
        را دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
     const cms = useCmsContent('products')
 
+    /* از `demo_cta` فقط متن دکمه خوانده می‌شود: دکمه لینک نیست و
+       `POST /orders/demo` را صدا می‌زند، پس `url` و `variant` اینجا
+       جایی ندارند. */
+    const demoCta = cms?.fields?.('demo_cta', { label: 'درخواست دمو' }) ?? {}
+
     const navigate = useNavigate()
 
     const {
@@ -52,10 +57,10 @@ function ProductsPage() {
                 <ProductsHero cms={cms} />
 
                 <div id="what-is-it" className={styles.section}>
-                    <ProductsWhatIs />
+                    <ProductsWhatIs cms={cms} />
                 </div>
 
-                <ProductsDetails />
+                <ProductsDetails cms={cms} />
 
                 {/* placeholder — بخش پلن‌ها و درخواست دمو با فیگمای خودشان ساخته می‌شوند */}
                 <div id="plans" className={styles.section}>
@@ -64,6 +69,7 @@ function ProductsPage() {
                 <div id="demo" className={styles.section}>
                     <ProductsDemo
                         onRequestDemo={handleRequestDemo}
+                        ctaLabel={demoCta.label}
                         loading={submitting || checking}
                         alreadyRequested={Boolean(existing)}
                         isAuthenticated={isAuthenticated}

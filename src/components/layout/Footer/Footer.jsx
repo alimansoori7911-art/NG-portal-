@@ -1,17 +1,92 @@
 import { useState } from 'react'
 import styles from './Footer.module.css'
 import logo from '../../../assets/images/logo/logowhite.png'
-import { Mail, Phone, Send, LoaderCircle } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Mail, Phone, MapPin, Send, LoaderCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { contactService } from '../../../services/contactService'
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Captcha from '../../ui/Captcha/Captcha'
 import { HTTP, MSG, CAPTCHA_ERROR_CODE } from '../../../constants/auth'
 import { useCaptcha } from '../../../hooks/useCaptcha'
 
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
 
+/* متن پیش‌فرض هر بلوک `site_footer` — همان چیزی که اگر CMS بالا
+   نیامد یا صفحه منتشر نشده بود دیده می‌شود. */
+const ABOUT = {
+    heading: '',
+    body: 'پلتفرم یکپارچه‌ی مدیریت انطباق امنیتی و تحلیل ریسک زیرساخت.',
+}
+
+const CONTACT = {
+    email: 'Info@ngcorion.com',
+    phone: '02122500058',
+    address: '',
+}
+
+/* `link_groups` یک CARD_LIST تخت است؛ هر آیتم `group_title` خودش را
+   دارد و ستون‌ها از روی همان ساخته می‌شوند (ترتیب اولین ظهور). */
+const LINKS = [
+    { group_title: 'لینک های سریع', label: 'تماس با ما', url: '/contact' },
+    { group_title: 'لینک های سریع', label: 'درباره ما', url: '/company' },
+    { group_title: 'لینک های سریع', label: 'سوالات متداول', url: '/resources/articles' },
+]
+
+const NEWSLETTER = {
+    heading: 'عضویت در خبرنامه',
+    placeholder: 'آدرس ایمیل خود را وارد کنید',
+    button_label: 'عضویت در خبرنامه',
+}
+
+function groupLinks(items) {
+    const groups = new Map()
+    for (const it of items) {
+        if (!it?.label) continue
+        const title = it.group_title?.trim() || ''
+        if (!groups.has(title)) groups.set(title, [])
+        groups.get(title).push(it)
+    }
+    return [...groups].map(([title, links]) => ({ title, links }))
+}
+
+/* آدرس لینک از CMS می‌آید، پس فقط شکل‌های امن پذیرفته می‌شوند:
+   مسیر داخلی (`/…`) با راوتر، و http(s)/mailto/tel با `<a>`. هر چیز
+   دیگری (مثلاً `javascript:`) لینک نمی‌شود و متن ساده می‌ماند. */
+function FooterLink({ label, url }) {
+    const href = String(url ?? '').trim()
+
+    if (href.startsWith('/') && !href.startsWith('//')) {
+        return (
+            <Link to={href} className={styles.link}>
+                {label}
+            </Link>
+        )
+    }
+    if (/^https?:\/\//i.test(href)) {
+        return (
+            <a href={href} className={styles.link} target="_blank" rel="noopener noreferrer">
+                {label}
+            </a>
+        )
+    }
+    if (/^(mailto|tel):/i.test(href)) {
+        return (
+            <a href={href} className={styles.link}>
+                {label}
+            </a>
+        )
+    }
+    return <span className={styles.link}>{label}</span>
+}
+
 function Footer() {
-    const navigate = useNavigate()
+    /* ✅ محتوای فوتر از CMS (`site_footer`). خطا عمداً نادیده گرفته
+       می‌شود: فوتر روی همه‌ی صفحه‌هاست و نباید به‌خاطر CMS خالی شود. */
+    const cms = useCmsContent('site_footer')
+    const about = cms.fields('about', ABOUT)
+    const contact = cms.fields('contact', CONTACT)
+    const linkGroups = groupLinks(cms.items('link_groups', LINKS))
+    const newsletter = cms.fields('newsletter', NEWSLETTER)
 
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
@@ -63,55 +138,73 @@ function Footer() {
                 {/* ستون راست — لوگو + توضیحات + اطلاعات تماس */}
                 <div className={styles.col}>
                     <img src={logo} alt="NGcorion" className={styles.logo} />
-                    <p className={styles.description}>
-                        لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ، و با
-                        استفاده از طراحان گرافیک است، چاپگرها و متون بلکه روزنامه و مجله در
-                        ستون و سطرآنچنان موجود در ارائه راهکارها، و شرایط سخت تایپ به پایان
-                        سوالات پیوسته اهل دنیای موجود طراحی اساسا مورد استفاده قرار گیرد.
-                    </p>
-                    <div className={styles.contactItems}>
+                    {about.heading && <h4 className={styles.aboutTitle}>{about.heading}</h4>}
+                    <p className={styles.description}>{about.body}</p>
+                    {(contact.email || contact.phone) && (
+                        <div className={styles.contactItems}>
+                            {contact.email && (
+                                <div className={styles.contactItem}>
+                                    <div className={styles.contactInfo}>
+                                        <span className={styles.contactLabel}>آدرس ایمیل</span>
+                                        <span className={styles.contactValue}>{contact.email}</span>
+                                    </div>
+                                    <div className={styles.contactIconBox}>
+                                        <Mail size={18} />
+                                    </div>
+                                </div>
+                            )}
+                            {contact.phone && (
+                                <div className={styles.contactItem}>
+                                    <div className={styles.contactInfo}>
+                                        <span className={styles.contactLabel}>شماره تماس</span>
+                                        <span className={styles.contactValue}>{contact.phone}</span>
+                                    </div>
+                                    <div className={styles.contactIconBox}>
+                                        <Phone size={18} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {/* آدرس بلند است، پس جدا و زیر بقیه با شکستن خط */}
+                    {contact.address && (
                         <div className={styles.contactItem}>
                             <div className={styles.contactInfo}>
-                                <span className={styles.contactLabel}>آدرس ایمیل</span>
-                                <span className={styles.contactValue}>Info@ngcorion.com</span>
+                                <span className={styles.contactLabel}>آدرس</span>
+                                <span className={`${styles.contactValue} ${styles.contactValueWrap}`}>
+                                    {contact.address}
+                                </span>
                             </div>
                             <div className={styles.contactIconBox}>
-                                <Mail size={18} />
+                                <MapPin size={18} />
                             </div>
                         </div>
-                        <div className={styles.contactItem}>
-                            <div className={styles.contactInfo}>
-                                <span className={styles.contactLabel}>شماره تماس</span>
-                                <span className={styles.contactValue}>02122500058</span>
-                            </div>
-                            <div className={styles.contactIconBox}>
-                                <Phone size={18} />
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
-                {/* ستون وسط — لینک‌های سریع */}
-                <div className={styles.col}>
-                    <h4 className={`${styles.colTitle} ${styles.withBorder}`}>لینک های سریع</h4>
-                    <ul className={styles.linkList}>
-                        <li>
-                            <button className={styles.link} onClick={() => navigate('/contact')}>
-                                تماس با ما
-                            </button>
-                        </li>
-                        <li>
-                            <button className={styles.link} onClick={() => navigate('/company')}>
-                                درباره ما
-                            </button>
-                        </li>
-                        <li><button className={styles.link}>سوالات متداول</button></li>
-                    </ul>
+                {/* ستون وسط — گروه‌های لینک (هر `group_title` یک فهرست) */}
+                <div className={`${styles.col} ${styles.linkGroups}`}>
+                    {linkGroups.map((group, gi) => (
+                        <div key={`${group.title}-${gi}`} className={styles.linkGroup}>
+                            {group.title && (
+                                <h4 className={`${styles.colTitle} ${styles.withBorder}`}>
+                                    {group.title}
+                                </h4>
+                            )}
+                            <ul className={styles.linkList}>
+                                {group.links.map((link, i) => (
+                                    <li key={`${link.label}-${i}`}>
+                                        <FooterLink label={link.label} url={link.url} />
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
 
                 {/* ستون چپ — خبرنامه + شبکه‌های اجتماعی */}
                 <div className={styles.col}>
-                    <h4 className={styles.colTitle}>عضویت در خبرنامه</h4>
+                    <h4 className={styles.colTitle}>{newsletter.heading}</h4>
                     {/* form تا کلید Enter هم فرم را ارسال کند.
 
                         فرم دورِ ردیف می‌پیچد تا کپچا زیرِ آن بنشیند، نه
@@ -121,7 +214,7 @@ function Footer() {
                         <div className={styles.newsletter}>
                             <input
                                 type="email"
-                                placeholder="آدرس ایمیل خود را وارد کنید"
+                                placeholder={newsletter.placeholder}
                                 className={styles.input}
                                 value={email}
                                 onChange={(e) => {
@@ -135,7 +228,8 @@ function Footer() {
                                 type="submit"
                                 className={styles.inputBtn}
                                 disabled={loading}
-                                aria-label="عضویت در خبرنامه"
+                                aria-label={newsletter.button_label}
+                                title={newsletter.button_label}
                             >
                                 {loading ? (
                                     <LoaderCircle size={16} className={styles.spinner} />

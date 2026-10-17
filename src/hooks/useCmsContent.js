@@ -66,9 +66,17 @@ export function useCmsContent(schemaKey) {
         return out
     }
 
+    /* `CmsBlockOut.items` در اسپک فقط «آرایه‌ای از شیء» است. مک
+       خودِ فیلدها را می‌دهد ولی ورودی (`CmsBlockItemIn`) شکل
+       `{ fields }` دارد و پیام بک‌اند هم همین شکل را مثال زده؛ هر دو
+       را تخت می‌کنیم تا کامپوننت‌ها همیشه `item.title` بخوانند. */
+    const flat = (it) =>
+        it?.fields && typeof it.fields === 'object' ? { ...it.fields } : it
+
     const items = (key, fallback = []) => {
         const b = blocks.find((x) => x.key === key)
-        return Array.isArray(b?.items) && b.items.length > 0 ? b.items : fallback
+        const list = Array.isArray(b?.items) ? b.items.map(flat).filter(Boolean) : []
+        return list.length > 0 ? list : fallback.map(flat)
     }
 
     return {

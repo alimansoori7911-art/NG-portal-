@@ -86,6 +86,28 @@
     text-align: center;
 }
 
+/* متن اختیاری بالای فرم (بلوک `form_intro` در CMS).
+   فاصله‌ی زیر عنوان را نصف می‌کند تا با عنوان یک گروه دیده شود. */
+.formIntro {
+    margin: calc(var(--spacing-2xl) / -2) 0 var(--spacing-xl);
+    text-align: center;
+}
+
+.formIntroTitle {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--color-white);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+}
+
+.formIntroBody {
+    margin: 0;
+    color: var(--color-white);
+    opacity: 0.7;
+    font-size: var(--font-size-sm);
+    line-height: 2;
+}
+
 .form {
     display: flex;
     flex-direction: column;

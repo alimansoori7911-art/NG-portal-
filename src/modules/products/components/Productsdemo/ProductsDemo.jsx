@@ -9,9 +9,12 @@ import styles from './ProductsDemo.module.css'
  * می‌شود و دلیلش گفته می‌شود، به‌جای اینکه تازه بعد از رد شدن بفهمد.
  *
  * کاربر مهمان به صفحه‌ی ورود هدایت می‌شود چون اندپوینت لاگین می‌خواهد.
+ *
+ * `ctaLabel` متن دکمه است و از بلوک `demo_cta` در CMS می‌آید.
  */
 function ProductsDemo({
     onRequestDemo,
+    ctaLabel = 'درخواست دمو',
     loading = false,
     alreadyRequested = false,
     isAuthenticated = true,
@@ -65,7 +68,7 @@ function ProductsDemo({
                             ? 'در حال ارسال…'
                             : alreadyRequested
                               ? 'دمو قبلاً درخواست شده'
-                              : 'درخواست دمو'}
+                              : ctaLabel}
                     </button>
                 </div>
 

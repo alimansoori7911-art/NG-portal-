@@ -90,6 +90,34 @@
     white-space: nowrap;
 }
 
+.aboutTitle {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--color-white);
+}
+
+/* آدرس بلند است و نباید مثل ایمیل/تلفن در یک خط بماند */
+.contactValueWrap {
+    white-space: normal;
+    line-height: 1.8;
+}
+
+/* ستون لینک‌ها: هر گروه CMS یک فهرست؛ اگر چند گروه بود کنار هم
+   می‌نشینند و در عرض کم زیر هم می‌روند. */
+.linkGroups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    align-items: start;
+    gap: var(--spacing-xl);
+}
+
+.linkGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    min-width: 0;
+}
+
 /* تیتر ستون */
 .colTitle {
     font-size: var(--font-size-md);
