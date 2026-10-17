@@ -40,9 +40,13 @@ export const identifierOf = (user, type) =>
  */
 export const adminUserService = {
     /* GET /admin/auth/users — لیست کاربران با صفحه‌بندی */
-    getUsers({ page = 1, limit = 10 } = {}) {
+    /* ✅ پارامتر `q` بالاخره آمد (بند ۱.۳ سند بک‌اند).
+       تا پیش از این، انتخابگر کاربر مجبور بود همه را بگیرد. */
+    getUsers({ page = 1, limit = 10, q } = {}) {
         return api
-            .get('/admin/auth/users', { params: { page, limit } })
+            .get('/admin/auth/users', {
+                params: { page, limit, q: q?.trim() || undefined },
+            })
             .then((res) => ({
                 items: res.data?.data ?? [],
                 pagination: res.data?.meta?.pagination ?? null,

@@ -68,6 +68,9 @@ export default function SupportPage() {
     const [showSender, setShowSender] = useState(false)
     const [chatOpen, setChatOpen] = useState(false)
     const [statusOpen, setStatusOpen] = useState(false)
+    /* ✅ منوی تغییر اولویت — اسپک تازه `priority` را در
+       `TicketUpdateSchema` اضافه کرد. */
+    const [priorityOpen, setPriorityOpen] = useState(false)
     const [selected, setSelected] = useState(null)
 
     const { nameOf } = useDepartments()
@@ -106,6 +109,20 @@ export default function SupportPage() {
         const ok = await chat.setStatus(selected.id, status)
         if (ok) {
             setSelected((s) => ({ ...s, rawStatus: status, status: TICKET_STATUS[status] }))
+            reload()
+        }
+    }
+
+    /* اولویت حالا بعد از ساخت هم قابل تغییر است. */
+    const changePriority = async (next) => {
+        setPriorityOpen(false)
+        const ok = await chat.setPriority(selected.id, next)
+        if (ok) {
+            setSelected((s) => ({
+                ...s,
+                rawPriority: next,
+                priority: TICKET_PRIORITY[next] ?? next,
+            }))
             reload()
         }
     }
@@ -222,6 +239,38 @@ export default function SupportPage() {
                                                 onClick={() => changeStatus(code)}
                                                 role="option"
                                                 aria-selected={selected?.rawStatus === code}
+                                            >
+                                                {label}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className={styles.statusWrap}>
+                            <button
+                                type="button"
+                                className={styles.actionBtn}
+                                onClick={() => setPriorityOpen((v) => !v)}
+                                disabled={!selected || chat.updating}
+                                aria-expanded={priorityOpen}
+                            >
+                                {chat.updating ? 'در حال تغییر…' : 'تغییر اولویت تیکت'}
+                            </button>
+
+                            {priorityOpen && (
+                                <ul className={styles.statusMenu} role="listbox">
+                                    {PRIORITY_OPTIONS.map(([code, label]) => (
+                                        <li key={code}>
+                                            <button
+                                                type="button"
+                                                className={styles.statusOption}
+                                                onClick={() => changePriority(code)}
+                                                role="option"
+                                                aria-selected={
+                                                    selected?.rawPriority === code
+                                                }
                                             >
                                                 {label}
                                             </button>

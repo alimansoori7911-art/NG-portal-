@@ -205,14 +205,22 @@ export const ticketService = {
 
     /* PATCH /ticketing/tickets/{id} — ویرایش تیکت.
        هر فیلدی که ارسال نشود بدون تغییر می‌ماند.
-       assigned_to_user_id = null یعنی برداشتن تخصیص. */
-    updateTicket(ticketId, { subject, status, department_id, assigned_to_user_id }) {
+       assigned_to_user_id = null یعنی برداشتن تخصیص.
+
+       ✅ `priority` اسپک تازه اضافه شد (بند ۱.۱ سند بک‌اند). تا پیش از
+       این، اولویت فقط موقع ساخت تیکت تعیین می‌شد و بعدش قابل تغییر
+       نبود — یعنی تیکتی که اشتباه «کم» ثبت شده بود تا ابد کم می‌ماند. */
+    updateTicket(
+        ticketId,
+        { subject, status, department_id, assigned_to_user_id, priority }
+    ) {
         return api
             .patch(`/ticketing/tickets/${ticketId}`, {
                 subject,
                 status,
                 department_id,
                 assigned_to_user_id,
+                priority,
             })
             .then(unwrap)
     },

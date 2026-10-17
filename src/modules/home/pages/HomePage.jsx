@@ -1,3 +1,4 @@
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import HeroSection from '../components/HeroSection/HeroSection'
@@ -11,6 +12,15 @@ import bgMain from '../../../assets/images/backgrounds/bg-main.png'
 import styles from './HomePage.module.css'
 
 function HomePage() {
+    /* ✅ محتوای صفحه‌ی اصلی از CMS.
+
+       یک‌بار اینجا خوانده می‌شود و به بخش‌ها پاس داده می‌شود؛ اگر
+       هر بخش خودش صدا می‌زد، یک صفحه چند درخواست یکسان می‌زد.
+
+       خطا عمداً نادیده گرفته می‌شود: هر بخش متن پیش‌فرض خودش را
+       دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
+    const cms = useCmsContent('home')
+
     return (
         <div
             className={styles.page}
@@ -23,15 +33,15 @@ function HomePage() {
         >
             <Header />
             <main className={styles.main}>
-                <HeroSection />
+                <HeroSection cms={cms} />
                 <div className={styles.section}>
-                    <ProductIntro />
+                    <ProductIntro cms={cms} />
                 </div>
                 <div className={styles.section}>
-                    <Features />
+                    <Features cms={cms} />
                 </div>
                 <div className={styles.section}>
-                    <WhyNG />
+                    <WhyNG cms={cms} />
                 </div>
                 <div className={styles.section}>
                     <Plans />

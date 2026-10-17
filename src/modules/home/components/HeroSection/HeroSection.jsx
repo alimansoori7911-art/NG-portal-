@@ -8,7 +8,7 @@ import { ChevronDown } from 'lucide-react'
 const SCROLL_BTN_TEXT = 'NGcorion چیست؟'
 const TYPE_SPEED_MS = 90
 
-function HeroSection() {
+function HeroSection({ cms }) {
     const [typedText, setTypedText] = useState('')
 
     // انیمیشن تایپ دستی: هر بار حرف بعدی به متن اضافه می‌شود
@@ -27,6 +27,14 @@ function HeroSection() {
         document.getElementById('product-intro')?.scrollIntoView({ behavior: 'smooth' })
     }
 
+
+    /* متن از CMS؛ متن فعلی به‌عنوان پیش‌فرض می‌ماند تا اگر CMS
+       چیزی نداد، صفحه خالی نشود. */
+    const hero = cms?.fields?.('hero', {
+        heading: 'هوشمندتر کار کنید، سریع‌تر رشد کنید',
+        subheading:
+            'به جمع کاربران حرفه‌ای بپیوندید و از تمام قابلیت‌های نرم‌افزار بهره‌مند شوید.',
+    }) ?? {}
     return (
         <section className={styles.hero}>
             <div className={styles.box}>
@@ -36,12 +44,8 @@ function HeroSection() {
                 </div>
 
                 <div className={styles.textWrapper}>
-                    <h1 className={styles.title}>
-                        هوشمندتر کار کنید، سریع‌تر رشد کنید
-                    </h1>
-                    <p className={styles.subtitle}>
-                        به جمع کاربران حرفه‌ای بپیوندید و از تمام قابلیت‌های نرم‌افزار بهره‌مند شوید.
-                    </p>
+                    <h1 className={styles.title}>{hero.heading}</h1>
+                    <p className={styles.subtitle}>{hero.subheading}</p>
                 </div>
 
                 <button className={styles.ctaBtn}>

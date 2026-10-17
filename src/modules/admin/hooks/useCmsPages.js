@@ -7,6 +7,28 @@ import {
 import { formatJalaliDateTime } from '../../../utils/datetime'
 import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
 
+/* نشانی واقعی هر صفحه روی سایت.
+
+   مقاله مسیر اسلاگی دارد. صفحه‌ی ساختاریافته به یک مسیر ثابت
+   سایت نگاشت می‌شود — همان نگاشتی که در CMS_CONTRACT.md توافق شد.
+
+   کلید ناشناخته `null` می‌دهد تا دکمه‌ی «دیدن در سایت» نیاید؛
+   لینک شکسته بدتر از نبودن دکمه است. */
+const SCHEMA_ROUTES = {
+    home: '/',
+    company: '/company',
+    services: '/services',
+    products: '/products',
+    resources: '/resources',
+    contact: '/contact',
+}
+
+function publicUrlOf(p) {
+    if (p.kind === 'ARTICLE') return `/resources/articles/${p.slug}`
+    if (p.kind === 'STRUCTURED') return SCHEMA_ROUTES[p.schema_key] ?? null
+    return null
+}
+
 function toRow(p, i, offset) {
     const { date } = formatJalaliDateTime(p.updated_at)
 
@@ -26,7 +48,7 @@ function toRow(p, i, offset) {
            ادمین نمی‌دانست کجا ببیندش. مقاله مسیر واقعی دارد؛
            صفحه‌ی ساختاریافته هنوز ندارد چون مسیر عمومی‌اش
            (`GET /landing/pages/{schema_key}`) از بک‌اند نیامده. */
-        publicUrl: p.kind === 'ARTICLE' ? `/resources/articles/${p.slug}` : null,
+        publicUrl: publicUrlOf(p),
         status: pageState(p),
         updatedAt: date || '—',
         raw: p,

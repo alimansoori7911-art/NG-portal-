@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Search } from 'lucide-react'
 import AdminTable from '../components/AdminTable/AdminTable'
 import AuditLogList from '../components/AuditLogList/AuditLogList'
 import UserProfileModal from '../components/UserProfileModal/UserProfileModal'
@@ -76,6 +76,9 @@ export default function UsersPage() {
         reload,
         adminsOnly,
         toggleAdminsOnly,
+        query,
+        setQuery,
+        searching,
     } = useAdminUsers()
 
     /* نقش‌ها فقط وقتی لازم‌اند که دیالوگ تغییر نقش باز شود */
@@ -335,22 +338,48 @@ export default function UsersPage() {
                             />
                             <span>فقط مدیران</span>
                         </label>
+
+                        {/* ✅ جستجو — اسپک تازه پارامتر `q` را داد.
+                            روی حالت «فقط مدیران» غیرفعال می‌شود چون
+                            `/admin/auth/admins` این پارامتر را ندارد. */}
+                        <div className={styles.searchBox}>
+                            <Search
+                                size={16}
+                                className={styles.searchIcon}
+                                aria-hidden="true"
+                            />
+                            <input
+                                type="search"
+                                className={styles.searchInput}
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                disabled={adminsOnly}
+                                placeholder={
+                                    adminsOnly
+                                        ? 'در حالت «فقط مدیران» جستجو نداریم'
+                                        : 'جستجوی نام، ایمیل یا شماره…'
+                                }
+                                aria-label="جستجوی کاربر"
+                            />
+                        </div>
                     </div>
 
                     <AdminTable
                         columns={COLUMNS}
                         rows={rows}
+                        emptyMessage={
+                            loading
+                                ? 'در حال دریافت کاربران…'
+                                : searching
+                                  ? 'کاربری با این عبارت پیدا نشد'
+                                  : error || 'کاربری ثبت نشده است'
+                        }
                         page={page}
                         pageCount={pageCount}
                         onPageChange={setPage}
                         selectedId={selectedId}
                         onRowClick={toggleRow}
                         renderRowActions={rowActions}
-                        emptyMessage={
-                            loading
-                                ? 'در حال دریافت کاربران…'
-                                : error || 'کاربری برای نمایش وجود ندارد'
-                        }
                     />
                   </>
                 )

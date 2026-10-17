@@ -65,6 +65,23 @@ export function useAdminUsers() {
        `/admin/auth/admins` است. */
     const [adminsOnly, setAdminsOnly] = useState(false)
 
+    /* ✅ جستجو — اسپک تازه پارامتر `q` را داد.
+
+       `query` چیزی است که کاربر تایپ می‌کند و `search` چیزی که
+       واقعاً فرستاده شده. جدا نگه‌شان می‌داریم تا هر حرف یک
+       درخواست نزند (debounce زیر). */
+    const [query, setQuery] = useState('')
+    const [search, setSearch] = useState('')
+
+    /* ۴۰۰ms صبر می‌کنیم؛ تایپ سریع نباید به سرور فشار بیاورد. */
+    useEffect(() => {
+        const id = setTimeout(() => {
+            setSearch(query)
+            setPage(1)
+        }, 400)
+        return () => clearTimeout(id)
+    }, [query])
+
     const reload = useCallback(() => setAttempt((n) => n + 1), [])
 
     const toggleAdminsOnly = useCallback(() => {
@@ -86,6 +103,9 @@ export function useAdminUsers() {
                 const { items, pagination } = await fetcher({
                     page,
                     limit: ROWS_PER_PAGE,
+                    /* ⚠️ `/admin/auth/admins` پارامتر `q` ندارد؛ فقط
+                       فهرست کاربران جستجوپذیر است. */
+                    q: adminsOnly ? undefined : search,
                 })
                 if (cancelled) return
 
@@ -103,7 +123,7 @@ export function useAdminUsers() {
         return () => {
             cancelled = true
         }
-    }, [page, attempt, adminsOnly])
+    }, [page, attempt, adminsOnly, search])
 
     return {
         rows,
@@ -111,6 +131,10 @@ export function useAdminUsers() {
         pageCount,
         loading,
         error,
+        query,
+        setQuery,
+        /* جستجوی فعال — برای پیام «نتیجه‌ای نیست» */
+        searching: search.trim().length > 0,
         setPage,
         reload,
         adminsOnly,

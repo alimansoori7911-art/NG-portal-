@@ -33,14 +33,24 @@ const FEATURES = [
     },
 ]
 
-function Features() {
+function Features({ cms }) {
+    /* عنوان بخش و کارت‌ها از CMS؛ مقادیر فعلی پیش‌فرض‌اند.
+
+       کارت‌ها یک `CARD_LIST` هستند، پس اگر ادمین کارت اضافه/کم
+       کند همینجا دیده می‌شود. کلید ردیف از عنوان ساخته می‌شود
+       چون آیتم‌های CMS شناسه ندارند. */
+    const head = cms?.fields?.('features', {
+        section_title: 'مزایا و ویژگی‌های رقابتی',
+    }) ?? {}
+    const cards = cms?.items?.('features', FEATURES) ?? FEATURES
+
     return (
         <section className={styles.section}>
-            <h2 className={styles.mainTitle}>مزایا و ویژگی‌های رقابتی</h2>
+            <h2 className={styles.mainTitle}>{head.section_title}</h2>
 
             <div className={styles.grid}>
-                {FEATURES.map(feature => (
-                    <div key={feature.id} className={styles.card}>
+                {cards.map((feature, i) => (
+                    <div key={feature.id ?? `${feature.title}-${i}`} className={styles.card}>
                         <div className={styles.cardInner}>
                             <h3 className={styles.cardTitle}>{feature.title}</h3>
                             <p className={styles.cardDescription}>{feature.description}</p>

@@ -1399,6 +1399,39 @@ const routes = [
         db.tickets.push(t)
         return [201, ok(t)]
     }],
+
+    /* PATCH /ticketing/tickets/{id} — ویرایش تیکت.
+
+       ⚠️ این مسیر اصلاً وجود نداشت، یعنی «تغییر وضعیت تیکت» در پنل
+       ادمین ۴۰۴ می‌گرفت و هیچ‌وقت کار نمی‌کرد. حالا هم وضعیت و هم
+       `priority` (اسپک تازه) واقعاً ذخیره می‌شوند. */
+    ['PATCH', /^\/ticketing\/tickets\/[^/]+$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+
+        const id = req.path.split('/')[3]
+        const t = db.tickets.find((x) => x.id === id)
+        if (!t) return [404, fail('NOT_FOUND', 'تیکت پیدا نشد')]
+
+        const b = req.body || {}
+
+        if (b.priority != null) {
+            if (!['low', 'normal', 'high', 'urgent'].includes(b.priority)) {
+                return [422, fail('VALIDATION_ERROR', 'اولویت نامعتبر است')]
+            }
+            t.priority = b.priority
+        }
+        if (b.status != null) t.status_code = b.status
+        if (b.subject != null) t.subject = b.subject
+        if (b.department_id != null) t.department_id = b.department_id
+        /* null یعنی برداشتن تخصیص، پس `undefined` و `null` فرق دارند */
+        if ('assigned_to_user_id' in b) {
+            t.assigned_to_user_id = b.assigned_to_user_id
+        }
+
+        t.updated_at = new Date().toISOString()
+        return ok(t)
+    }],
+
     /* پیام‌ها واقعاً روی تیکت ذخیره می‌شوند.
 
        قبلاً این مسیر همیشه `[]` می‌داد و `reply` چیزی را نگه
@@ -1450,9 +1483,27 @@ const routes = [
     }],
 
     /* ─── ادمین ─── */
-    ['GET', /^\/admin\/auth\/users$/, () =>
-        page([...db.users.values()].map((u, i) => makeAdminUser(u, i + 1))),
-    ],
+    /* ✅ پارامتر `q` اسپک تازه — جستجو روی نام کاربری، ایمیل و شماره.
+
+       ⚠️ `req` هم پاس داده می‌شود؛ بدون آن صفحه‌بندی اعمال نمی‌شد و
+       همیشه صفحه‌ی اول برمی‌گشت. */
+    ['GET', /^\/admin\/auth\/users$/, (req) => {
+        const q = (req.query.get('q') || '').trim().toLowerCase()
+
+        let rows = [...db.users.values()]
+        if (q) {
+            rows = rows.filter((u) =>
+                [u.username, u.email, u.phone, u.first_name, u.last_name]
+                    .filter(Boolean)
+                    .some((v) => String(v).toLowerCase().includes(q))
+            )
+        }
+
+        return page(
+            rows.map((u, i) => makeAdminUser(u, i + 1)),
+            req
+        )
+    }],
     /* فهرست مدیران — کاربرانی که دست‌کم یک نقش دارند.
 
        ⚠️ `/admin/auth/users` فیلتر نقش **ندارد** (فقط page و limit)،
@@ -3060,6 +3111,38 @@ const routes = [
         const from = decodeURIComponent(req.path.split('/')[3])
         const r = db.cmsRedirects.find((x) => x.from_slug === from)
         return r ? ok({ to_slug: r.to_slug }) : [404, fail('NOT_FOUND', 'ریدایرکتی نیست')]
+    }],
+
+    /* GET /cms/pages/schema/{schema_key} — صفحه‌ی ساختاریافته‌ی عمومی.
+
+       ⚠️ باید **قبل از** مسیر `/cms/pages/{slug}` ثبت شود، وگرنه
+       آن الگو اول `schema` را به‌عنوان اسلاگ می‌گیرد و ۴۰۴ می‌دهد. */
+    ['GET', /^\/cms\/pages\/schema\/[^/]+$/, (req) => {
+        const key = decodeURIComponent(req.path.split('/')[4])
+        const p = db.cmsPages.find(
+            (x) =>
+                x.schema_key === key &&
+                x.kind === 'STRUCTURED' &&
+                !x.deleted_at &&
+                x.status === 'PUBLISHED' &&
+                x.is_public
+        )
+        if (!p) return [404, fail('NOT_FOUND', 'صفحه یافت نشد')]
+
+        /* مثل مسیر اسلاگ: نسخه‌ی منتشرشده، نه جاری. */
+        const pub = db.cmsVersions.find((v) => v.id === p.published_version_id)
+        return ok({
+            id: p.id,
+            kind: p.kind,
+            slug: p.slug,
+            title: p.title,
+            excerpt: p.excerpt,
+            content_html: pub?.content_html ?? '',
+            blocks: pub?.structure ?? [],
+            published_at: p.published_at,
+            tags: p.tags,
+            seo: p.seo,
+        })
     }],
 
     ['GET', /^\/cms\/pages\/[^/]+$/, (req) => {

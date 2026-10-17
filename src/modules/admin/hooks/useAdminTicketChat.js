@@ -94,6 +94,22 @@ export function useAdminTicketChat(ticketId) {
         }
     }, [])
 
+    /* ✅ اولویت حالا بعد از ساخت هم قابل تغییر است (اسپک تازه).
+       قبلاً تیکتی که اشتباه «کم» ثبت شده بود تا ابد کم می‌ماند. */
+    const setPriority = useCallback(async (id, priority) => {
+        setUpdating(true)
+        setUpdateError(null)
+        try {
+            await ticketService.updateTicket(id, { priority })
+            return true
+        } catch (err) {
+            setUpdateError(err?.message || 'تغییر اولویت ناموفق بود')
+            return false
+        } finally {
+            setUpdating(false)
+        }
+    }, [])
+
     return {
         messages,
         loading,
@@ -102,6 +118,7 @@ export function useAdminTicketChat(ticketId) {
         sendError,
         send,
         setStatus,
+        setPriority,
         updating,
         updateError,
     }

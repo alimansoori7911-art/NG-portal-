@@ -196,4 +196,18 @@ export const cmsService = {
     resolveRedirect(slug) {
         return api.get(`/cms/redirects/${slug}`).then(unwrap)
     },
+
+    /**
+     * GET /cms/pages/schema/{schema_key} — صفحه‌ی ساختاریافته‌ی
+     * منتشرشده (home, company, ...).
+     *
+     * ✅ همان مسیری که در CMS_CONTRACT.md خواسته بودیم. تا پیش
+     * از این، محتوای CMS هیچ‌جای سایت دیده نمی‌شد.
+     *
+     * ⚠️ توکن لازم ندارد و فقط نسخه‌ی منتشرشده را می‌دهد؛
+     * کلید ناشناخته یا منتشرنشده ۴۰۴ می‌دهد.
+     */
+    getPublicSchemaPage(schemaKey) {
+        return api.get(`/cms/pages/schema/${schemaKey}`).then(unwrap)
+    },
 }
