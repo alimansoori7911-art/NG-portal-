@@ -145,25 +145,13 @@
     flex-shrink: 0;
 }
 
-.chip:not(.chipSoon):hover {
+.chip:hover {
     border-color: var(--color-primary-medium);
 }
 
 .chip:focus-visible {
     outline: 2px solid var(--color-primary-lighter);
     outline-offset: 2px;
-}
-
-/* مقصدی ندارد — کلیک‌ناپذیر، ولی هنوز خوانا */
-.chipSoon {
-    opacity: 0.55;
-    cursor: default;
-}
-
-.soon {
-    margin-inline-start: auto;
-    font-size: var(--font-size-xs);
-    color: var(--text-muted-2);
 }
 
 @media (max-width: 1024px) {

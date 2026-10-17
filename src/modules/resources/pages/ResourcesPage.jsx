@@ -41,10 +41,11 @@ export default function ResourcesPage() {
 
     const topics = cms?.items?.('topics', TOPICS) ?? TOPICS
 
-    /* از CMS فقط متن و اسم آیکون می‌آید. مقصد کارت (`to`, `ready`,
+    /* از CMS فقط متن و اسم آیکون می‌آید. مقصد کارت (`to`,
        `linkLabel`) وضعیت راوتر است و طبق CMS_CONTRACT.md در کد
-       می‌ماند؛ با عنوان به کارت CMS وصل می‌شود. دسته‌ای که در کد
-       نیست لینک ندارد و «به‌زودی» می‌گیرد، نه لینکی حدسی. */
+       می‌ماند؛ با عنوان به کارت CMS وصل می‌شود. دسته‌ای که ادمین تازه
+       ساخته و در کد نیست، به مقاله‌های برچسب هم‌نامش می‌رود — همان
+       الگوی بقیه‌ی دسته‌ها — تا هیچ کارتی بی‌لینک نماند. */
     const categories = (cms?.items?.('categories', CATEGORIES) ?? CATEGORIES).map(
         (it, i) => {
             const known = CATEGORIES.find((c) => c.title === it.title?.trim())
@@ -52,9 +53,10 @@ export default function ResourcesPage() {
                 ...it,
                 id: known?.id ?? `${it.title}-${i}`,
                 icon: resolveIcon(it.icon, known?.icon ?? CATEGORIES[i]?.icon ?? CATEGORIES[0].icon),
-                linkLabel: known?.linkLabel,
-                ready: known?.ready ?? false,
-                to: known?.to,
+                linkLabel: known?.linkLabel ?? 'مشاهده منابع',
+                to:
+                    known?.to ??
+                    `/resources/articles?tag=${encodeURIComponent(it.title?.trim() ?? '')}`,
             }
         }
     )
@@ -82,14 +84,16 @@ export default function ResourcesPage() {
                                 {hero.subheading}
                             </p>
 
-                            {/* اسپک اینجا جعبه‌ی جستجو داشت. تا وقتی هیچ
-                                منبعی منتشر نشده، جستجو همیشه «چیزی پیدا
-                                نشد» می‌دهد — یعنی وعده‌ای که پشتش خالی
-                                است. به‌جایش وضعیت واقعی گفته می‌شود. */}
+                            {/* راه مستقیم به همه‌ی مقاله‌های منتشرشده‌ی CMS */}
                             <p className={styles.notice}>
-                                این بخش در حال تکمیل است. منابع به‌تدریج منتشر
-                                می‌شوند؛ تا آن زمان برای هر سؤالی می‌توانید از
-                                تیکتینگ یا تماس با ما استفاده کنید.
+                                <span>
+                                    همه‌ی راهنماها و مقاله‌ها را در{' '}
+                                    <Link to="/resources/articles" className={styles.noticeLink}>
+                                        فهرست مقاله‌ها
+                                    </Link>{' '}
+                                    ببینید. اگر پاسخ سؤالتان را پیدا نکردید، از
+                                    تیکتینگ یا تماس با ما کمک بگیرید.
+                                </span>
                             </p>
 
                             <div className={styles.topics}>
@@ -120,7 +124,7 @@ export default function ResourcesPage() {
 
                         <ul className={styles.grid}>
                             {categories.map(
-                                ({ id, icon: Icon, title, description, linkLabel, ready, to }) => (
+                                ({ id, icon: Icon, title, description, linkLabel, to }) => (
                                     <li key={id} className={styles.card}>
                                         <span className={styles.cardIcon} aria-hidden="true">
                                             <Icon size={28} />
@@ -128,14 +132,10 @@ export default function ResourcesPage() {
                                         <h3 className={styles.cardTitle}>{title}</h3>
                                         <p className={styles.cardText}>{description}</p>
 
-                                        {ready && to ? (
-                                            <Link to={to} className={styles.cardLink}>
-                                                {linkLabel}
-                                                <ArrowLeft size={14} aria-hidden="true" />
-                                            </Link>
-                                        ) : (
-                                            <span className={styles.cardSoon}>به‌زودی</span>
-                                        )}
+                                        <Link to={to} className={styles.cardLink}>
+                                            {linkLabel}
+                                            <ArrowLeft size={14} aria-hidden="true" />
+                                        </Link>
                                     </li>
                                 )
                             )}

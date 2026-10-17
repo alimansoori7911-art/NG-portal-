@@ -27,7 +27,6 @@ function ProductsHero({ cms }) {
                 <button className={styles.btnPrimary} onClick={scrollToWhatIsIt}>
                     محصول ngcorion چیست؟
                 </button>
-                {/* مقصد این دکمه هنوز مشخص نیست — فعلاً placeholder */}
                 <button className={styles.btnSecondary} onClick={() => navigate('/products/buy')}>
                     رفتن به صفحه خرید محصول
                 </button>

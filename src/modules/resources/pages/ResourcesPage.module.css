@@ -65,6 +65,15 @@
     color: var(--color-primary-pale);
 }
 
+.noticeLink {
+    color: var(--color-primary-light);
+    font-weight: 700;
+}
+
+.noticeLink:hover {
+    color: var(--color-primary-lighter);
+}
+
 .notice {
     display: flex;
     margin-top: var(--spacing-lg);
@@ -182,74 +191,6 @@
     color: var(--color-primary-lighter);
 }
 
-/* مقصدش هنوز ساخته نشده */
-.cardSoon,
-.featuredSoon {
-    margin-top: var(--spacing-md);
-    font-size: var(--font-size-xs);
-    color: var(--text-muted-2);
-}
-
-/* ── منابع پیشنهادی ── */
-
-.featuredGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--spacing-lg);
-}
-
-.featured {
-    display: flex;
-    flex-direction: column;
-    padding: var(--spacing-lg);
-    background: var(--color-bg-dark);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-}
-
-.featuredTop {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.featuredIcon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    flex-shrink: 0;
-    background: var(--color-bg-darkest);
-    border-radius: var(--radius-sm);
-    color: var(--color-primary-light);
-}
-
-.featuredBadge {
-    font-size: var(--font-size-xs);
-    color: var(--color-primary-soft);
-}
-
-.featuredTitle {
-    margin-top: var(--spacing-md);
-    font-size: var(--font-size-md);
-    font-weight: 700;
-    line-height: 1.7;
-    color: var(--color-white);
-}
-
-.featuredText {
-    margin-top: var(--spacing-xs);
-    font-size: var(--font-size-sm);
-    line-height: 1.8;
-    color: var(--text-muted-2);
-}
-
-.featuredSoon {
-    /* به ته کارت می‌چسبد تا کارت‌های هم‌ردیف هم‌تراز بمانند */
-    margin-top: auto;
-    padding-top: var(--spacing-md);
-}
 
 /* ── پرطرفدارها + CTA ── */
 

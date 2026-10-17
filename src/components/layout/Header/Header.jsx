@@ -20,12 +20,6 @@ const NAV_ITEMS = [
     /* بدون زیرمنو: تیکتینگ از اینجا برداشته شد (پشتیبانی زیرمجموعه‌ی
        محصول نیست) و تنها آیتم باقی‌مانده خودِ همین صفحه بود. */
     { label: 'محصولات', path: '/products' },
-    /* `soon: true` یعنی صفحه‌اش هنوز ساخته نشده: کلیک کاری نمی‌کند و
-       برچسب «به‌زودی» ظاهر می‌شود — بردن کاربر به صفحه‌ی سفید بدتر از
-       نرفتن است.
-
-       الان هیچ آیتمی آن را ندارد (خدمات و منابع ساخته شدند) ولی
-       سازوکارش می‌ماند برای صفحه‌های بعدی. */
     { label: 'خدمات', path: '/services' },
     { label: 'منابع', path: '/resources' },
     {
@@ -101,19 +95,11 @@ function Header() {
                 {NAV_ITEMS.map(item => (
                     <div key={item.path} className={styles.navItemWrapper}>
                         <button
-                            className={`${styles.navItem} ${item.soon ? styles.navItemSoon : ''}`}
-                            onClick={() => !item.soon && goTo(item.path)}
-                            aria-disabled={item.soon || undefined}
+                            className={styles.navItem}
+                            onClick={() => goTo(item.path)}
                         >
                             {item.label}
                         </button>
-
-                        {/* برچسب «به‌زودی» — با هاور روی همان دکمه */}
-                        {item.soon && (
-                            <span className={styles.soonBadge} aria-hidden="true">
-                                به‌زودی…
-                            </span>
-                        )}
 
                         {/* پنل دراپ‌داون — فقط روی دسکتاپ با هاور نمایش داده می‌شود */}
                         {item.items && (
@@ -189,20 +175,13 @@ function Header() {
             <div className={`${styles.mobileNav} ${mobileOpen ? styles.open : ''}`}>
                 {NAV_ITEMS.map(item => (
                     <div key={item.path} className={styles.mobileNavGroup}>
-                        {/* روی موبایل هاور وجود ندارد، پس برچسب همیشه
-                            کنار متن دیده می‌شود. */}
                         <button
-                            className={`${styles.mobileNavItem} ${item.soon ? styles.mobileNavItemSoon : ''}`}
-                            onClick={() => {
-                                if (item.soon) return
+                            className={styles.mobileNavItem}
+                            onClick={() =>
                                 item.items ? toggleMobileDropdown(item.label) : goTo(item.path)
-                            }}
-                            aria-disabled={item.soon || undefined}
+                            }
                         >
                             {item.label}
-                            {item.soon && (
-                                <span className={styles.soonInline}>به‌زودی…</span>
-                            )}
                         </button>
 
                         {item.items && openMobileDropdown === item.label && (

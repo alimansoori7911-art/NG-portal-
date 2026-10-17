@@ -9,8 +9,7 @@ import styles from './SectionHeader.module.css'
  *  - `align="start"` راست‌چین، با لینک اختیاری «مشاهده همه» در سمت چپ
  *  - `align="center"` وسط‌چین و کمی درشت‌تر (صفحه‌ی خدمات)
  *
- * `action` برای وقتی است که مقصد هنوز صفحه ندارد — به‌جای لینک شکسته
- * چیزی نشان داده نمی‌شود. (`soon` در هدر هم همین منطق را دارد.)
+ * `action` اختیاری است؛ بدون آن لینکی نشان داده نمی‌شود.
  */
 export default function SectionHeader({
     title,

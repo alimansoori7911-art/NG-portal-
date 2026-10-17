@@ -15,8 +15,7 @@ import styles from './TermsPage.module.css'
 /* چیپ‌های «لینک‌های مرتبط».
 
    دو تای اول به همین صفحه می‌روند (تب دیگر) و بقیه مقصد واقعی
-   دارند. `to: null` هنوز پشتیبانی می‌شود: چیپ بی‌مقصد به‌جای لینک
-   شکسته غیرفعال نشان داده می‌شود. */
+   دارند. */
 const RELATED_LINKS = [
     { icon: Shield, label: 'حریم خصوصی', docId: 'privacy' },
     { icon: FileText, label: 'قوانین و مقررات', docId: 'terms' },
@@ -148,18 +147,6 @@ export default function TermsPage() {
                                         >
                                             {content}
                                         </button>
-                                    )
-                                }
-
-                                if (!to) {
-                                    return (
-                                        <span
-                                            key={label}
-                                            className={`${styles.chip} ${styles.chipSoon}`}
-                                        >
-                                            {content}
-                                            <span className={styles.soon}>به‌زودی</span>
-                                        </span>
                                     )
                                 }
 

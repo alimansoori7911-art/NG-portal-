@@ -62,7 +62,6 @@ function ProductsPage() {
 
                 <ProductsDetails cms={cms} />
 
-                {/* placeholder — بخش پلن‌ها و درخواست دمو با فیگمای خودشان ساخته می‌شوند */}
                 <div id="plans" className={styles.section}>
                     <ProductsPlans />
                 </div>
