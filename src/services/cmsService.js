@@ -56,6 +56,23 @@ export function pageState(p) {
     return { key: 'draft', label: 'پیش‌نویس' }
 }
 
+/* بلوک‌های خروجی (`CmsBlockOut`) به شکل ورودی (`CmsBlockIn`).
+
+   ⚠️ بک‌اند تأیید کرد `PUT` بلوک‌ها را **جایگزین** می‌کند. معلوم
+   نیست نفرستادن `blocks` یعنی «دست نزن» یا «خالی کن»؛ پس ویرایش
+   عنوان/سئوی صفحه‌ی ساختاریافته و بازگردانی نسخه، بلوک‌ها را
+   همراهش می‌فرستند تا در هر دو حالت محتوا پاک نشود. */
+export function toBlockInput(blocks) {
+    return (blocks ?? []).map((b) => ({
+        key: b.key,
+        fields: b.fields ?? {},
+        items:
+            Array.isArray(b.items) && (b.items.length > 0 || b.type === 'CARD_LIST')
+                ? b.items.map((it) => ({ fields: it?.fields ?? it }))
+                : null,
+    }))
+}
+
 /**
  * مدیریت محتوا — ماژول `/admin/cms/*` و `/cms/*`.
  *

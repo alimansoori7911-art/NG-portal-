@@ -95,9 +95,27 @@
 }
 
 .label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--text-body);
     font-size: 11px;
-    line-height: 1;
+    line-height: 1.4;
+}
+
+/* شمارنده‌ی نویسه — سقف‌ها از اسپک می‌آیند */
+.counter {
+    margin-inline-start: auto;
+    color: var(--text-faint);
+    font-size: 10px;
+    direction: ltr;
+}
+
+/* هشدار نرم (نه خطا): نشانیِ صفحه‌ی منتشرشده، صفحه‌ی خصوصی */
+.warnHint {
+    color: #F0B44C;
+    font-size: var(--font-size-xs);
+    line-height: 1.8;
 }
 
 .input {

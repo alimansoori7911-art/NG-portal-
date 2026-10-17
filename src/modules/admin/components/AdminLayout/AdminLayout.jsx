@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import AdminSidebar from '../AdminSidebar/AdminSidebar'
 import AdminTopbar from '../AdminTopbar/AdminTopbar'
 import AdminHelpModal from '../AdminHelpModal/AdminHelpModal'
@@ -46,6 +47,23 @@ export default function AdminLayout() {
                 <main className={styles.main}>
                     <Outlet />
                 </main>
+
+                {/* پیام کوتاه «ذخیره شد» / «منتشر شد». قبلاً بعد از ذخیره فرم
+                    فقط بسته می‌شد و ادمین نمی‌دانست کار انجام شده یا نه. */}
+                <Toaster
+                    position="top-center"
+                    toastOptions={{
+                        duration: 3500,
+                        style: {
+                            direction: 'rtl',
+                            fontFamily: 'var(--font-family)',
+                            fontSize: 'var(--font-size-sm)',
+                            background: 'var(--surface-card)',
+                            color: 'var(--text-bright)',
+                            border: '1px solid var(--line-default)',
+                        },
+                    }}
+                />
 
                 <AdminHelpModal
                     open={helpOpen}

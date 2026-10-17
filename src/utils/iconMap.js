@@ -108,6 +108,43 @@ const ICONS = {
     instagram: InstagramIcon,
 }
 
+/* آیکون‌هایی که انتخابگر پنل ادمین پیشنهاد می‌دهد — نام اصلی هر
+   آیکون (همان چیزی که در CMS ذخیره می‌شود) و توضیح فارسی‌اش.
+   نام‌های مستعار بالا فقط برای خواندن مقدارهای قدیمی‌اند. */
+export const ICON_CHOICES = [
+    { name: 'users', label: 'تیم / کاربران', Icon: Users },
+    { name: 'badge-check', label: 'تأییدشده', Icon: BadgeCheck },
+    { name: 'handshake', label: 'همکاری', Icon: Handshake },
+    { name: 'settings', label: 'تنظیمات', Icon: Settings },
+    { name: 'layers', label: 'لایه‌ها', Icon: Layers },
+    { name: 'network', label: 'شبکه', Icon: Network },
+    { name: 'shield-check', label: 'امنیت', Icon: ShieldCheck },
+    { name: 'shield-half', label: 'سپر', Icon: ShieldHalf },
+    { name: 'shield-alert', label: 'هشدار امنیتی', Icon: ShieldAlert },
+    { name: 'sliders-horizontal', label: 'پیکربندی', Icon: SlidersHorizontal },
+    { name: 'bar-chart-3', label: 'نمودار', Icon: BarChart3 },
+    { name: 'trending-up', label: 'رشد', Icon: TrendingUp },
+    { name: 'target', label: 'هدف', Icon: Target },
+    { name: 'database', label: 'پشتیبان / داده', Icon: Database },
+    { name: 'server', label: 'سرور', Icon: Server },
+    { name: 'refresh-cw', label: 'به‌روزرسانی', Icon: RefreshCw },
+    { name: 'wrench', label: 'ابزار', Icon: Wrench },
+    { name: 'scan-search', label: 'بررسی', Icon: ScanSearch },
+    { name: 'clipboard-list', label: 'چک‌لیست', Icon: ClipboardList },
+    { name: 'headphones', label: 'پشتیبانی تلفنی', Icon: Headphones },
+    { name: 'building-2', label: 'سازمان', Icon: Building2 },
+    { name: 'file-text', label: 'سند', Icon: FileText },
+    { name: 'book-open', label: 'کتاب / راهنما', Icon: BookOpen },
+    { name: 'rocket', label: 'شروع', Icon: Rocket },
+    { name: 'cloud-download', label: 'دانلود', Icon: CloudDownload },
+    { name: 'phone', label: 'تلفن', Icon: Phone },
+    { name: 'mail', label: 'ایمیل', Icon: Mail },
+    { name: 'life-buoy', label: 'پشتیبانی', Icon: LifeBuoy },
+    { name: 'briefcase', label: 'فروش', Icon: Briefcase },
+    { name: 'map-pin', label: 'آدرس', Icon: MapPin },
+    { name: 'instagram', label: 'اینستاگرام', Icon: InstagramIcon },
+]
+
 /**
  * `value` اگر رشته باشد اسم آیکون است؛ اگر از قبل کامپوننت باشد
  * (متن پیش‌فرضِ داخل کد) همان برگردانده می‌شود.

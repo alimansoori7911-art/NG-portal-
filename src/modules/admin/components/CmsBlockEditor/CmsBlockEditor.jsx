@@ -1,6 +1,28 @@
-import { useState } from 'react'
-import { X, Plus, Trash2, Type, Image, LayoutGrid, MousePointerClick, FileText } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+    X,
+    Plus,
+    Trash2,
+    Type,
+    Image,
+    LayoutGrid,
+    MousePointerClick,
+    FileText,
+    ArrowUp,
+    ArrowDown,
+    MapPin,
+} from 'lucide-react'
 import RichTextEditor from '../../../../components/ui/RichTextEditor/RichTextEditor'
+import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
+import { useUnsavedChanges } from '../../../../hooks/useUnsavedChanges'
+import { ICON_CHOICES, resolveIcon } from '../../../../utils/iconMap'
+import NamedIcon from '../../../../components/ui/icons/NamedIcon'
+import {
+    BLOCK_TYPE_LABEL,
+    blockHint,
+    blockName,
+    fieldLabel,
+} from '../../constants/cmsLabels'
 import styles from './CmsBlockEditor.module.css'
 
 /* آیکون هر نوع بلوک — `BlockType` پنج مقدار ثابت دارد. */
@@ -12,97 +34,134 @@ const BLOCK_ICON = {
     CTA: MousePointerClick,
 }
 
-/* برچسب فارسی نوع بلوک */
-const BLOCK_LABEL = {
-    TEXT: 'متن ساده',
-    RICH_TEXT: 'متن غنی',
-    IMAGE: 'تصویر',
-    CARD_LIST: 'فهرست کارت',
-    CTA: 'دکمه‌ی اقدام',
+/* `BlockFieldKind` بک‌اند فقط `TEXT` دارد و «متن بلند» جدا نیست (نوع
+   `textarea` فقط در مک بود). پس متن بلند از روی سقف طول یا نام فیلد
+   تشخیص داده می‌شود، وگرنه «متن» و «توضیح» یک ورودی یک‌خطی می‌شدند. */
+const LONG_TEXT_NAMES = ['body', 'description', 'address', 'subheading']
+const LONG_TEXT_MIN = 160
+
+const isLongText = (spec, kind) =>
+    kind === 'textarea' ||
+    kind === 'long_text' ||
+    ((kind === 'text' || kind === '') &&
+        (spec.max_length
+            ? spec.max_length > LONG_TEXT_MIN
+            : LONG_TEXT_NAMES.includes(spec.name)))
+
+/* متن غنیِ «خالی» معمولاً `<p><br></p>` است؛ نباید فیلد الزامی را
+   پرشده حساب کند. */
+const isBlank = (v) =>
+    !String(v ?? '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .trim()
+
+/* نشانی لینک: مسیر داخلی سایت یا نشانی کامل. هر چیز دیگری (مثلاً
+   `www.x.com` بدون https) در سایت لینک شکسته می‌سازد. */
+const isValidLink = (v) => /^(https?:\/\/|\/|mailto:|tel:|#)/i.test(v.trim())
+const isValidImage = (v) => /^(https?:\/\/|\/)/i.test(v.trim())
+
+/* هر ردیف شناسه‌ی محلی می‌گیرد تا جابه‌جایی ردیف‌ها ویرایشگر متن غنیِ
+   ردیف دیگری را جای خودش نشان ندهد. در ذخیره حذف می‌شود. */
+let uidSeq = 0
+const withUid = (it) => ({ ...it, _uid: ++uidSeq })
+const withoutUid = (it) => {
+    const { _uid, ...rest } = it
+    void _uid
+    return rest
 }
 
-/* نام فارسی هر بلوک.
+const snapshot = (blocks) =>
+    JSON.stringify(blocks.map((b) => ({ ...b, items: b.items.map(withoutUid) })))
 
-   ⚠️ اسپک برای بلوک فیلد `title` ندارد — فقط `key` انگلیسی
-   می‌دهد. بدون این نگاشت، مدیر محتوا سرنامه‌های خام مثل
-   `cta` و `hero` می‌بیند و نمی‌داند کدام بخش صفحه است.
+/* ── انتخابگر آیکون ──
+   اسم آیکون قبلاً دستی تایپ می‌شد و ادمین نمی‌دانست چه بنویسد. */
+function IconPicker({ value, onChange, disabled }) {
+    const [open, setOpen] = useState(false)
+    const Current = resolveIcon(value)
+    const unknown = Boolean(value) && !Current
 
-   کلید ناشناخته خودِ کلید را نشان می‌دهد، پس بلوک تازه‌ی
-   بک‌اند بی‌نام نمی‌ماند. از بک‌اند خواسته شد عنوان را خودش
-   بدهد تا این نگاشت حذف شود. */
-const BLOCK_NAME = {
-    hero: 'سربرگ صفحه',
-    intro: 'معرفی',
-    product_intro: 'معرفی محصول',
-    banner: 'بنر',
-    features: 'ویژگی‌ها',
-    why_ng: 'چرا ما',
-    cta: 'دکمه‌ی اقدام',
-    demo_cta: 'دکمه‌ی درخواست دمو',
-    clients: 'مشتریان',
-    company_brand: 'معرفی شرکت',
-    plans_intro: 'عنوان بخش پلن‌ها',
-    mission: 'ماموریت',
-    vision: 'چشم‌انداز',
-    history: 'تاریخچه',
-    services: 'خدمات',
-    lifecycle: 'چرخه‌ی خدمت',
-    advantages: 'مزایا',
-    hero_points: 'نکات سربرگ',
-    what_is: 'این چیست؟',
-    details: 'جزئیات',
-    topics: 'موضوعات',
-    categories: 'دسته‌بندی‌ها',
-    featured: 'منابع منتخب',
-    popular: 'پرطرفدارترین‌ها',
-    channels: 'راه‌های ارتباط',
-    form_intro: 'معرفی فرم',
-    about: 'درباره‌ی ما',
-    contact: 'تماس',
-    link_groups: 'گروه لینک‌ها',
-    newsletter: 'خبرنامه',
-    popular_title: 'عنوان پرطرفدارترین‌ها',
+    return (
+        <div className={styles.iconPicker}>
+            <div className={styles.iconCurrent}>
+                <span className={styles.iconPreview} aria-hidden="true">
+                    {Current ? <NamedIcon name={value} size={20} /> : '—'}
+                </span>
+                <span className={styles.iconName}>
+                    {unknown
+                        ? `«${value}» شناخته نمی‌شود؛ روی سایت آیکون پیش‌فرض می‌آید`
+                        : Current
+                          ? ICON_CHOICES.find((c) => c.Icon === Current)?.label ?? value
+                          : 'بدون آیکون (آیکون پیش‌فرض همان ردیف)'}
+                </span>
+                <button
+                    type="button"
+                    className={styles.iconToggle}
+                    onClick={() => setOpen((o) => !o)}
+                    disabled={disabled}
+                    aria-expanded={open}
+                >
+                    {open ? 'بستن' : 'انتخاب آیکون'}
+                </button>
+            </div>
+
+            {open && (
+                <div className={styles.iconGrid} role="listbox" aria-label="آیکون‌ها">
+                    {ICON_CHOICES.map(({ name, label, Icon }) => {
+                        const active = Current === Icon
+                        return (
+                            <button
+                                key={name}
+                                type="button"
+                                role="option"
+                                aria-selected={active}
+                                className={`${styles.iconOption} ${
+                                    active ? styles.iconOptionActive : ''
+                                }`}
+                                title={label}
+                                aria-label={label}
+                                onClick={() => {
+                                    onChange(name)
+                                    setOpen(false)
+                                }}
+                            >
+                                <Icon size={18} />
+                            </button>
+                        )
+                    })}
+                    {value && (
+                        <button
+                            type="button"
+                            className={styles.iconClear}
+                            onClick={() => {
+                                onChange('')
+                                setOpen(false)
+                            }}
+                        >
+                            بدون آیکون
+                        </button>
+                    )}
+                </div>
+            )}
+        </div>
+    )
 }
-
-/* برچسب فارسی نام فیلد.
-
-   بک‌اند نام فیلد را انگلیسی و ماشینی می‌دهد (`heading`, `og_image_url`).
-   نمایش خامش به ادمین فارسی‌زبان بی‌معناست، ولی چون `kind` و نام‌ها
-   enum ندارند و بک‌اند می‌تواند هر چیزی بفرستد، این جدول فقط یک
-   «بهبود» است: نامی که نشناسیم، خودش نمایش داده می‌شود. */
-const FIELD_LABEL = {
-    heading: 'عنوان',
-    subheading: 'زیرعنوان',
-    title: 'عنوان',
-    section_title: 'عنوان بخش',
-    body: 'متن',
-    description: 'توضیح',
-    label: 'برچسب دکمه',
-    url: 'نشانی',
-    image_url: 'نشانی تصویر',
-    icon_url: 'نشانی آیکون',
-    alt: 'توضیح تصویر',
-    variant: 'گونه',
-}
-
-const fieldLabel = (name) => FIELD_LABEL[name] ?? name
 
 /**
  * یک فیلد — نوعِ ورودی از `kind` می‌آید.
  *
- * ⚠️ `kind` در اسپک enum **ندارد** و فقط `string` است، یعنی بک‌اند
- * می‌تواند مقداری بفرستد که نمی‌شناسیم. پس حالت پیش‌فرض یک input
- * ساده است: فیلد ناشناخته باید قابل ویرایش بماند، نه این‌که ناپدید
- * شود یا فرم را بشکند.
+ * فیلد با `kind` ناشناخته یک input ساده می‌گیرد: باید قابل ویرایش
+ * بماند، نه این‌که ناپدید شود یا فرم را بشکند.
  */
-function BlockField({ spec, value, onChange, disabled, error }) {
-    const label = fieldLabel(spec.name)
+function BlockField({ spec, blockType, value, onChange, disabled, error }) {
+    const label = fieldLabel(spec.name, blockType)
     const kind = String(spec.kind ?? '').toLowerCase()
+    const invalid = Boolean(error)
 
     /* متن غنی ویرایشگر کامل می‌گیرد */
     if (kind === 'rich_text' || kind === 'html') {
         return (
-            <div className={styles.fieldBlock}>
+            <div className={styles.fieldBlock} data-invalid={invalid || undefined}>
                 <span className={styles.fieldLabel}>
                     {label}
                     {spec.required && <span className={styles.req}>*</span>}
@@ -111,7 +170,7 @@ function BlockField({ spec, value, onChange, disabled, error }) {
                     value={value ?? ''}
                     onChange={onChange}
                     disabled={disabled}
-                    error={Boolean(error)}
+                    error={invalid}
                     placeholder={`${label} را بنویسید…`}
                 />
                 {error && <span className={styles.fieldError}>{error}</span>}
@@ -119,24 +178,39 @@ function BlockField({ spec, value, onChange, disabled, error }) {
         )
     }
 
-    const isTextarea = kind === 'textarea' || kind === 'long_text'
-    /* نشانی همیشه چپ‌به‌راست است، حتی در صفحه‌ی راست‌به‌چپ */
-    const isUrl = kind === 'url' || kind === 'image' || spec.name.endsWith('_url')
-    /* `NUMBER` و `ICON` در `BlockFieldKind` اسپک هستند.
+    if (kind === 'icon' || spec.name === 'icon') {
+        return (
+            <div className={styles.fieldBlock} data-invalid={invalid || undefined}>
+                <span className={styles.fieldLabel}>
+                    {label}
+                    {spec.required && <span className={styles.req}>*</span>}
+                </span>
+                <IconPicker value={value ?? ''} onChange={onChange} disabled={disabled} />
+                {error && <span className={styles.fieldError}>{error}</span>}
+            </div>
+        )
+    }
 
-       آیکون عمداً متن ساده می‌ماند (اسم آیکون، نه فایل) — همان
-       چیزی که در CMS_CONTRACT.md پیشنهاد شد و بک‌اند با افزودن
-       `ICON` به enum تأییدش کرد. */
+    const isImage = kind === 'image' || spec.name === 'image_url'
+    /* نشانی همیشه چپ‌به‌راست است، حتی در صفحه‌ی راست‌به‌چپ */
+    const isUrl = kind === 'url' || isImage || spec.name.endsWith('_url')
     const isNumber = kind === 'number'
+    const isTextarea = !isUrl && !isNumber && isLongText(spec, kind)
+    const text = String(value ?? '')
 
     return (
-        <label className={`${styles.field} ${error ? styles.fieldInvalid : ''}`}>
+        <label
+            className={`${styles.field} ${isTextarea ? styles.fieldWide : ''} ${
+                invalid ? styles.fieldInvalid : ''
+            }`}
+            data-invalid={invalid || undefined}
+        >
             <span className={styles.label}>
                 {label}
                 {spec.required && <span className={styles.req}>*</span>}
                 {spec.max_length && (
                     <span className={styles.counter}>
-                        {(value ?? '').length.toLocaleString('fa-IR')}/
+                        {text.length.toLocaleString('fa-IR')}/
                         {spec.max_length.toLocaleString('fa-IR')}
                     </span>
                 )}
@@ -145,7 +219,7 @@ function BlockField({ spec, value, onChange, disabled, error }) {
             {isTextarea ? (
                 <textarea
                     className={styles.textarea}
-                    value={value ?? ''}
+                    value={text}
                     onChange={(e) => onChange(e.target.value)}
                     disabled={disabled}
                     maxLength={spec.max_length ?? undefined}
@@ -154,27 +228,56 @@ function BlockField({ spec, value, onChange, disabled, error }) {
             ) : (
                 <input
                     className={styles.input}
-                    value={value ?? ''}
+                    value={text}
                     onChange={(e) => onChange(e.target.value)}
                     disabled={disabled}
                     maxLength={spec.max_length ?? undefined}
                     dir={isUrl || isNumber ? 'ltr' : undefined}
                     inputMode={isNumber ? 'numeric' : undefined}
-                    placeholder={isUrl ? 'https://…' : undefined}
+                    placeholder={
+                        isImage
+                            ? 'https://…/image.png'
+                            : isUrl
+                              ? '/contact یا https://…'
+                              : undefined
+                    }
                 />
             )}
 
             {error && <span className={styles.fieldError}>{error}</span>}
 
-            {/* اندازه‌های مجاز تصویر — راهنما، نه محدودیت اجباری */}
-            {spec.allowed_sizes?.length > 0 && (
+            {isImage && (
                 <span className={styles.hint}>
-                    اندازه‌ی پیشنهادی:{' '}
-                    {spec.allowed_sizes.map((n) => n.toLocaleString('fa-IR')).join(' · ')}{' '}
-                    پیکسل
+                    تصویر را جایی آپلود کنید و نشانی کاملش را اینجا بگذارید.
+                    {spec.allowed_sizes?.length > 0 &&
+                        ` اندازه‌ی پیشنهادی: ${spec.allowed_sizes
+                            .map((n) => n.toLocaleString('fa-IR'))
+                            .join(' · ')} پیکسل.`}
                 </span>
             )}
+
+            {isImage && isValidImage(text) && (
+                /* key با نشانی عوض می‌شود تا تصویر تازه، خطای تصویر قبلی
+                   را به ارث نبرد. */
+                <ImagePreview key={text} src={text.trim()} />
+            )}
         </label>
+    )
+}
+
+function ImagePreview({ src }) {
+    const [failed, setFailed] = useState(false)
+    return failed ? (
+        <span className={styles.fieldError}>
+            تصویر از این نشانی باز نشد؛ نشانی را بررسی کنید.
+        </span>
+    ) : (
+        <img
+            src={src}
+            alt=""
+            className={styles.imagePreview}
+            onError={() => setFailed(true)}
+        />
     )
 }
 
@@ -182,13 +285,15 @@ function BlockField({ spec, value, onChange, disabled, error }) {
  * ویرایشگر بلوک‌های صفحه‌ی ساختاریافته.
  *
  * فرم **از روی قالبی که بک‌اند می‌دهد ساخته می‌شود**، نه از روی یک
- * ساختار ثابت در فرانت. توضیح خود اسپک برای `structured-schemas` همین
- * است: «تا ویرایشگر فرم درست را بسازد و فیلدی که بک‌اند قبول نمی‌کند
- * پیشنهاد ندهد.» یعنی اگر بک‌اند فردا بلوکی اضافه کند، این صفحه
+ * ساختار ثابت در فرانت. اگر بک‌اند فردا بلوکی اضافه کند، این صفحه
  * بدون تغییر کد نشانش می‌دهد.
  *
  * ⚠️ بلوکی که `editable: false` باشد فقط خوانده می‌شود — ورودی‌هایش
- * غیرفعالند و در ذخیره هم فرستاده نمی‌شوند.
+ * غیرفعالند ولی در ذخیره دست‌نخورده فرستاده می‌شوند.
+ *
+ * `onSubmit(payload, { publish })` — با «ذخیره و انتشار» `publish`
+ * درست است. `onDirtyChange` به صفحه‌ی بالا می‌گوید فرم تغییر
+ * ذخیره‌نشده دارد تا عوض کردن تب را بپرسد.
  */
 export default function CmsBlockEditor({
     page,
@@ -196,21 +301,52 @@ export default function CmsBlockEditor({
     error = null,
     onSubmit,
     onClose,
+    onDirtyChange,
 }) {
     /* حالت اولیه از مقادیر ذخیره‌شده‌ای که همراه قالب آمده‌اند */
-    const [blocks, setBlocks] = useState(() =>
-        (page.editable_blocks ?? []).map((b) => ({
-            key: b.key,
-            fields: Object.fromEntries(
-                (b.fields ?? []).map((f) => [f.name, f.value ?? ''])
-            ),
-            items: (b.items?.values ?? []).map((it) => ({ ...it })),
-        }))
+    const initialBlocks = useMemo(
+        () =>
+            (page.editable_blocks ?? []).map((b) => ({
+                key: b.key,
+                fields: Object.fromEntries(
+                    (b.fields ?? []).map((f) => [f.name, f.value ?? ''])
+                ),
+                items: (b.items?.values ?? []).map(withUid),
+            })),
+        [page]
     )
+    const [blocks, setBlocks] = useState(initialBlocks)
+    const [initial] = useState(() => snapshot(initialBlocks))
     const [fieldErrors, setFieldErrors] = useState({})
+    const [confirmClose, setConfirmClose] = useState(false)
+    const formRef = useRef(null)
+
+    const dirty = snapshot(blocks) !== initial
+    useUnsavedChanges(dirty)
+    useEffect(() => {
+        onDirtyChange?.(dirty)
+    }, [dirty, onDirtyChange])
+
+    /* بعد از ذخیره‌ی ناموفق، اولین فیلد نامعتبر را نشان بده. در یک فرم
+       بلند، خطای کنار فیلدی که بیرون از دید است یعنی «هیچ اتفاقی
+       نیفتاد». */
+    const errorCount = Object.keys(fieldErrors).length
+    useEffect(() => {
+        if (errorCount === 0) return
+        formRef.current
+            ?.querySelector('[data-invalid="true"]')
+            ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, [errorCount])
 
     const specOf = (key) =>
         (page.editable_blocks ?? []).find((b) => b.key === key)
+
+    const clearErrors = (prefix) =>
+        setFieldErrors((prev) =>
+            Object.fromEntries(
+                Object.entries(prev).filter(([k]) => !k.startsWith(prefix))
+            )
+        )
 
     const setField = (blockKey, name, value) => {
         setBlocks((prev) =>
@@ -220,11 +356,7 @@ export default function CmsBlockEditor({
                     : b
             )
         )
-        setFieldErrors((prev) => {
-            const next = { ...prev }
-            delete next[`${blockKey}.${name}`]
-            return next
-        })
+        clearErrors(`${blockKey}.${name}`)
     }
 
     const setItemField = (blockKey, index, name, value) => {
@@ -240,11 +372,7 @@ export default function CmsBlockEditor({
                     : b
             )
         )
-        setFieldErrors((prev) => {
-            const next = { ...prev }
-            delete next[`${blockKey}.items.${index}.${name}`]
-            return next
-        })
+        clearErrors(`${blockKey}.items.${index}.${name}`)
     }
 
     const addItem = (blockKey) => {
@@ -258,11 +386,14 @@ export default function CmsBlockEditor({
                 const blank = Object.fromEntries(
                     (spec?.items?.fields ?? []).map((f) => [f.name, ''])
                 )
-                return { ...b, items: [...b.items, blank] }
+                return { ...b, items: [...b.items, withUid(blank)] }
             })
         )
     }
 
+    /* خطاهای ردیف‌ها با شماره‌ی ردیف کلید خورده‌اند؛ بعد از حذف یا
+       جابه‌جایی به ردیف دیگری می‌چسبیدند، پس پاک می‌شوند و در ذخیره‌ی
+       بعدی دوباره حساب می‌شوند. */
     const removeItem = (blockKey, index) => {
         setBlocks((prev) =>
             prev.map((b) =>
@@ -271,19 +402,40 @@ export default function CmsBlockEditor({
                     : b
             )
         )
-        /* خطاهای همان ردیف باید پاک شوند، وگرنه به ردیف بعدی می‌چسبند */
-        setFieldErrors((prev) =>
-            Object.fromEntries(
-                Object.entries(prev).filter(
-                    ([k]) => !k.startsWith(`${blockKey}.items.${index}.`)
-                )
-            )
-        )
+        clearErrors(`${blockKey}.items.`)
     }
 
-    const submit = (e) => {
-        e.preventDefault()
+    /* ترتیب ردیف‌ها روی سایت دیده می‌شود (مثلاً مراحل شماره‌دار چرخه‌ی
+       خدمات)، پس باید بدون حذف و ساخت دوباره قابل تغییر باشد. */
+    const moveItem = (blockKey, index, delta) => {
+        setBlocks((prev) =>
+            prev.map((b) => {
+                if (b.key !== blockKey) return b
+                const to = index + delta
+                if (to < 0 || to >= b.items.length) return b
+                const items = [...b.items]
+                ;[items[index], items[to]] = [items[to], items[index]]
+                return { ...b, items }
+            })
+        )
+        clearErrors(`${blockKey}.items.`)
+    }
 
+    const checkField = (f, raw) => {
+        const v = String(raw ?? '')
+        if (f.required && isBlank(v)) return 'این فیلد الزامی است'
+        if (!v.trim()) return null
+
+        const kind = String(f.kind ?? '').toLowerCase()
+        if (kind === 'image' || f.name === 'image_url') {
+            if (!isValidImage(v)) return 'نشانی تصویر باید با https:// یا / شروع شود'
+        } else if (kind === 'url' || f.name === 'url' || f.name.endsWith('_url')) {
+            if (!isValidLink(v)) return 'نشانی باید با / (صفحه‌ی داخلی) یا https:// شروع شود'
+        }
+        return null
+    }
+
+    const submit = (publish) => {
         const errs = {}
 
         for (const block of blocks) {
@@ -291,52 +443,76 @@ export default function CmsBlockEditor({
             if (!spec?.editable) continue
 
             for (const f of spec.fields ?? []) {
-                if (f.required && !String(block.fields[f.name] ?? '').trim()) {
-                    errs[`${block.key}.${f.name}`] = 'این فیلد الزامی است'
-                }
+                const msg = checkField(f, block.fields[f.name])
+                if (msg) errs[`${block.key}.${f.name}`] = msg
             }
 
             block.items.forEach((item, i) => {
                 for (const f of spec.items?.fields ?? []) {
-                    if (f.required && !String(item[f.name] ?? '').trim()) {
-                        errs[`${block.key}.items.${i}.${f.name}`] =
-                            'این فیلد الزامی است'
-                    }
+                    const msg = checkField(f, item[f.name])
+                    if (msg) errs[`${block.key}.items.${i}.${f.name}`] = msg
                 }
             })
         }
 
-        if (Object.keys(errs).length > 0) {
-            setFieldErrors(errs)
-            return
-        }
+        setFieldErrors(errs)
+        if (Object.keys(errs).length > 0) return
 
         /* `CmsBlockIn` فقط `key` و `fields` و `items` می‌گیرد، نه
            `type` و نه `version`.
 
            ⚠️ بلوک‌های **غیرقابل‌ویرایش هم فرستاده می‌شوند** — با همان
-           مقدار دست‌نخورده. اسپک نمی‌گوید `PUT` آرایه‌ی بلوک‌ها را
-           ادغام می‌کند یا جایگزین؛ اگر جایگزین کند و ما بلوک قفل‌شده
-           را نفرستیم، محتوایش **پاک می‌شود**. فرستادنِ بدون‌تغییرش در
-           هر دو حالت بی‌خطر است. */
+           مقدار دست‌نخورده. بک‌اند تأیید کرد `PUT` آرایه‌ی بلوک‌ها را
+           **جایگزین** می‌کند؛ نفرستادن بلوک قفل‌شده یعنی پاک شدنش. */
         const payload = blocks.map((b) => ({
             key: b.key,
             fields: b.fields,
             /* `items` برای بلوک غیرتکرارشونده باید null بماند */
             items: specOf(b.key)?.items
-                ? b.items.map((fields) => ({ fields }))
+                ? b.items.map((it) => ({ fields: withoutUid(it) }))
                 : null,
         }))
 
-        onSubmit?.({ blocks: payload })
+        onSubmit?.({ blocks: payload }, { publish })
     }
 
+    const requestClose = () => {
+        if (dirty) setConfirmClose(true)
+        else onClose?.()
+    }
+
+    const canPublish = Boolean(page.permissions?.can_publish)
+
+    const feedback = (
+        <>
+            {errorCount > 0 && (
+                <p className={styles.error} role="alert">
+                    {errorCount.toLocaleString('fa-IR')} فیلد نیاز به اصلاح دارد؛
+                    کنار هر کدام توضیح داده شده.
+                </p>
+            )}
+            {error && (
+                <p className={styles.error} role="alert">
+                    {error}
+                </p>
+            )}
+        </>
+    )
+
     return (
-        <form className={styles.wrapper} onSubmit={submit} noValidate>
+        <form
+            ref={formRef}
+            className={styles.wrapper}
+            onSubmit={(e) => {
+                e.preventDefault()
+                submit(false)
+            }}
+            noValidate
+        >
             <button
                 type="button"
                 className={styles.close}
-                onClick={onClose}
+                onClick={requestClose}
                 aria-label="بستن ویرایشگر"
             >
                 <X size={16} strokeWidth={3} />
@@ -347,15 +523,12 @@ export default function CmsBlockEditor({
             <h2 className={styles.title}>ویرایش «{page.title}»</h2>
 
             <div className={styles.body}>
-                {error && (
-                    <p className={styles.error} role="alert">
-                        {error}
-                    </p>
-                )}
+                {feedback}
 
                 <p className={styles.intro}>
                     این صفحه قالب ثابت دارد: فقط فیلدهای زیر قابل تغییرند و
-                    چیدمانشان سمت سایت مشخص شده است.
+                    چیدمانشان سمت سایت مشخص شده است. فیلد خالی روی سایت متن
+                    پیش‌فرض همان بخش را نشان می‌دهد.
                 </p>
 
                 {(page.editable_blocks ?? []).map((spec) => {
@@ -364,19 +537,21 @@ export default function CmsBlockEditor({
 
                     const Icon = BLOCK_ICON[spec.type] ?? Type
                     const locked = !spec.editable
-                    const maxItems = spec.items?.max_items ?? 0
+                    const maxItems = spec.items?.max_items ?? Infinity
                     const atMax = block.items.length >= maxItems
+                    const hint = blockHint(page.schema_key, spec.key)
 
                     return (
                         <section key={spec.key} className={styles.block}>
                             <header className={styles.blockHead}>
                                 <span className={styles.blockName}>
                                     <Icon size={15} aria-hidden="true" />
-                                    {BLOCK_NAME[spec.key] ?? spec.key}
+                                    {/* عنوان از قالب بک‌اند؛ نبودش یعنی نگاشت فارسی خودمان */}
+                                    {spec.title || blockName(spec.key)}
                                 </span>
 
                                 <span className={styles.blockType}>
-                                    {BLOCK_LABEL[spec.type] ?? spec.type}
+                                    {BLOCK_TYPE_LABEL[spec.type] ?? spec.type}
                                 </span>
 
                                 {locked && (
@@ -384,18 +559,28 @@ export default function CmsBlockEditor({
                                 )}
                             </header>
 
-                            <div className={styles.fields}>
-                                {(spec.fields ?? []).map((f) => (
-                                    <BlockField
-                                        key={f.name}
-                                        spec={f}
-                                        value={block.fields[f.name]}
-                                        disabled={locked || busy}
-                                        error={fieldErrors[`${spec.key}.${f.name}`]}
-                                        onChange={(v) => setField(spec.key, f.name, v)}
-                                    />
-                                ))}
-                            </div>
+                            {hint && (
+                                <p className={styles.blockHint}>
+                                    <MapPin size={13} aria-hidden="true" />
+                                    {hint}
+                                </p>
+                            )}
+
+                            {(spec.fields ?? []).length > 0 && (
+                                <div className={styles.fields}>
+                                    {spec.fields.map((f) => (
+                                        <BlockField
+                                            key={f.name}
+                                            spec={f}
+                                            blockType={spec.type}
+                                            value={block.fields[f.name]}
+                                            disabled={locked || busy}
+                                            error={fieldErrors[`${spec.key}.${f.name}`]}
+                                            onChange={(v) => setField(spec.key, f.name, v)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
 
                             {/* ── ردیف‌های تکرارشونده ── */}
                             {spec.items && (
@@ -405,36 +590,68 @@ export default function CmsBlockEditor({
                                             ردیف‌ها
                                         </span>
                                         <span className={styles.itemsCount}>
-                                            {block.items.length.toLocaleString('fa-IR')}{' '}
-                                            از {maxItems.toLocaleString('fa-IR')}
+                                            {block.items.length.toLocaleString('fa-IR')}
+                                            {Number.isFinite(maxItems) &&
+                                                ` از ${maxItems.toLocaleString('fa-IR')}`}
                                         </span>
                                     </div>
 
                                     {block.items.length === 0 && (
                                         <p className={styles.itemsEmpty}>
-                                            هنوز ردیفی اضافه نشده است.
+                                            هنوز ردیفی اضافه نشده است؛ روی سایت
+                                            ردیف‌های پیش‌فرض نمایش داده می‌شوند.
                                         </p>
                                     )}
 
                                     {block.items.map((item, i) => (
-                                        <div key={i} className={styles.item}>
+                                        <div key={item._uid} className={styles.item}>
                                             <div className={styles.itemHead}>
                                                 <span className={styles.itemIndex}>
                                                     ردیف {(i + 1).toLocaleString('fa-IR')}
                                                 </span>
 
                                                 {!locked && (
-                                                    <button
-                                                        type="button"
-                                                        className={styles.itemRemove}
-                                                        onClick={() =>
-                                                            removeItem(spec.key, i)
-                                                        }
-                                                        disabled={busy}
-                                                        aria-label={`حذف ردیف ${i + 1}`}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <div className={styles.itemTools}>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.itemBtn}
+                                                            onClick={() =>
+                                                                moveItem(spec.key, i, -1)
+                                                            }
+                                                            disabled={busy || i === 0}
+                                                            aria-label={`بردن ردیف ${i + 1} به بالا`}
+                                                            title="بالا"
+                                                        >
+                                                            <ArrowUp size={14} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.itemBtn}
+                                                            onClick={() =>
+                                                                moveItem(spec.key, i, 1)
+                                                            }
+                                                            disabled={
+                                                                busy ||
+                                                                i === block.items.length - 1
+                                                            }
+                                                            aria-label={`بردن ردیف ${i + 1} به پایین`}
+                                                            title="پایین"
+                                                        >
+                                                            <ArrowDown size={14} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={styles.itemRemove}
+                                                            onClick={() =>
+                                                                removeItem(spec.key, i)
+                                                            }
+                                                            disabled={busy}
+                                                            aria-label={`حذف ردیف ${i + 1}`}
+                                                            title="حذف ردیف"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
 
@@ -443,6 +660,7 @@ export default function CmsBlockEditor({
                                                     <BlockField
                                                         key={f.name}
                                                         spec={f}
+                                                        blockType={spec.type}
                                                         value={item[f.name]}
                                                         disabled={locked || busy}
                                                         error={
@@ -470,11 +688,6 @@ export default function CmsBlockEditor({
                                             className={styles.addItem}
                                             onClick={() => addItem(spec.key)}
                                             disabled={busy || atMax}
-                                            title={
-                                                atMax
-                                                    ? 'به سقف تعداد ردیف رسیدید'
-                                                    : undefined
-                                            }
                                         >
                                             <Plus size={15} aria-hidden="true" />
                                             {atMax ? 'سقف ردیف‌ها پر است' : 'افزودن ردیف'}
@@ -487,26 +700,57 @@ export default function CmsBlockEditor({
                 })}
 
                 <p className={styles.hintBox}>
-                    ذخیره، صفحه را <strong>منتشر نمی‌کند</strong>؛ یک نسخه‌ی تازه
-                    می‌سازد. برای دیده شدن روی سایت، از فهرست دکمه‌ی «انتشار» را
-                    بزنید.
+                    «ذخیره» فقط یک نسخه‌ی تازه می‌سازد و روی سایت دیده
+                    نمی‌شود. برای دیده شدن، «ذخیره و انتشار» را بزنید.
                 </p>
 
+                {/* خطا کنار دکمه‌ها هم تکرار می‌شود: فرم بلند است و
+                    ادمین بعد از کلیک پایین صفحه است، نه بالا. */}
+                {feedback}
+
                 <div className={styles.actions}>
-                    <button type="submit" className={styles.submit} disabled={busy}>
-                        {busy ? 'در حال ذخیره…' : 'ذخیره تغییرات'}
+                    {canPublish && (
+                        <button
+                            type="button"
+                            className={styles.submit}
+                            disabled={busy}
+                            onClick={() => submit(true)}
+                        >
+                            {busy ? 'در حال ذخیره…' : 'ذخیره و انتشار'}
+                        </button>
+                    )}
+
+                    <button
+                        type="submit"
+                        className={canPublish ? styles.cancel : styles.submit}
+                        disabled={busy}
+                    >
+                        {busy ? 'در حال ذخیره…' : canPublish ? 'فقط ذخیره' : 'ذخیره تغییرات'}
                     </button>
 
                     <button
                         type="button"
                         className={styles.cancel}
-                        onClick={onClose}
+                        onClick={requestClose}
                         disabled={busy}
                     >
                         انصراف
                     </button>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={confirmClose}
+                title="تغییرات ذخیره نشده"
+                message="تغییراتی که داده‌اید ذخیره نشده‌اند و با بستن ویرایشگر از بین می‌روند. خارج می‌شوید؟"
+                confirmLabel="خروج بدون ذخیره"
+                cancelLabel="ادامه‌ی ویرایش"
+                onConfirm={() => {
+                    setConfirmClose(false)
+                    onClose?.()
+                }}
+                onClose={() => setConfirmClose(false)}
+            />
         </form>
     )
 }

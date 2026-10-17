@@ -307,6 +307,56 @@
     color: var(--status-error);
 }
 
+.badge_private {
+    border: 1px solid rgba(240, 180, 76, 0.4);
+    background: rgba(240, 180, 76, 0.12);
+    color: #F0B44C;
+}
+
+/* هشدار «صفحه‌ی خصوصی روی سایت دیده نمی‌شود» روی کارت */
+.cardWarn {
+    margin: 0;
+    color: #F0B44C;
+    font-size: var(--font-size-xs);
+    line-height: 1.8;
+}
+
+/* ── فیلتر برچسب ── */
+
+.searchWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    inset-inline-start: 11px;
+    color: var(--text-muted-2);
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 160px;
+    height: 36px;
+    padding: 0 34px 0 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-bright);
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    outline: none;
+}
+
+.searchInput:focus {
+    border-color: var(--color-primary-light);
+}
+
+.searchInput::placeholder {
+    color: var(--text-faint);
+}
+
 /* ── دکمه‌ی انتشار در نوار عملیات ── */
 
 .rowActionPrimary {

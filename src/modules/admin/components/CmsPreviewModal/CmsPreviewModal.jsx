@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Eye } from 'lucide-react'
 import { cmsService, pageState } from '../../../../services/cmsService'
+import { publicUrlOf, versionLabel, withBlockTitles } from '../../hooks/useCmsPages'
+import CmsBlocksView from '../CmsBlocksView/CmsBlocksView'
 import styles from './CmsPreviewModal.module.css'
 
 /**
@@ -14,7 +16,7 @@ import styles from './CmsPreviewModal.module.css'
  * ⚠️ `dangerouslySetInnerHTML` لازم است چون محتوا HTML است. پاک‌سازی
  * کار بک‌اند است — نه اینجا.
  */
-export default function CmsPreviewModal({ page, onClose }) {
+export default function CmsPreviewModal({ page, schemas = [], onClose }) {
     /* نتیجه با شناسه نگه داشته می‌شود تا صفر کردن state داخل افکت
        لازم نشود؛ `loading` از نبودِ نتیجه‌ی تازه درمی‌آید. */
     const [result, setResult] = useState({ id: null, data: null, error: null })
@@ -60,7 +62,7 @@ export default function CmsPreviewModal({ page, onClose }) {
 
     /* نتیجه‌ی مربوط به صفحه‌ی دیگری، نتیجه‌ی این یکی نیست */
     const fresh = result.id === page?.id
-    const data = fresh ? result.data : null
+    const data = fresh && result.data ? withBlockTitles(result.data, schemas) : null
     const error = fresh ? result.error : null
     const loading = Boolean(page?.id) && !fresh
 
@@ -86,8 +88,10 @@ export default function CmsPreviewModal({ page, onClose }) {
                         <Eye size={18} aria-hidden="true" />
                         <div>
                             <h2 className={styles.title}>پیش‌نمایش صفحه</h2>
+                            {/* نشانی واقعی روی سایت، نه اسلاگ خام
+                                (`home` نشانی‌اش `/` است نه `/home`) */}
                             <p className={styles.subtitle} dir="ltr">
-                                /{data?.slug ?? page?.slug}
+                                {publicUrlOf(data ?? page) ?? `/${data?.slug ?? page?.slug}`}
                             </p>
                         </div>
                     </div>
@@ -115,7 +119,7 @@ export default function CmsPreviewModal({ page, onClose }) {
                             {data?.has_unpublished_changes && (
                                 <p className={styles.warn}>
                                     این پیش‌نمایش نسخه‌ی{' '}
-                                    {Number(data.version).toLocaleString('fa-IR')} است
+                                    {versionLabel(data.version)} است
                                     که هنوز منتشر نشده؛ چیزی که روی سایت دیده می‌شود
                                     با این فرق دارد.
                                 </p>
@@ -132,8 +136,7 @@ export default function CmsPreviewModal({ page, onClose }) {
                                     </span>
                                 )}
                                 <span className={styles.metaItem}>
-                                    نسخه‌ی{' '}
-                                    {Number(data?.version ?? 1).toLocaleString('fa-IR')}
+                                    نسخه‌ی {versionLabel(data?.version)}
                                 </span>
                                 <span className={styles.metaItem}>
                                     {data?.is_public ? 'عمومی' : 'خصوصی'}
@@ -147,47 +150,10 @@ export default function CmsPreviewModal({ page, onClose }) {
                             )}
 
                             {/* صفحه‌ی ساختاریافته محتوای آزاد ندارد؛
-                                بلوک‌هایش را خام نشان می‌دهیم چون قالب
-                                نمایششان سمت سایت عمومی است نه پنل. */}
+                                محتوای بلوک‌ها و ردیف‌هایشان مرتب نشان داده
+                                می‌شود. چیدمان واقعی سمت سایت عمومی است. */}
                             {blocks.length > 0 ? (
-                                <div className={styles.blocks}>
-                                    {blocks.map((b) => (
-                                        <div key={b.key} className={styles.block}>
-                                            <span className={styles.blockKey} dir="ltr">
-                                                {b.key} · {b.type}
-                                            </span>
-
-                                            <dl className={styles.fields}>
-                                                {Object.entries(b.fields ?? {}).map(
-                                                    ([k, v]) => (
-                                                        <div
-                                                            key={k}
-                                                            className={styles.fieldRow}
-                                                        >
-                                                            <dt
-                                                                className={
-                                                                    styles.fieldKey
-                                                                }
-                                                                dir="ltr"
-                                                            >
-                                                                {k}
-                                                            </dt>
-                                                            <dd
-                                                                className={
-                                                                    styles.fieldValue
-                                                                }
-                                                            >
-                                                                {typeof v === 'string'
-                                                                    ? v
-                                                                    : JSON.stringify(v)}
-                                                            </dd>
-                                                        </div>
-                                                    )
-                                                )}
-                                            </dl>
-                                        </div>
-                                    ))}
-                                </div>
+                                <CmsBlocksView blocks={blocks} />
                             ) : html ? (
                                 <div
                                     className={styles.html}

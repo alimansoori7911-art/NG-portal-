@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, History, RotateCcw, Eye } from 'lucide-react'
-import { cmsService } from '../../../../services/cmsService'
-import { useCmsVersions } from '../../hooks/useCmsPages'
+import { cmsService, toBlockInput } from '../../../../services/cmsService'
+import { useCmsVersions, versionLabel, withBlockTitles } from '../../hooks/useCmsPages'
+import CmsBlocksView from '../CmsBlocksView/CmsBlocksView'
 import styles from './CmsVersionsModal.module.css'
 
 /**
@@ -17,7 +18,7 @@ import styles from './CmsVersionsModal.module.css'
  * ⚠️ محتوای نسخه HTML خامی است که ادمین خودش نوشته. برای پیش‌نمایش
  * `dangerouslySetInnerHTML` لازم است؛ پاک‌سازی کار بک‌اند است.
  */
-export default function CmsVersionsModal({ page, onClose, onRestored }) {
+export default function CmsVersionsModal({ page, schemas = [], onClose, onRestored }) {
     const { rows, loading, error } = useCmsVersions(page?.id)
 
     /* نسخه‌ی باز‌شده برای پیش‌نمایش */
@@ -69,17 +70,34 @@ export default function CmsVersionsModal({ page, onClose, onRestored }) {
         setRestoring(v.version)
         setRestoreError(null)
         try {
-            /* محتوای همان نسخه را می‌خوانیم و با PUT برمی‌گردانیم */
+            /* محتوای همان نسخه را می‌خوانیم و با PUT برمی‌گردانیم.
+
+               قبلاً فقط عنوان و متن برمی‌گشت: بلوک‌های صفحه‌ی
+               ساختاریافته (`structure`)، نشانی و سئو جا می‌ماندند، یعنی
+               «بازگرداندن» یک صفحه‌ی ساختاریافته عملاً هیچ محتوایی را
+               برنمی‌گرداند. برچسب‌ها در نسخه ذخیره نمی‌شوند و دست
+               نمی‌خورند. */
             const full = await cmsService.getVersion(page.id, v.version)
-            await cmsService.updatePage(page.id, {
+            const seo = full.seo ?? {}
+            const changes = {
                 title: full.title,
+                slug: full.slug,
                 excerpt: full.excerpt,
-                content_raw: full.content_raw,
-                content_format: full.content_format,
                 is_public: full.is_public,
                 robots: full.robots,
-            })
-            onRestored?.()
+                meta_title: seo.meta_title ?? null,
+                meta_description: seo.meta_description ?? null,
+                og_image_url: seo.og_image_url ?? null,
+                canonical_url: seo.canonical_url ?? null,
+            }
+            if (full.content_raw != null) {
+                changes.content_raw = full.content_raw
+                changes.content_format = full.content_format
+            }
+            if (full.structure?.length) changes.blocks = toBlockInput(full.structure)
+
+            await cmsService.updatePage(page.id, changes)
+            onRestored?.(v)
             onClose?.()
         } catch (err) {
             setRestoreError(err?.message || 'بازگردانی نسخه ناموفق بود')
@@ -146,8 +164,7 @@ export default function CmsVersionsModal({ page, onClose, onRestored }) {
                                         <div className={styles.itemHead}>
                                             <div className={styles.itemMeta}>
                                                 <span className={styles.version}>
-                                                    نسخه‌ی{' '}
-                                                    {v.version.toLocaleString('fa-IR')}
+                                                    نسخه‌ی {versionLabel(v.version)}
                                                 </span>
 
                                                 {v.is_current && (
@@ -215,6 +232,21 @@ export default function CmsVersionsModal({ page, onClose, onRestored }) {
                                                     >
                                                         {bodyError}
                                                     </p>
+                                                ) : versionBody?.structure?.length ? (
+                                                    /* صفحه‌ی ساختاریافته: محتوای
+                                                       بلوک‌ها، نه HTML خالی */
+                                                    <CmsBlocksView
+                                                        blocks={
+                                                            withBlockTitles(
+                                                                {
+                                                                    schema_key:
+                                                                        page.schema_key,
+                                                                    blocks: versionBody.structure,
+                                                                },
+                                                                schemas
+                                                            ).blocks
+                                                        }
+                                                    />
                                                 ) : (
                                                     /* HTML نوشته‌ی خود ادمین است؛
                                                        sanitize سمت سرور. */
