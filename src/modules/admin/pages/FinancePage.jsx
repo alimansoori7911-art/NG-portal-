@@ -28,18 +28,16 @@ const TRANSACTION_COLUMNS = [
 
 /* ستون‌های فاکتورها — از tab2.svg
 
-   ⚠️ ستون «نام کاربر» که در فیگما بود حذف شد: خروجی
-   `GET /admin/invoice/` از نوع `PublicInvoiceListItemSchema` است که
-   نه `user_id` دارد نه نام کاربر — حتی `AdminInvoiceDetailSchema`
-   هم ندارد. پس این ستون همیشه '—' می‌شد.
-   به‌جایش نوع و مبلغ را نشان می‌دهیم که واقعاً می‌آیند.
-   از بک‌اند خواسته شد (بند ۱.۳ در BACKEND_REQUESTS.md). */
+   ✅ ستون «نام کاربر» فیگما برگشت: اسپک تازه `user_id` را در
+   فهرست فاکتورهای ادمین آورد و نام از روی همان پیدا می‌شود
+   (`useAdminInvoices`). */
 const INVOICE_COLUMNS = [
-    { key: 'index', label: 'ردیف', width: '10%' },
-    { key: 'serial', label: 'شماره سریال فاکتور', width: '28%', ltr: true },
-    { key: 'type', label: 'نوع', width: '16%' },
-    { key: 'amount', label: 'مبلغ', width: '24%', ltr: true },
-    { key: 'issuedAt', label: 'تاریخ صدور', width: '22%', ltr: true },
+    { key: 'index', label: 'ردیف', width: '8%' },
+    { key: 'serial', label: 'شماره سریال فاکتور', width: '22%', ltr: true },
+    { key: 'user', label: 'نام کاربر', width: '20%' },
+    { key: 'type', label: 'نوع', width: '12%' },
+    { key: 'amount', label: 'مبلغ', width: '20%', ltr: true },
+    { key: 'issuedAt', label: 'تاریخ صدور', width: '18%', ltr: true },
 ]
 
 const TABS = [

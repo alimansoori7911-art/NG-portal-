@@ -160,6 +160,8 @@ function seedInvoices() {
             issued_at: new Date(now - 3 * 86400_000).toISOString(),
             created_at: new Date(now - 3 * 86400_000).toISOString(),
             pdf_file_id: 'mock-pdf-1',
+            /* اسپک تازه `user_id` را در فهرست ادمین برمی‌گرداند */
+            user_id: null,
         },
         {
             id: uuid(), invoice_number: 'INV-1002', invoice_type: 'proforma',
@@ -169,6 +171,7 @@ function seedInvoices() {
             issued_at: new Date(now - 86400_000).toISOString(),
             created_at: new Date(now - 86400_000).toISOString(),
             pdf_file_id: 'mock-pdf-2',
+            user_id: null,
         },
     ]
 }
@@ -299,8 +302,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -309,14 +312,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'textarea', required: false, max_length: 600, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 600, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
                     ],
                 },
             },
@@ -325,8 +328,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'RICH_TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'RICH_TEXT', required: false, max_length: null, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -335,8 +338,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'RICH_TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'RICH_TEXT', required: false, max_length: null, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -345,14 +348,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 12,
                     fields: [
-                        { name: 'year', kind: 'number', required: true, max_length: 4, allowed_sizes: null },
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'year', kind: 'NUMBER', required: true, max_length: 4, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
                     ],
                 },
             },
@@ -367,8 +370,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -381,8 +384,8 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 6,
                     fields: [
-                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -391,14 +394,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 12,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 400, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -407,14 +410,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 10,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
-                        { name: 'subtitle', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'subtitle', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -423,14 +426,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -445,8 +448,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -455,15 +458,15 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'textarea', required: false, max_length: 600, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 600, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'title_fa', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'title_en', kind: 'text', required: false, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'title_fa', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'title_en', kind: 'TEXT', required: false, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
                     ],
                 },
             },
@@ -476,11 +479,11 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'title_fa', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'title_en', kind: 'text', required: false, max_length: 80, allowed_sizes: null },
-                        { name: 'subtitle', kind: 'text', required: false, max_length: 160, allowed_sizes: null },
-                        { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
-                        { name: 'image_url', kind: 'image', required: false, max_length: null, allowed_sizes: [960, 640] },
+                        { name: 'title_fa', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'title_en', kind: 'TEXT', required: false, max_length: 80, allowed_sizes: null },
+                        { name: 'subtitle', kind: 'TEXT', required: false, max_length: 160, allowed_sizes: null },
+                        { name: 'body', kind: 'RICH_TEXT', required: false, max_length: null, allowed_sizes: null },
+                        { name: 'image_url', kind: 'IMAGE', required: false, max_length: null, allowed_sizes: [960, 640] },
                     ],
                 },
             },
@@ -489,9 +492,9 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CTA',
                 editable: true,
                 fields: [
-                    { name: 'label', kind: 'text', required: true, max_length: 40, allowed_sizes: null },
-                    { name: 'url', kind: 'url', required: true, max_length: null, allowed_sizes: null },
-                    { name: 'variant', kind: 'text', required: false, max_length: 20, allowed_sizes: null },
+                    { name: 'label', kind: 'TEXT', required: true, max_length: 40, allowed_sizes: null },
+                    { name: 'url', kind: 'URL', required: true, max_length: null, allowed_sizes: null },
+                    { name: 'variant', kind: 'TEXT', required: false, max_length: 20, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -506,8 +509,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -520,7 +523,7 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 10,
                     fields: [
-                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
                     ],
                 },
             },
@@ -533,9 +536,9 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 10,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -548,10 +551,10 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 100, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
-                        { name: 'badge', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 100, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'badge', kind: 'TEXT', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -560,12 +563,12 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 10,
                     fields: [
-                        { name: 'label', kind: 'text', required: true, max_length: 100, allowed_sizes: null },
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 100, allowed_sizes: null },
                     ],
                 },
             },
@@ -580,8 +583,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -594,9 +597,9 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 8,
                     fields: [
-                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
-                        { name: 'value', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'value', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                        { name: 'icon', kind: 'ICON', required: false, max_length: 40, allowed_sizes: null },
                     ],
                 },
             },
@@ -605,8 +608,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 400, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -621,8 +624,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'body', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 400, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -631,9 +634,9 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'email', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'phone', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
-                    { name: 'address', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                    { name: 'email', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'phone', kind: 'TEXT', required: false, max_length: 40, allowed_sizes: null },
+                    { name: 'address', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -646,9 +649,9 @@ const STRUCTURED_SCHEMAS = [
                 items: {
                     max_items: 20,
                     fields: [
-                        { name: 'group_title', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
-                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
-                        { name: 'url', kind: 'url', required: false, max_length: null, allowed_sizes: null },
+                        { name: 'group_title', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'url', kind: 'URL', required: false, max_length: null, allowed_sizes: null },
                     ],
                 },
             },
@@ -657,9 +660,9 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'placeholder', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
-                    { name: 'button_label', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'placeholder', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'button_label', kind: 'TEXT', required: false, max_length: 40, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -674,8 +677,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'TEXT',
                 editable: true,
                 fields: [
-                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
-                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -684,7 +687,7 @@ const STRUCTURED_SCHEMAS = [
                 type: 'RICH_TEXT',
                 editable: true,
                 fields: [
-                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                    { name: 'body', kind: 'RICH_TEXT', required: false, max_length: null, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -693,8 +696,8 @@ const STRUCTURED_SCHEMAS = [
                 type: 'IMAGE',
                 editable: true,
                 fields: [
-                    { name: 'image_url', kind: 'image', required: true, max_length: null, allowed_sizes: [1920, 1280] },
-                    { name: 'alt', kind: 'text', required: true, max_length: 160, allowed_sizes: null },
+                    { name: 'image_url', kind: 'IMAGE', required: true, max_length: null, allowed_sizes: [1920, 1280] },
+                    { name: 'alt', kind: 'TEXT', required: true, max_length: 160, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -704,14 +707,14 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CARD_LIST',
                 editable: true,
                 fields: [
-                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
                     max_items: 4,
                     fields: [
-                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
-                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
-                        { name: 'icon_url', kind: 'image', required: false, max_length: null, allowed_sizes: [64] },
+                        { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon_url', kind: 'IMAGE', required: false, max_length: null, allowed_sizes: [64] },
                     ],
                 },
             },
@@ -720,16 +723,38 @@ const STRUCTURED_SCHEMAS = [
                 type: 'CTA',
                 editable: true,
                 fields: [
-                    { name: 'label', kind: 'text', required: true, max_length: 40, allowed_sizes: null },
-                    { name: 'url', kind: 'url', required: true, max_length: null, allowed_sizes: null },
+                    { name: 'label', kind: 'TEXT', required: true, max_length: 40, allowed_sizes: null },
+                    { name: 'url', kind: 'URL', required: true, max_length: null, allowed_sizes: null },
                     /* بلوک غیرقابل‌ویرایش هم باید تست شود */
-                    { name: 'variant', kind: 'text', required: false, max_length: 20, allowed_sizes: null },
+                    { name: 'variant', kind: 'TEXT', required: false, max_length: 20, allowed_sizes: null },
                 ],
                 items: null,
             },
         ],
     },
 ]
+
+/* ✅ اسپک تازه: `kind` فیلدها enum بزرگ است (`TEXT`, `RICH_TEXT`,
+   `IMAGE`, `URL`, `NUMBER`, `ICON`) و نوع «متن بلند» ندارد — قبلاً مک
+   `textarea` می‌داد که بک‌اند واقعی ندارد و فرم با مک درست و با
+   بک‌اند واقعی یک‌خطی بود. همچنین هر بلوک قالب `title` دارد. */
+const MOCK_BLOCK_TITLES = {
+    hero: 'سربرگ صفحه', intro: 'معرفی', banner: 'بنر', features: 'ویژگی‌ها',
+    cta: 'دکمه‌ی اقدام', mission: 'ماموریت', vision: 'چشم‌انداز',
+    history: 'تاریخچه', hero_points: 'نکات سربرگ', services: 'خدمات',
+    lifecycle: 'چرخه‌ی خدمات', advantages: 'مزایا', what_is: 'این نرم‌افزار چیست؟',
+    details: 'جزئیات محصولات', demo_cta: 'دکمه‌ی درخواست دمو',
+    topics: 'موضوعات پربحث', categories: 'دسته‌بندی منابع',
+    featured: 'منابع منتخب', popular: 'منابع پرطرفدار',
+    channels: 'راه‌های ارتباط', form_intro: 'معرفی فرم تماس',
+    about: 'درباره‌ی ما (فوتر)', contact: 'اطلاعات تماس (فوتر)',
+    link_groups: 'لینک‌های فوتر', newsletter: 'خبرنامه',
+}
+for (const schema of STRUCTURED_SCHEMAS) {
+    for (const block of schema.blocks) {
+        block.title ??= MOCK_BLOCK_TITLES[block.key] ?? block.key
+    }
+}
 
 /* دسترسی‌ها — کلید از `module.resource.action` ساخته می‌شود، همان
    سه‌تایی که `PermissionIdentitySchema` می‌خواهد. */
@@ -1256,7 +1281,8 @@ function makeAdminUser(u, index) {
             { id: 2, type: 'email', value: u.email, status: 'active', is_verified: false, verified_at: null },
             { id: 3, type: 'phone', value: u.phone, status: 'active', is_verified: true, verified_at: null },
         ],
-        is_active: true,
+        /* قبلاً همیشه true بود و «غیرفعال کردن» در مک بی‌اثر دیده می‌شد */
+        is_active: u.is_active ?? true,
         created_at: new Date().toISOString(),
         roles: (u.roles ?? []).map((name) => ({
             role: {
@@ -2235,6 +2261,18 @@ const routes = [
        قبلاً فقط `{message:'updated'}` می‌داد و هیچ چیزی ذخیره
        نمی‌کرد: فرم ویرایش موفق به‌نظر می‌رسید ولی داده عوض
        نمی‌شد و هیچ باگی دیده نمی‌شد. */
+    /* یک کاربر — اسپک دارد ولی مک نداشت؛ ستون «نام کاربر» فاکتورها
+       نام را از همین می‌گیرد. */
+    ['GET', /^\/admin\/auth\/users\/\d+$/, (req) => {
+        if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(req.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+        const id = Number(req.path.split('/')[4])
+        const u = [...db.users.values()].find((x) => x.id === id)
+        return u ? ok(makeAdminUser(u)) : [404, fail('NOT_FOUND', 'کاربر پیدا نشد')]
+    }],
+
     ['PATCH', /^\/admin\/auth\/users\/[^/]+$/, (req) => {
         if (!req.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
         if (!(req.user.roles ?? []).includes('admin')) {
@@ -3946,8 +3984,10 @@ const routes = [
         let rows = db.invoices
         const type = req.query.get('invoice_type')
         const status = req.query.get('status')
+        const userId = req.query.get('user_id')
         if (type) rows = rows.filter((i) => i.invoice_type === type)
         if (status) rows = rows.filter((i) => i.status === status)
+        if (userId) rows = rows.filter((i) => String(i.user_id) === userId)
 
         return page(rows, req)
     }],

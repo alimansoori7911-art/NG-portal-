@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { invoiceService } from '../../../services/invoiceService'
+import { adminUserService, identifierOf } from '../../../services/adminUserService'
+import { fullName } from '../../../utils/name'
 import { formatJalaliDateTime } from '../../../utils/datetime'
 import { formatToman } from '../../../utils/currency'
 import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
@@ -10,6 +12,34 @@ import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
  * ✅ اسپک ۲۲ این را اضافه کرد. تا پیش از آن کل تب زیر پوشش «به‌زودی»
  * بود و جدولش `rows={[]}` هاردکد داشت.
  */
+/* نام کاربر هر فاکتور.
+
+   ✅ اسپک تازه `user_id` را در فهرست فاکتورهای ادمین آورد (بند ۱.۳
+   سند بک‌اند). نام کاربر هنوز نمی‌آید، پس برای هر شناسه‌ی تازه یک
+   `GET /admin/auth/users/{id}` زده می‌شود و نتیجه کش می‌ماند؛ صفحه‌ی
+   ۱۰ ردیفی حداکثر ۱۰ درخواست، و صفحه‌های بعدی معمولاً هیچ. */
+const userNames = new Map()
+
+const userLabel = (u, id) =>
+    fullName(u?.kyc_profile, '') ||
+    identifierOf(u, 'username') ||
+    identifierOf(u, 'email') ||
+    identifierOf(u, 'phone') ||
+    `کاربر ${id}`
+
+async function resolveUserNames(ids) {
+    const missing = [...new Set(ids)].filter((id) => id != null && !userNames.has(id))
+    await Promise.all(
+        missing.map((id) =>
+            adminUserService
+                .getUser(id)
+                .then((u) => userNames.set(id, userLabel(u, id)))
+                /* کاربر حذف‌شده یا خطای شبکه نباید کل جدول را خالی کند */
+                .catch(() => userNames.set(id, `کاربر ${id}`))
+        )
+    )
+}
+
 export function useAdminInvoices() {
     const [rows, setRows] = useState([])
     const [page, setPage] = useState(1)
@@ -40,6 +70,9 @@ export function useAdminInvoices() {
                 /* اسپک ترتیبی را تضمین نمی‌کند، ولی فاکتور تازه باید
                    بالا باشد — وگرنه ادمین بعد از صدور، فاکتورش را
                    در صفحه پیدا نمی‌کند. */
+                await resolveUserNames((items ?? []).map((i) => i.user_id))
+                if (cancelled) return
+
                 const sorted = [...(items ?? [])].sort(
                     (a, b) =>
                         new Date(b.issued_at || b.created_at || 0) -
@@ -55,6 +88,10 @@ export function useAdminInvoices() {
                             id: inv.id,
                             index: offset + i + 1,
                             serial: inv.invoice_number || '—',
+                            user:
+                                inv.user_id != null
+                                    ? userNames.get(inv.user_id) ?? '—'
+                                    : '—',
                             type:
                                 inv.invoice_type === 'proforma'
                                     ? 'پیش‌فاکتور'
