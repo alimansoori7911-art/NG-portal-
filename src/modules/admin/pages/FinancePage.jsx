@@ -33,7 +33,7 @@ const TRANSACTION_COLUMNS = [
    نه `user_id` دارد نه نام کاربر — حتی `AdminInvoiceDetailSchema`
    هم ندارد. پس این ستون همیشه '—' می‌شد.
    به‌جایش نوع و مبلغ را نشان می‌دهیم که واقعاً می‌آیند.
-   از بک‌اند خواسته شد (بند ۱.۴ در BACKEND_REQUESTS.md). */
+   از بک‌اند خواسته شد (بند ۱.۳ در BACKEND_REQUESTS.md). */
 const INVOICE_COLUMNS = [
     { key: 'index', label: 'ردیف', width: '10%' },
     { key: 'serial', label: 'شماره سریال فاکتور', width: '28%', ltr: true },

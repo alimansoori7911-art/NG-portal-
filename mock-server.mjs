@@ -2270,7 +2270,10 @@ const routes = [
         if (b.phone != null) target.phone = b.phone
         if (b.is_active != null) target.is_active = b.is_active
         if (b.is_blocked != null) target.is_blocked = b.is_blocked
-        if (b.is_verifed != null) target.is_verified = b.is_verifed
+        /* نام درست `is_verified` است؛ غلط قدیمی اسپک هم پذیرفته
+           می‌شود تا کلاینت قدیمی با مک نشکند. */
+        const verified = b.is_verified ?? b.is_verifed
+        if (verified != null) target.is_verified = verified
 
         /* کلید مپ خودِ username است، پس تغییرش یعنی جابه‌جایی رکورد */
         if (b.username != null && b.username !== oldUsername) {
