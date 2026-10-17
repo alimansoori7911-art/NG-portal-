@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore, hasRole } from "../store/authStore";
 import styles from "./ProtectedRoute.module.css";
 
 /**
@@ -16,6 +16,7 @@ import styles from "./ProtectedRoute.module.css";
  */
 export default function GuestRoute() {
     const status = useAuthStore((s) => s.status);
+    const user = useAuthStore((s) => s.user);
     const location = useLocation();
 
     if (status === "checking") {
@@ -38,9 +39,13 @@ export default function GuestRoute() {
 
     if (status === "authenticated" && !isRegisterFlow) {
         // اگر کاربر از یک صفحه‌ی محافظت‌شده به اینجا هدایت شده بود،
-        // به همان‌جا برمی‌گردد؛ وگرنه به داشبورد.
+        // به همان‌جا برمی‌گردد؛ وگرنه ادمین به پنل مدیریت و بقیه به
+        // داشبورد. (همین‌جاست که بعد از ورود تصمیم گرفته می‌شود، چون
+        // با authenticated شدن، این مسیر زودتر از navigate صفحه‌ی ورود
+        // ریدایرکت می‌کند.)
         const from = location.state?.from?.pathname;
-        return <Navigate to={from || "/dashboard"} replace />;
+        const home = hasRole(user, "admin") ? "/admin" : "/dashboard";
+        return <Navigate to={from || home} replace />;
     }
 
     return <Outlet />;

@@ -11,7 +11,8 @@ import Select from '../../../components/ui/Select/Select'
 import { useAdminUsers, useUserActions, useRoles } from '../hooks/useAdminUsers'
 import { useRolesAdmin, useRoleActions } from '../hooks/useRoles'
 import { useAuditLogs } from '../hooks/useAuditLogs'
-import { useAuthStore } from '../../../store/authStore'
+import { useAuthStore, getIdentifier } from '../../../store/authStore'
+import { identifierOf } from '../../../services/adminUserService'
 import styles from './UsersPage.module.css'
 
 /* عرض ستون‌ها از SVG (از راست): 107.8 | 161.4 | 173.9 | 167.7 | 152.1 | 166 | 115.1
@@ -139,9 +140,16 @@ export default function UsersPage() {
     /* ادمین نباید بتواند حساب خودش را حذف یا غیرفعال کند — یک کلیک
        اشتباه و دیگر کسی به پنل دسترسی ندارد. */
     const me = useAuthStore((s) => s.user)
+    const myUsername = getIdentifier(me, 'username')
+    /* `Profile.id` (از `/auth/me`) همان `public_id` کاربر است، نه
+       شناسه‌ی عددی فهرست ادمین؛ نام کاربری پشتیبان است. */
     const isSelf = (u) =>
-        Boolean(me && u && ((me.id != null && me.id === u.id) ||
-            (me.username && me.username === u.username)))
+        Boolean(
+            me &&
+                u &&
+                ((me.id && me.id === u.public_id) ||
+                    (myUsername && myUsername === identifierOf(u, 'username')))
+        )
 
     const onToggleActive = (user) => {
         if (user?.is_active) setDeactivating(user)
