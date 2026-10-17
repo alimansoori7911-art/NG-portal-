@@ -7,7 +7,7 @@ import Captcha from "../../../components/ui/Captcha/Captcha";
 import Alert from "../../../components/ui/Alert/Alert";
 import { authService, parseValidationErrors } from "../../../services/authService";
 import { healthService } from "../../../services/healthService";
-import { useAuthStore } from "../../../store/authStore";
+import { useAuthStore, hasRole } from "../../../store/authStore";
 import { HTTP, MSG, CAPTCHA_ERROR_CODE, toEnglishDigits } from "../../../constants/auth";
 import { useCaptcha } from "../../../hooks/useCaptcha";
 import styles from "./LoginPage.module.css";
@@ -34,7 +34,7 @@ export default function LoginPage() {
     const setAuth = useAuthStore((s) => s.setAuth);
 
     // مسیری که کاربر قبل از ریدایرکت به /login قصد رفتن به آن را داشت
-    const from = location.state?.from?.pathname ?? "/";
+    const from = location.state?.from?.pathname ?? null;
 
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
@@ -66,7 +66,11 @@ export default function LoginPage() {
                 { captchaToken }
             );
             setAuth(data);
-            navigate(from, { replace: true });
+            /* ادمین بدون مقصد مشخص مستقیم به پنل مدیریت می‌رود، نه به
+               داشبورد کاربری که از آنجا باید دنبال لینک پنل بگردد. */
+            const target =
+                from ?? (hasRole(data?.user, "admin") ? "/admin" : "/");
+            navigate(target, { replace: true });
         } catch (err) {
             if (err.message === "captcha-failed") {
                 setApiError("تأیید امنیتی انجام نشد. لطفاً دوباره تلاش کنید.");

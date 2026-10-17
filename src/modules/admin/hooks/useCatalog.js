@@ -267,6 +267,9 @@ export function useCatalog() {
 
     const deletePlan = useCallback(
         async (planId) => {
+            /* `saving` تا دکمه‌ی تأیید حذف موقع درخواست غیرفعال شود؛
+               بدونش دوبار کلیک دو درخواست حذف می‌فرستاد. */
+            setSaving(true)
             setSaveError(null)
             try {
                 await adminCatalogService.deletePlan(planId)
@@ -275,6 +278,8 @@ export function useCatalog() {
             } catch (err) {
                 setSaveError(err?.message || 'حذف پلن ناموفق بود')
                 return false
+            } finally {
+                setSaving(false)
             }
         },
         [load]

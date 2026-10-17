@@ -540,8 +540,12 @@ export default function CatalogPage() {
                 confirmLabel="حذف کن"
                 cancelLabel="انصراف"
                 loading={catalogActions.busy}
+                error={catalogActions.error}
                 onConfirm={confirmEntityDelete}
-                onClose={() => setEntityDelete(null)}
+                onClose={() => {
+                    setEntityDelete(null)
+                    catalogActions.clearError()
+                }}
             />
 
             <ConfirmDialog
@@ -550,8 +554,13 @@ export default function CatalogPage() {
                 message={`پلن «${pendingDelete?.name ?? ''}» حذف می‌شود. این کار برگشت‌پذیر نیست. ادامه می‌دهید؟`}
                 confirmLabel="حذف پلن"
                 cancelLabel="انصراف"
+                loading={saving}
+                error={pendingDelete ? saveError : null}
                 onConfirm={confirmDelete}
-                onClose={() => setPendingDelete(null)}
+                onClose={() => {
+                    setPendingDelete(null)
+                    clearSaveError()
+                }}
             />
 
             {/* هشدار درباره‌ی قیمت‌ها عمدی است: حذف مدت، قیمت‌هایی را
@@ -562,8 +571,13 @@ export default function CatalogPage() {
                 message={`مدت «${pendingTermDelete?.name ?? ''}» حذف می‌شود. قیمت‌هایی که از این مدت استفاده می‌کنند بی‌اعتبار خواهند شد. ادامه می‌دهید؟`}
                 confirmLabel="حذف مدت"
                 cancelLabel="انصراف"
+                loading={saving}
+                error={pendingTermDelete ? saveError : null}
                 onConfirm={confirmTermDelete}
-                onClose={() => setPendingTermDelete(null)}
+                onClose={() => {
+                    setPendingTermDelete(null)
+                    clearSaveError()
+                }}
             />
         </div>
     )

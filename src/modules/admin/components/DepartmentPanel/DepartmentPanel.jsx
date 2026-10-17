@@ -117,8 +117,13 @@ export default function DepartmentPanel() {
 
     /* ⚠️ حذف با `user_id` انجام می‌شود نه شناسه‌ی ردیف عضویت —
        مسیر اسپک `/members/{user_id}` است. */
-    const removeMember = async (member) => {
-        if (!(await actions.removeMember(membersOf.id, member.user_id))) return
+    /* حذف عضو تأیید می‌خواهد: دکمه‌اش یک آیکون کوچک کنار نام است و
+       کلیک اشتباه، کارشناس را بی‌صدا از صف تیکت‌ها بیرون می‌برد. */
+    const [removing, setRemoving] = useState(null)
+
+    const confirmRemoveMember = async () => {
+        if (!(await actions.removeMember(membersOf.id, removing.user_id))) return
+        setRemoving(null)
         members.reload()
     }
 
@@ -295,7 +300,7 @@ export default function DepartmentPanel() {
                                     <button
                                         type="button"
                                         className={`${styles.iconBtn} ${styles.danger}`}
-                                        onClick={() => removeMember(m)}
+                                        onClick={() => setRemoving(m)}
                                         disabled={actions.busy}
                                         aria-label={`حذف ${u ? userLabel(u) : m.user_id}`}
                                         title="حذف از دپارتمان"
@@ -391,6 +396,25 @@ export default function DepartmentPanel() {
             )}
 
             <ConfirmDialog
+                open={Boolean(removing)}
+                title="حذف عضو دپارتمان"
+                message={
+                    removing
+                        ? `این کارشناس از دپارتمان «${membersOf?.name ?? ''}» حذف شود؟ بعداً دوباره می‌توانید اضافه‌اش کنید.`
+                        : ''
+                }
+                confirmLabel="حذف کن"
+                cancelLabel="انصراف"
+                loading={actions.busy}
+                error={removing ? actions.error : null}
+                onConfirm={confirmRemoveMember}
+                onClose={() => {
+                    setRemoving(null)
+                    actions.clearError()
+                }}
+            />
+
+            <ConfirmDialog
                 open={Boolean(deleting)}
                 title="حذف دپارتمان"
                 message={
@@ -401,8 +425,12 @@ export default function DepartmentPanel() {
                 confirmLabel="حذف کن"
                 cancelLabel="انصراف"
                 loading={actions.busy}
+                error={actions.error}
                 onConfirm={confirmDelete}
-                onClose={() => setDeleting(null)}
+                onClose={() => {
+                    setDeleting(null)
+                    actions.clearError()
+                }}
             />
         </>
     )

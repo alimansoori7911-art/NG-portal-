@@ -13,6 +13,10 @@ import styles from './ConfirmDialog.module.css'
  *  children: محتوای اختیاری زیر پیام — برای دیالوگ‌هایی که علاوه بر
  *            تأیید، ورودی هم می‌گیرند (مثل انتخاب نقش کاربر)
  *  confirmDisabled: غیرفعال کردن تأیید تا وقتی ورودی کامل نشده
+ *  error: پیام خطای عملیات — **داخل** دیالوگ نشان داده می‌شود.
+ *         قبلاً خطا روی صفحه‌ی پشت نوشته می‌شد که زیر پوشش تار
+ *         پنهان بود؛ دیالوگ باز می‌ماند و ادمین فکر می‌کرد کار هنگ
+ *         کرده است.
  */
 export default function ConfirmDialog({
                                           open,
@@ -25,6 +29,7 @@ export default function ConfirmDialog({
                                           loading = false,
                                           children,
                                           confirmDisabled = false,
+                                          error = null,
                                       }) {
     const confirmRef = useRef(null)
 
@@ -73,6 +78,11 @@ export default function ConfirmDialog({
                 <div className={styles.body}>
                     <p className={styles.message}>{message}</p>
                     {children}
+                    {error && (
+                        <p className={styles.error} role="alert">
+                            {error}
+                        </p>
+                    )}
                 </div>
 
                 {/* در RTL اولین فرزند سمت راست قرار می‌گیرد */}
@@ -84,7 +94,7 @@ export default function ConfirmDialog({
                         onClick={onConfirm}
                         disabled={loading || confirmDisabled}
                     >
-                        {confirmLabel}
+                        {loading ? 'در حال انجام…' : confirmLabel}
                     </button>
                     <button type="button" className={styles.button} onClick={onClose}>
                         {cancelLabel}

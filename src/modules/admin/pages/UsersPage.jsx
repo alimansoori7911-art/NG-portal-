@@ -11,6 +11,7 @@ import Select from '../../../components/ui/Select/Select'
 import { useAdminUsers, useUserActions, useRoles } from '../hooks/useAdminUsers'
 import { useRolesAdmin, useRoleActions } from '../hooks/useRoles'
 import { useAuditLogs } from '../hooks/useAuditLogs'
+import { useAuthStore } from '../../../store/authStore'
 import styles from './UsersPage.module.css'
 
 /* عرض ستون‌ها از SVG (از راست): 107.8 | 161.4 | 173.9 | 167.7 | 152.1 | 166 | 115.1
@@ -131,6 +132,25 @@ export default function UsersPage() {
     const [selectedId, setSelectedId] = useState(null)
     const [profileUser, setProfileUser] = useState(null)
     const [deleteTarget, setDeleteTarget] = useState(null)
+    /* غیرفعال کردن تأیید می‌خواهد: کاربر غیرفعال دیگر نمی‌تواند وارد
+       شود. فعال کردن بی‌خطر است و مستقیم انجام می‌شود. */
+    const [deactivating, setDeactivating] = useState(null)
+
+    /* ادمین نباید بتواند حساب خودش را حذف یا غیرفعال کند — یک کلیک
+       اشتباه و دیگر کسی به پنل دسترسی ندارد. */
+    const me = useAuthStore((s) => s.user)
+    const isSelf = (u) =>
+        Boolean(me && u && ((me.id != null && me.id === u.id) ||
+            (me.username && me.username === u.username)))
+
+    const onToggleActive = (user) => {
+        if (user?.is_active) setDeactivating(user)
+        else toggleActive(user)
+    }
+
+    const confirmDeactivate = async () => {
+        if (await toggleActive(deactivating)) setDeactivating(null)
+    }
 
     /* ذخیره‌ی نقش: خودِ نقش و دسترسی‌هایش دو درخواست جدا هستند
        (اسپک مسیر واحدی ندارد)، پس اول نقش ساخته/ویرایش می‌شود و بعد
@@ -229,7 +249,8 @@ export default function UsersPage() {
             <button
                 type="button"
                 className={styles.rowActionBtn}
-                disabled={busy}
+                disabled={busy || isSelf(row.raw)}
+                title={isSelf(row.raw) ? 'حساب خودتان را نمی‌توانید حذف کنید' : undefined}
                 onClick={(e) => {
                     e.stopPropagation()
                     setDeleteTarget(row)
@@ -241,10 +262,15 @@ export default function UsersPage() {
             <button
                 type="button"
                 className={styles.rowActionBtn}
-                disabled={busy}
+                disabled={busy || (isSelf(row.raw) && row.raw?.is_active)}
+                title={
+                    isSelf(row.raw) && row.raw?.is_active
+                        ? 'حساب خودتان را نمی‌توانید غیرفعال کنید'
+                        : undefined
+                }
                 onClick={(e) => {
                     e.stopPropagation()
-                    toggleActive(row.raw)
+                    onToggleActive(row.raw)
                 }}
             >
                 {row.raw?.is_active ? 'غیرفعال کردن' : 'فعال کردن'}
@@ -502,8 +528,12 @@ export default function UsersPage() {
                             confirmLabel="حذف کن"
                             cancelLabel="انصراف"
                             loading={roleActions.busy}
+                            error={roleActions.error}
                             onConfirm={confirmRoleDelete}
-                            onClose={() => setRoleDelete(null)}
+                            onClose={() => {
+                                setRoleDelete(null)
+                                roleActions.clearError()
+                            }}
                         />
                     </>
                 )
@@ -571,8 +601,33 @@ export default function UsersPage() {
                 confirmLabel="حذف کاربر"
                 cancelLabel="انصراف"
                 loading={busy}
+                error={actionError}
                 onConfirm={confirmDelete}
-                onClose={() => !busy && setDeleteTarget(null)}
+                onClose={() => {
+                    if (busy) return
+                    setDeleteTarget(null)
+                    clearError()
+                }}
+            />
+
+            <ConfirmDialog
+                open={deactivating !== null}
+                title="غیرفعال کردن کاربر"
+                message={
+                    deactivating
+                        ? `کاربر «${deactivating.username}» غیرفعال شود؟ تا وقتی دوباره فعالش نکنید نمی‌تواند وارد حساب شود.`
+                        : ''
+                }
+                confirmLabel="غیرفعال کن"
+                cancelLabel="انصراف"
+                loading={busy}
+                error={deactivating ? actionError : null}
+                onConfirm={confirmDeactivate}
+                onClose={() => {
+                    if (busy) return
+                    setDeactivating(null)
+                    clearError()
+                }}
             />
 
             <ConfirmDialog
@@ -587,11 +642,13 @@ export default function UsersPage() {
                 cancelLabel="انصراف"
                 loading={busy}
                 confirmDisabled={!selectedRole}
+                error={actionError}
                 onConfirm={confirmRole}
                 onClose={() => {
                     if (busy) return
                     setRoleDialog(null)
                     setSelectedRole('')
+                    clearError()
                 }}
             >
                 {/* Select با رشته کار می‌کند نه شیء، پس نام نقش نگه داشته

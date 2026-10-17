@@ -93,8 +93,9 @@ function SectionTitle({ children }) {
  *    ادمین** را نشان می‌داد نه کاربرِ پروفایل. ضمناً بک‌اند گفت پنل
  *    ادمینِ لایسنس در این سیستم نیست.
  *
- * TODO: دکمه‌های «ویرایش اطلاعات» و «احراز هویت دستی» عملکردی ندارند —
- *       `UserUpdateSchema` فقط is_active/is_blocked می‌پذیرد.
+ * «ویرایش اطلاعات» با `UserEditForm` کار می‌کند (اسپک فعلی
+ * `UserUpdateSchema` همه‌ی فیلدها را می‌پذیرد). «احراز هویت دستی»
+ * برداشته شد چون اسپک اندپوینتی برایش ندارد.
  */
 export default function UserProfileModal({
     open,

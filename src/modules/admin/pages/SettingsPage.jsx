@@ -266,8 +266,12 @@ export default function SettingsPage() {
                         confirmLabel="حذف"
                         cancelLabel="انصراف"
                         loading={templateActions.busy}
+                        error={templateActions.error}
                         onConfirm={confirmDelete}
-                        onClose={() => setDeleting(null)}
+                        onClose={() => {
+                            setDeleting(null)
+                            templateActions.clearError()
+                        }}
                     />
                 </>
             )}

@@ -297,8 +297,12 @@ export default function FinancePage() {
                             confirmLabel="باطل کن"
                             cancelLabel="انصراف"
                             loading={discountActions.busy}
+                            error={discountActions.error}
                             onConfirm={confirmRevoke}
-                            onClose={() => setRevoking(null)}
+                            onClose={() => {
+                                setRevoking(null)
+                                discountActions.clearError()
+                            }}
                         />
                     </>
                 )
