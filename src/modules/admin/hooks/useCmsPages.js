@@ -14,7 +14,7 @@ import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
 
    کلید ناشناخته `null` می‌دهد تا دکمه‌ی «دیدن در سایت» نیاید؛
    لینک شکسته بدتر از نبودن دکمه است. */
-const SCHEMA_ROUTES = {
+export const SCHEMA_ROUTES = {
     home: '/',
     company: '/company',
     services: '/services',
@@ -23,7 +23,7 @@ const SCHEMA_ROUTES = {
     contact: '/contact',
 }
 
-function publicUrlOf(p) {
+export function publicUrlOf(p) {
     if (p.kind === 'ARTICLE') return `/resources/articles/${p.slug}`
     if (p.kind === 'STRUCTURED') return SCHEMA_ROUTES[p.schema_key] ?? null
     return null

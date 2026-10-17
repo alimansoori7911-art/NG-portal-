@@ -1,0 +1,109 @@
+/* صفحه‌ی ۴۰۴ — تا پیش از این آدرس اشتباه صفحه‌ی سفید می‌داد. */
+
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 80px 16px 100px;
+    text-align: center;
+}
+
+.icon {
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    margin-bottom: 6px;
+    border-radius: 50%;
+    background: rgb(47 107 255 / 10%);
+    border: 1px solid rgb(47 107 255 / 30%);
+    color: var(--color-primary, #2F6BFF);
+}
+
+.code {
+    margin: 0;
+    color: var(--color-primary, #2F6BFF);
+    font-family: var(--font-family);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.title {
+    margin: 0;
+    color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.text {
+    max-width: 440px;
+    margin: 0;
+    color: rgb(255 255 255 / 65%);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    line-height: 2;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.primaryBtn,
+.ghostBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 12px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    text-decoration: none;
+}
+
+.primaryBtn {
+    background: var(--color-primary, #2F6BFF);
+    color: #fff;
+}
+
+.primaryBtn:hover {
+    opacity: 0.9;
+}
+
+.ghostBtn {
+    border: 1px solid rgb(255 255 255 / 25%);
+    color: var(--color-white);
+}
+
+.ghostBtn:hover {
+    border-color: rgb(255 255 255 / 50%);
+}
+
+@media (max-width: 480px) {
+    .main {
+        padding: 56px 16px 72px;
+    }
+
+    .actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .primaryBtn,
+    .ghostBtn {
+        justify-content: center;
+    }
+}

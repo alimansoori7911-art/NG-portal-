@@ -11,6 +11,7 @@ import ForgotPasswordPage from "./modules/auth/pages/ForgotPasswordPage";
 import AboutPage from "./modules/about/pages/AboutPage";
 import ContactPage from "./modules/contact/pages/ContactPage";
 import TermsPage from "./modules/terms/pages/TermsPage";
+import NotFoundPage from './modules/errors/pages/NotFoundPage'
 /* «خدمات» عمومی، در برابر «مدیریت سرویس» داشبورد که لایسنس‌های کاربر
    را نشان می‌دهد و اسمش هم ServicesPage است. */
 import PublicServicesPage from "./modules/services/pages/ServicesPage";
@@ -141,6 +142,12 @@ function App() {
                         <Route path="settings" element={<AdminSettingsPage />} />
                     </Route>
                 </Route>
+
+                {/* ✅ مسیر ناشناخته.
+
+                    قبلاً هیچ مسیر `*` نبود و هر آدرس اشتباهی یک
+                    صفحه‌ی کاملاً سفید می‌داد — نه خطا، نه راه برگشت. */}
+                <Route path="*" element={<NotFoundPage />} />
 
             </Routes>
         </BrowserRouter>

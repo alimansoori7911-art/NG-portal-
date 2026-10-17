@@ -11,6 +11,7 @@ import {
     useCmsActions,
     useCmsPage,
     useCmsRedirects,
+    publicUrlOf,
 } from '../hooks/useCmsPages'
 import { useEditablePages } from '../hooks/useEditablePages'
 import { PAGE_KIND, PAGE_STATUS, pageState } from '../../../services/cmsService'
@@ -106,11 +107,23 @@ export default function ContentPage() {
         }
     }
 
+    /* ⚠️ هر دو فهرست باید تازه شوند.
+
+       صفحه‌های محتوا و صفحه‌های ساختاریافته دو هوک جدا دارند و
+       یک صفحه ممکن است در هر دو باشد. قبلاً فقط `pages` تازه
+       می‌شد، پس بعد از انتشار کارت ساختاریافته هنوز
+       «تغییر منتشرنشده» نشان می‌داد در حالی که انتشار انجام
+       شده بود — ادمین فکر می‌کرد کار نکرده. */
+    const reloadBoth = () => {
+        pages.reload()
+        editablePages.reload()
+    }
+
     const confirmPublish = async () => {
         if (await actions.publish(publishing.id)) {
             setPublishing(null)
             setSelectedId(null)
-            pages.reload()
+            reloadBoth()
         }
     }
 
@@ -118,14 +131,14 @@ export default function ContentPage() {
         if (await actions.remove(deleting.id)) {
             setDeleting(null)
             setSelectedId(null)
-            pages.reload()
+            reloadBoth()
         }
     }
 
     const restore = async (row) => {
         if (await actions.restore(row.id)) {
             setSelectedId(null)
-            pages.reload()
+            reloadBoth()
         }
     }
 
@@ -308,8 +321,12 @@ export default function ContentPage() {
                                                 </span>
                                             </header>
 
+                                            {/* ⚠️ قبلاً `/{slug}` نشان داده می‌شد که
+                                                گمراه‌کننده بود: اسلاگ صفحه‌ی اصلی
+                                                `home` است ولی نشانی واقعی‌اش `/` است و
+                                                `/home` صفحه‌ی سفید می‌داد. */}
                                             <p className={styles.cardSlug} dir="ltr">
-                                                /{p.slug}
+                                                {publicUrlOf(p) ?? `/${p.slug}`}
                                             </p>
 
                                             <dl className={styles.cardMeta}>
@@ -358,6 +375,45 @@ export default function ContentPage() {
                                                 >
                                                     پیش‌نمایش
                                                 </button>
+
+                                                {/* ⚠️ این دکمه نبود و دکمه‌ی انتشار
+                                                    فقط در جدول صفحه‌های محتوا بود.
+                                                    یعنی ادمین بلوک‌ها را ذخیره می‌کرد و
+                                                    هیچ راهی برای منتشر کردنش نداشت. */}
+                                                {p.permissions?.can_publish &&
+                                                    (p.status !== 'PUBLISHED' ||
+                                                        p.has_unpublished_changes) && (
+                                                        <button
+                                                            type="button"
+                                                            className={
+                                                                styles.rowActionPrimary
+                                                            }
+                                                            onClick={() =>
+                                                                setPublishing({
+                                                                    id: p.id,
+                                                                    title: p.title,
+                                                                    raw: p,
+                                                                })
+                                                            }
+                                                        >
+                                                            انتشار
+                                                        </button>
+                                                    )}
+
+                                                {/* باز کردن روی سایت — فقط وقتی
+                                                    واقعاً قابل دیدن است. */}
+                                                {publicUrlOf(p) &&
+                                                    p.status === 'PUBLISHED' &&
+                                                    p.is_public && (
+                                                        <a
+                                                            className={styles.rowActionBtn}
+                                                            href={publicUrlOf(p)}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            دیدن در سایت
+                                                        </a>
+                                                    )}
                                             </div>
                                         </article>
                                     )
@@ -631,28 +687,6 @@ export default function ContentPage() {
                         />
                     )}
 
-                    {/* ⚠️ انتشار به‌تنهایی کافی نیست: طبق اسپک، صفحه‌ی
-                        خصوصی حتی بعد از انتشار روی سایت ۴۰۴ می‌دهد. قبلاً
-                        دیالوگ قول می‌داد «روی سایت دیده می‌شود» و نمی‌شد. */}
-                    <ConfirmDialog
-                        open={Boolean(publishing)}
-                        title="انتشار صفحه"
-                        message={
-                            publishing
-                                ? publishing.raw?.is_public
-                                    ? `صفحه‌ی «${publishing.title}» منتشر شود؟ از این پس نسخه‌ی جاری روی سایت دیده می‌شود.`
-                                    : `صفحه‌ی «${publishing.title}» منتشر شود؟
-
-⚠️ این صفحه «خصوصی» است، پس با انتشار هم روی سایت دیده نمی‌شود. برای دیده شدن، در فرم ویرایش تیک «صفحه برای همه قابل دیدن باشد» را هم بزنید.`
-                                : ''
-                        }
-                        confirmLabel="منتشر کن"
-                        cancelLabel="انصراف"
-                        loading={actions.busy}
-                        onConfirm={confirmPublish}
-                        onClose={() => setPublishing(null)}
-                    />
-
                     <ConfirmDialog
                         open={Boolean(deleting)}
                         title="حذف صفحه"
@@ -669,6 +703,34 @@ export default function ContentPage() {
                     />
                 </>
             )}
+
+            {/* ⚠️ این دیالوگ عمداً بیرون از شاخه‌ی تب‌هاست.
+
+                قبلاً داخل شاخه‌ی «صفحه‌های محتوا» بود، پس در تب
+                ساختاریافته اصلاً رندر نمی‌شد و دکمه‌ی انتشار آنجا
+                ساکت بی‌اثر می‌ماند.
+
+                انتشار به‌تنهایی کافی نیست: طبق اسپک، صفحه‌ی خصوصی
+                حتی بعد از انتشار روی سایت ۴۰۴ می‌دهد. */}
+            <ConfirmDialog
+                open={Boolean(publishing)}
+                title="انتشار صفحه"
+                message={
+                    publishing
+                        ? publishing.raw?.is_public
+                            ? `صفحه‌ی «${publishing.title}» منتشر شود؟ از این پس نسخه‌ی جاری روی سایت دیده می‌شود.`
+                            : `صفحه‌ی «${publishing.title}» منتشر شود؟
+
+⚠️ این صفحه «خصوصی» است، پس با انتشار هم روی سایت دیده نمی‌شود. برای دیده شدن، در فرم ویرایش تیک «صفحه برای همه قابل دیدن باشد» را هم بزنید.`
+                        : ''
+                }
+                confirmLabel="منتشر کن"
+                cancelLabel="انصراف"
+                loading={actions.busy}
+                onConfirm={confirmPublish}
+                onClose={() => setPublishing(null)}
+            />
+
         </div>
     )
 }

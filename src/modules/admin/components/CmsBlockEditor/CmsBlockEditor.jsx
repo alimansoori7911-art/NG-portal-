@@ -21,6 +21,49 @@ const BLOCK_LABEL = {
     CTA: 'دکمه‌ی اقدام',
 }
 
+/* نام فارسی هر بلوک.
+
+   ⚠️ اسپک برای بلوک فیلد `title` ندارد — فقط `key` انگلیسی
+   می‌دهد. بدون این نگاشت، مدیر محتوا سرنامه‌های خام مثل
+   `cta` و `hero` می‌بیند و نمی‌داند کدام بخش صفحه است.
+
+   کلید ناشناخته خودِ کلید را نشان می‌دهد، پس بلوک تازه‌ی
+   بک‌اند بی‌نام نمی‌ماند. از بک‌اند خواسته شد عنوان را خودش
+   بدهد تا این نگاشت حذف شود. */
+const BLOCK_NAME = {
+    hero: 'سربرگ صفحه',
+    intro: 'معرفی',
+    product_intro: 'معرفی محصول',
+    banner: 'بنر',
+    features: 'ویژگی‌ها',
+    why_ng: 'چرا ما',
+    cta: 'دکمه‌ی اقدام',
+    demo_cta: 'دکمه‌ی درخواست دمو',
+    clients: 'مشتریان',
+    company_brand: 'معرفی شرکت',
+    plans_intro: 'عنوان بخش پلن‌ها',
+    mission: 'ماموریت',
+    vision: 'چشم‌انداز',
+    history: 'تاریخچه',
+    services: 'خدمات',
+    lifecycle: 'چرخه‌ی خدمت',
+    advantages: 'مزایا',
+    hero_points: 'نکات سربرگ',
+    what_is: 'این چیست؟',
+    details: 'جزئیات',
+    topics: 'موضوعات',
+    categories: 'دسته‌بندی‌ها',
+    featured: 'منابع منتخب',
+    popular: 'پرطرفدارترین‌ها',
+    channels: 'راه‌های ارتباط',
+    form_intro: 'معرفی فرم',
+    about: 'درباره‌ی ما',
+    contact: 'تماس',
+    link_groups: 'گروه لینک‌ها',
+    newsletter: 'خبرنامه',
+    popular_title: 'عنوان پرطرفدارترین‌ها',
+}
+
 /* برچسب فارسی نام فیلد.
 
    بک‌اند نام فیلد را انگلیسی و ماشینی می‌دهد (`heading`, `og_image_url`).
@@ -322,7 +365,7 @@ export default function CmsBlockEditor({
                             <header className={styles.blockHead}>
                                 <span className={styles.blockName}>
                                     <Icon size={15} aria-hidden="true" />
-                                    {spec.key}
+                                    {BLOCK_NAME[spec.key] ?? spec.key}
                                 </span>
 
                                 <span className={styles.blockType}>

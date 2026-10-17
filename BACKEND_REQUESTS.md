@@ -54,7 +54,26 @@ company   services   products   resources   contact   site_footer
 خصوصی طبق اسپک ۴۰۴ می‌دهد.
 
 
-### ۱.۱ `is_vip` در پاسخ کاربر نیست
+### ۱.۱ بلوک‌های CMS عنوان فارسی ندارند
+
+```
+CmsStructuredBlockSpecOut → key, type, editable, fields, items
+                             ^^^ فقط کلید انگلیسی
+```
+
+صفحه `title` دارد ولی بلوک ندارد. پس مدیر محتوا در فرم
+ویرایش سرنامه‌های خام مثل `hero` و `cta` می‌بیند و نمی‌داند
+کدام بخش صفحه است.
+
+فعلاً سمت فرانت یک نگاشت فارسی گذاشتیم (مثلاً `hero` ←
+«سربرگ صفحه»)، ولی هر بلوک تازه‌ای که شما اضافه کنید
+دوباره انگلیسی نشان داده می‌شود تا ما دستی اضافه‌اش کنیم.
+
+**درخواست:** یک فیلد `title` (یا `label`) روی خود بلوک، تا این
+نگاشت حذف شود و عنوان همان‌جایی تعریف شود که خود بلوک
+تعریف می‌شود.
+
+### ۱.۲ `is_vip` در پاسخ کاربر نیست
 
 ```
 UserResponseSchema: id, public_id, is_active, is_verified,
@@ -68,7 +87,7 @@ VIP بودن را الان از روی `roles` حساب می‌کنیم (نقش 
 
 **درخواست:** تأیید کنید که خواندن از `roles` روش درست و پایدار است.
 
-### ۱.۲ فهرست فاکتورهای ادمین صاحب فاکتور را نمی‌دهد
+### ۱.۳ فهرست فاکتورهای ادمین صاحب فاکتور را نمی‌دهد
 
 در `POST /admin/invoice/` فیلد `user_id` **اجباری** است، ولی در
 خروجی خواندن هیچ اثری از کاربر نیست:
@@ -92,7 +111,7 @@ GET /admin/invoice/{id}    → AdminInvoiceDetailSchema
 
 ---
 
-### ۱.۳ غلط املایی `is_verifed` در `UserUpdateSchema`
+### ۱.۴ غلط املایی `is_verifed` در `UserUpdateSchema`
 
 ```
 UserUpdateSchema → is_active, is_verifed, is_blocked, ...
@@ -105,7 +124,7 @@ UserUpdateSchema → is_active, is_verifed, is_blocked, ...
 **درخواست:** همین الان به `is_verified` تغییر دهید تا همین‌جا هماهنگ
 شویم، نه بعد از تحویل.
 
-### ۱.۴ کاربر نمی‌تواند ایمیل/شماره‌ی خودش را عوض کند
+### ۱.۵ کاربر نمی‌تواند ایمیل/شماره‌ی خودش را عوض کند
 
 ```
 UserProfilePatchSchema → first_name, last_name, birth_date,
