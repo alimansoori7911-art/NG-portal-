@@ -27,7 +27,7 @@ const REASONS = [
     },
 ]
 
-function AboutIntro() {
+function AboutIntro({ cms }) {
     const [activeIndex, setActiveIndex] = useState(0)
 
     // پیشروی خودکار هر ۵ ثانیه؛ با هر تغییر index (چه خودکار چه با کلیک) تایمر از نو شروع می‌شود
@@ -42,20 +42,30 @@ function AboutIntro() {
         setActiveIndex(index)
     }
 
+    /* سرنامه و کارت‌ها از CMS؛ مقادیر فعلی پیش‌فرض‌اند.
+
+       ⚠️ کاروسل به طول آرایه وابسته است، پس اگر ادمین تعداد
+       کارت‌ها را کم کند، ایندکس فعلی ممکن است بیرون از محدوده
+       بیفتد و صفحه خالی شود. پس محدودش می‌کنیم. */
+    const head = cms?.fields?.('intro', {
+        section_title: 'چرا NGCORION ساخته شده؟',
+        body: '- امنیت زیرساخت باید ساده، قابل مشاهده و قابل کنترل باشد',
+    }) ?? {}
+    const cards = cms?.items?.('intro', REASONS) ?? REASONS
+    const safeIndex = Math.min(activeIndex, Math.max(0, cards.length - 1))
+
     return (
         <section
             className={styles.section}
             style={{ backgroundImage: `url(${bgImage})` }}
         >
-            <h2 className={styles.title}>چرا NGCORION ساخته شده؟</h2>
-            <p className={styles.subtitle}>
-                - امنیت زیرساخت باید ساده، قابل مشاهده و قابل کنترل باشد
-            </p>
+            <h2 className={styles.title}>{head.section_title}</h2>
+            <p className={styles.subtitle}>{head.body}</p>
 
             {/* کارت‌های کاروسل: فقط همسایه‌های بلافصل کارت فعال دیده می‌شوند */}
             <div className={styles.carousel}>
-                {REASONS.map((reason, index) => {
-                    const offset = index - activeIndex
+                {cards.map((reason, index) => {
+                    const offset = index - safeIndex
                     const isActive = offset === 0
                     const isVisible = Math.abs(offset) <= 1
 
@@ -76,7 +86,7 @@ function AboutIntro() {
 
             {/* دکمه‌های انتخاب + نوار پیشرفت زیر دکمه‌ی فعال */}
             <div className={styles.tabs}>
-                {REASONS.map((reason, index) => (
+                {cards.map((reason, index) => (
                     <button
                         key={reason.title}
                         className={`${styles.tabBtn} ${index === activeIndex ? styles.tabBtnActive : ''}`}

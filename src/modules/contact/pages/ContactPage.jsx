@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Phone, Mail, Check, LifeBuoy, Briefcase } from 'lucide-react'
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Input from '../../../components/ui/Input/Input'
@@ -65,6 +66,23 @@ function buildMessage({ requestType, assetCount, description }) {
 }
 
 function ContactPage() {
+    /* ✅ محتوای صفحه از CMS — یک‌بار اینجا خوانده می‌شود.
+       خطا عمداً نادیده گرفته می‌شود: هر بخش متن پیش‌فرض خودش
+       را دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
+    const cms = useCmsContent('contact')
+
+    /* متن و راه‌های ارتباط از CMS؛ مقادیر فعلی پیش‌فرض‌اند.
+
+       ⚠️ آیکون کامپوننت ریکت است و از CMS نمی‌آید؛ از روی ترتیب
+       نگاشت می‌شود تا کارتِ آمده از CMS بدون آیکون نماند. */
+    const hero = cms?.fields?.('hero', {
+        heading: 'ارتباط با تیم NG CORION',
+    }) ?? {}
+
+    const channels = (cms?.items?.('channels', CONTACT_CARDS) ?? CONTACT_CARDS).map(
+        (it, i) => ({ ...it, icon: it.icon ?? CONTACT_CARDS[i]?.icon })
+    )
+
     const user = useAuthStore((s) => s.user)
     const status = useAuthStore((s) => s.status)
 
@@ -171,7 +189,7 @@ function ContactPage() {
                 {/* ستون کناری — برچسب صفحه + کارت‌های اطلاعات تماس */}
                 <aside className={styles.sidebar}>
                     <span className={styles.pageLabel}>تماس با ما</span>
-                    {CONTACT_CARDS.map(({ icon: Icon, label, value }) => (
+                    {channels.map(({ icon: Icon, label, value }) => (
                         <div key={label} className={styles.infoCard}>
                             <Icon size={22} className={styles.infoIcon} />
                             <span className={styles.infoLabel}>{label}</span>
@@ -185,7 +203,7 @@ function ContactPage() {
 
                     {view === 'form' && (
                         <>
-                            <h1 className={styles.title}>ارتباط با تیم NG CORION</h1>
+                            <h1 className={styles.title}>{hero.heading}</h1>
                             <form className={styles.form} onSubmit={handleSubmit} noValidate>
                                 <div className={styles.grid}>
                                     <Input

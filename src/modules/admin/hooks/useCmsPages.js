@@ -16,6 +16,10 @@ import { ROWS_PER_PAGE } from '../components/AdminTable/AdminTable'
    لینک شکسته بدتر از نبودن دکمه است. */
 export const SCHEMA_ROUTES = {
     home: '/',
+    /* فوتر صفحه‌ی مستقل نیست و در همه‌ی صفحات دیده می‌شود؛
+       مسیر صفحه‌ی اصلی را می‌دهیم تا دکمه‌ی «دیدن در سایت»
+       به مسیر ناموجود /site-footer نرود. */
+    site_footer: '/',
     company: '/company',
     services: '/services',
     products: '/products',

@@ -1,5 +1,6 @@
 import { Flame, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Clients from '../../home/components/Clients/Clients'
@@ -24,6 +25,18 @@ import styles from './ResourcesPage.module.css'
  * گشتن ندارد، کاربر را فریب می‌دهد. جایش یک توضیح صادقانه آمده.
  */
 export default function ResourcesPage() {
+    /* ✅ محتوای صفحه از CMS — یک‌بار اینجا خوانده می‌شود.
+       خطا عمداً نادیده گرفته می‌شود: هر بخش متن پیش‌فرض خودش
+       را دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
+    const cms = useCmsContent('resources')
+
+
+    /* متن از CMS؛ متن فعلی پیش‌فرض می‌ماند */
+    const hero = cms?.fields?.('hero', {
+        heading: 'مرکز منابع NGCorion',
+        subheading:
+            'به مستندات، راهنماها، مقالات، نسخه‌ها و منابع موردنیاز برای استفاده بهتر از NGCorion دسترسی داشته باشید.',
+    }) ?? {}
     return (
         <div className={styles.page}>
             <Header />
@@ -40,10 +53,9 @@ export default function ResourcesPage() {
                                 <span className={styles.current}>منابع</span>
                             </nav>
 
-                            <h1 className={styles.heroTitle}>مرکز منابع NGCorion</h1>
+                            <h1 className={styles.heroTitle}>{hero.heading}</h1>
                             <p className={styles.heroLead}>
-                                به مستندات، راهنماها، مقالات، نسخه‌ها و منابع موردنیاز
-                                برای استفاده بهتر از NGCorion دسترسی داشته باشید.
+                                {hero.subheading}
                             </p>
 
                             {/* اسپک اینجا جعبه‌ی جستجو داشت. تا وقتی هیچ

@@ -1,5 +1,6 @@
 import { Users, BadgeCheck, Handshake, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import Clients from '../../home/components/Clients/Clients'
@@ -17,6 +18,24 @@ const HERO_POINTS = [
 ]
 
 export default function ServicesPage() {
+    /* ✅ محتوای صفحه از CMS — یک‌بار اینجا خوانده می‌شود.
+       خطا عمداً نادیده گرفته می‌شود: هر بخش متن پیش‌فرض خودش
+       را دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
+    const cms = useCmsContent('services')
+
+
+    /* متن از CMS؛ متن فعلی پیش‌فرض می‌ماند */
+    const hero = cms?.fields?.('hero', {
+        heading: 'از استقرار تا امنیت مداوم',
+        subheading:
+            'مجموعه‌ای از خدمات تخصصی برای استقرار، بهره‌برداری و بهبود NGCorion؛ همراه شما در مسیر ساخت زیرساختی امن‌تر و پایدارتر.',
+    }) ?? {}
+
+    /* نکات سربرگ: آیکون در کد می‌ماند چون کامپوننت است؛
+       از CMS فقط متن می‌آید و آیکون به ترتیب نگاشت می‌شود. */
+    const points = (cms?.items?.('hero_points', HERO_POINTS) ?? HERO_POINTS).map(
+        (it, i) => ({ ...it, icon: it.icon ?? HERO_POINTS[i]?.icon })
+    )
     return (
         <div className={styles.page}>
             <Header />
@@ -33,13 +52,9 @@ export default function ServicesPage() {
                                 <span className={styles.current}>خدمات</span>
                             </nav>
 
-                            <h1 className={styles.heroTitle}>
-                                از استقرار تا امنیت مداوم
-                            </h1>
+                            <h1 className={styles.heroTitle}>{hero.heading}</h1>
                             <p className={styles.heroLead}>
-                                مجموعه‌ای از خدمات تخصصی برای استقرار، بهره‌برداری و
-                                بهبود NGCorion؛ همراه شما در مسیر ساخت زیرساختی امن‌تر
-                                و پایدارتر.
+                                {hero.subheading}
                             </p>
 
                             <div className={styles.heroActions}>
@@ -53,9 +68,11 @@ export default function ServicesPage() {
                             </div>
 
                             <ul className={styles.heroPoints}>
-                                {HERO_POINTS.map(({ icon: Icon, label }) => (
-                                    <li key={label} className={styles.heroPoint}>
-                                        <Icon size={18} aria-hidden="true" />
+                                {points.map(({ icon: Icon, label }, i) => (
+                                    <li key={`${label}-${i}`} className={styles.heroPoint}>
+                                        {typeof Icon === 'function' && (
+                                            <Icon size={18} aria-hidden="true" />
+                                        )}
                                         {label}
                                     </li>
                                 ))}

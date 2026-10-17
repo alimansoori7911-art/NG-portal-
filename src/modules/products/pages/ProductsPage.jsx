@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import ProductsHero from '../components/ProductsHero/ProductsHero'
@@ -10,6 +11,11 @@ import { useDemoRequest } from '../hooks/useDemoRequest'
 import styles from './ProductsPage.module.css'
 
 function ProductsPage() {
+    /* ✅ محتوای صفحه از CMS — یک‌بار اینجا خوانده می‌شود.
+       خطا عمداً نادیده گرفته می‌شود: هر بخش متن پیش‌فرض خودش
+       را دارد و صفحه‌ی فروش نباید به‌خاطر CMS سفید شود. */
+    const cms = useCmsContent('products')
+
     const navigate = useNavigate()
 
     const {
@@ -43,7 +49,7 @@ function ProductsPage() {
         <div className={styles.page}>
             <Header />
             <main className={styles.main}>
-                <ProductsHero />
+                <ProductsHero cms={cms} />
 
                 <div id="what-is-it" className={styles.section}>
                     <ProductsWhatIs />

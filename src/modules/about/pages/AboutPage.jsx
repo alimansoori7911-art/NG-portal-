@@ -1,3 +1,4 @@
+import { useCmsContent } from '../../../hooks/useCmsContent'
 import Header from '../../../components/layout/Header/Header'
 import Footer from '../../../components/layout/Footer/Footer'
 import AboutHero from '../components/AboutHero/AboutHero'
@@ -7,22 +8,26 @@ import AboutHistory from '../components/AboutHistory/AboutHistory'
 import styles from './AboutPage.module.css'
 
 function AboutPage() {
+    /* ✅ محتوای صفحه از CMS — یک‌بار اینجا خوانده و به بخش‌ها
+       پاس داده می‌شود، تا چند درخواست یکسان نزنیم. */
+    const cms = useCmsContent('company')
+
     return (
         <div className={styles.page}>
             <Header />
             <main className={styles.main}>
-                <AboutHero />
+                <AboutHero cms={cms} />
 
                 <div id="intro" className={styles.section}>
-                    <AboutIntro />
+                    <AboutIntro cms={cms} />
                 </div>
 
                 <div id="vision" className={styles.section}>
-                    <AboutVision />
+                    <AboutVision cms={cms} />
                 </div>
 
                 <div id="history" className={styles.section}>
-                    <AboutHistory />
+                    <AboutHistory cms={cms} />
                 </div>
             </main>
             <Footer />

@@ -122,6 +122,12 @@ function BlockField({ spec, value, onChange, disabled, error }) {
     const isTextarea = kind === 'textarea' || kind === 'long_text'
     /* نشانی همیشه چپ‌به‌راست است، حتی در صفحه‌ی راست‌به‌چپ */
     const isUrl = kind === 'url' || kind === 'image' || spec.name.endsWith('_url')
+    /* `NUMBER` و `ICON` در `BlockFieldKind` اسپک هستند.
+
+       آیکون عمداً متن ساده می‌ماند (اسم آیکون، نه فایل) — همان
+       چیزی که در CMS_CONTRACT.md پیشنهاد شد و بک‌اند با افزودن
+       `ICON` به enum تأییدش کرد. */
+    const isNumber = kind === 'number'
 
     return (
         <label className={`${styles.field} ${error ? styles.fieldInvalid : ''}`}>
@@ -152,7 +158,8 @@ function BlockField({ spec, value, onChange, disabled, error }) {
                     onChange={(e) => onChange(e.target.value)}
                     disabled={disabled}
                     maxLength={spec.max_length ?? undefined}
-                    dir={isUrl ? 'ltr' : undefined}
+                    dir={isUrl || isNumber ? 'ltr' : undefined}
+                    inputMode={isNumber ? 'numeric' : undefined}
                     placeholder={isUrl ? 'https://…' : undefined}
                 />
             )}

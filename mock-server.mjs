@@ -283,6 +283,388 @@ function makeCmsPage(b) {
 /* قالب صفحه‌های ساختاریافته — مرجع هم برای مسیر schemas و هم برای
    ساختن بلوک‌های اولیه‌ی seed، تا این دو از هم جدا نیفتند. */
 const STRUCTURED_SCHEMAS = [
+    /* ✅ شش کلید باقی‌مانده‌ی CMS_CONTRACT.md.
+
+       قبلاً فقط `home` تعریف شده بود، پس بقیه‌ی صفحات عمومی
+       قابل ویرایش نبودند و وصل کردنشان هم قابل تست نبود.
+
+       ⚠️ این آینه‌ی قرارداد است نه جایگزین آن: بک‌اند باید
+       همین‌ها را سمت خودش ثبت کند (بند ۱.۰ سند بک‌اند). */
+    {
+        key: 'company',
+        title: 'درباره‌ی ما',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'intro',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'textarea', required: false, max_length: 600, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'mission',
+                type: 'RICH_TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'vision',
+                type: 'RICH_TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'history',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 12,
+                    fields: [
+                        { name: 'year', kind: 'number', required: true, max_length: 4, allowed_sizes: null },
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                    ],
+                },
+            },
+        ],
+    },
+    {
+        key: 'services',
+        title: 'خدمات',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'hero_points',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 6,
+                    fields: [
+                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'services',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 12,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'lifecycle',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 10,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'subtitle', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'advantages',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+        ],
+    },
+    {
+        key: 'products',
+        title: 'محصولات',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'what_is',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'textarea', required: false, max_length: 600, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'title_fa', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'title_en', kind: 'text', required: false, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'details',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'title_fa', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'title_en', kind: 'text', required: false, max_length: 80, allowed_sizes: null },
+                        { name: 'subtitle', kind: 'text', required: false, max_length: 160, allowed_sizes: null },
+                        { name: 'body', kind: 'rich_text', required: false, max_length: null, allowed_sizes: null },
+                        { name: 'image_url', kind: 'image', required: false, max_length: null, allowed_sizes: [960, 640] },
+                    ],
+                },
+            },
+            {
+                key: 'demo_cta',
+                type: 'CTA',
+                editable: true,
+                fields: [
+                    { name: 'label', kind: 'text', required: true, max_length: 40, allowed_sizes: null },
+                    { name: 'url', kind: 'url', required: true, max_length: null, allowed_sizes: null },
+                    { name: 'variant', kind: 'text', required: false, max_length: 20, allowed_sizes: null },
+                ],
+                items: null,
+            },
+        ],
+    },
+    {
+        key: 'resources',
+        title: 'مرکز منابع',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'topics',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 10,
+                    fields: [
+                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'categories',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 10,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 80, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'featured',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'title', kind: 'text', required: true, max_length: 100, allowed_sizes: null },
+                        { name: 'description', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                        { name: 'badge', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'popular',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 10,
+                    fields: [
+                        { name: 'label', kind: 'text', required: true, max_length: 100, allowed_sizes: null },
+                    ],
+                },
+            },
+        ],
+    },
+    {
+        key: 'contact',
+        title: 'تماس با ما',
+        blocks: [
+            {
+                key: 'hero',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                    { name: 'subheading', kind: 'text', required: false, max_length: 240, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'channels',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 8,
+                    fields: [
+                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'value', kind: 'text', required: true, max_length: 120, allowed_sizes: null },
+                        { name: 'icon', kind: 'icon', required: false, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'form_intro',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
+                ],
+                items: null,
+            },
+        ],
+    },
+    {
+        key: 'site_footer',
+        title: 'فوتر سایت',
+        blocks: [
+            {
+                key: 'about',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'textarea', required: false, max_length: 400, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'contact',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'email', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'phone', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
+                    { name: 'address', kind: 'textarea', required: false, max_length: 300, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'link_groups',
+                type: 'CARD_LIST',
+                editable: true,
+                fields: [
+                ],
+                items: {
+                    max_items: 20,
+                    fields: [
+                        { name: 'group_title', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'label', kind: 'text', required: true, max_length: 60, allowed_sizes: null },
+                        { name: 'url', kind: 'url', required: false, max_length: null, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'newsletter',
+                type: 'TEXT',
+                editable: true,
+                fields: [
+                    { name: 'heading', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'placeholder', kind: 'text', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'button_label', kind: 'text', required: false, max_length: 40, allowed_sizes: null },
+                ],
+                items: null,
+            },
+        ],
+    },
     {
         key: 'home',
         title: 'صفحه‌ی اصلی',
@@ -663,7 +1045,81 @@ function seedCms() {
     home.published_version_id = db.cmsVersions.at(-1).id
     home.current_version_id = home.published_version_id
 
-    db.cmsPages.push(about, terms, draft, gone, home)
+    /* ✅ صفحات ساختاریافته‌ی باقی‌مانده.
+
+       محتوای اولیه همان متنی است که الان در صفحات هاردکد است،
+       تا بعد از وصل شدن سایت دقیقاً همان چیزی را نشان بدهد که
+       قبلاً نشان می‌داد — نه متن خالی. */
+    const structured = [
+        ['company', 'درباره‌ی ما', 'company', [
+            { key: 'hero', type: 'TEXT', fields: { heading: 'درباره‌ی NGCORION', subheading: 'معرفی شرکت، تیم و مسیر رشد' }, items: [] },
+            { key: 'intro', type: 'CARD_LIST', fields: { section_title: 'چرا NGCORION ساخته شد؟' }, items: [
+                { title: 'عدم شناخت ریسک واقعی', description: 'سازمان‌ها همیشه نمی‌دانند کدام دارایی بیشترین ریسک را دارد.' },
+                { title: 'نبود بکاپ ساختاریافته', description: 'پشتیبان‌گیری پیکربندی دستی و پراکنده است.' },
+                { title: 'هاردنینگ زمان‌بر', description: 'سخت‌سازی دستی وقت‌گیر و خطاپذیر است.' },
+                { title: 'ممیزی دستی', description: 'ارزیابی امنیتی بدون ابزار یکپارچه قابل تکرار نیست.' },
+                { title: 'نبود دید متمرکز', description: 'اطلاعات در چند سامانه‌ی جدا پخش است.' },
+            ] },
+            { key: 'mission', type: 'RICH_TEXT', fields: { heading: 'ماموریت', body: '<p>ساده کردن امنیت زیرساخت برای سازمان‌ها.</p>' }, items: [] },
+            { key: 'vision', type: 'RICH_TEXT', fields: { heading: 'چشم انداز', body: '<p>مرجع مدیریت انطباق امنیتی در ایران.</p>' }, items: [] },
+            { key: 'history', type: 'CARD_LIST', fields: { section_title: 'تاریخچه' }, items: [
+                { year: '2023', title: 'ایده اولیه', description: 'تمرکز روی مدیریت دارایی و ممیزی امنیتی.' },
+                { year: '2024', title: 'نسخه اول', description: 'Asset، Audit، Hardening و Backup.' },
+                { year: '2025', title: 'Risk Intelligence', description: 'افزودن تحلیل ریسک و Exposure.' },
+                { year: '2026', title: 'Vendor Expansion', description: 'گسترش پشتیبانی از Vendorها.' },
+                { year: '2027', title: 'AI Assistant', description: 'هوشمندسازی تحلیل و پیشنهاد اقدام.' },
+            ] },
+        ]],
+        ['services', 'خدمات', 'services', [
+            { key: 'hero', type: 'TEXT', fields: { heading: 'خدمات NGCORION', subheading: 'همراهی از ارزیابی تا بهبود مستمر' }, items: [] },
+            { key: 'hero_points', type: 'CARD_LIST', fields: {}, items: [
+                { label: 'تیم متخصص', icon: 'users' },
+                { label: 'مبتنی بر تجربه عملی', icon: 'badge' },
+                { label: 'همراهی بلندمدت', icon: 'handshake' },
+            ] },
+        ]],
+        ['products', 'محصولات', 'products', [
+            { key: 'hero', type: 'TEXT', fields: { heading: 'محصولات NGCORION', subheading: 'پلتفرم یکپارچه‌ی امنیت زیرساخت' }, items: [] },
+            { key: 'demo_cta', type: 'CTA', fields: { label: 'درخواست دمو', url: '/contact', variant: 'primary' }, items: [] },
+        ]],
+        ['resources', 'مرکز منابع', 'resources', [
+            { key: 'hero', type: 'TEXT', fields: { heading: 'مرکز منابع NGCorion', subheading: 'مستندات، راهنماها و مقاله‌ها' }, items: [] },
+        ]],
+        ['site_footer', 'فوتر سایت', 'site-footer', [
+            { key: 'about', type: 'TEXT', fields: { heading: 'درباره‌ی NGCorion', body: 'پلتفرم یکپارچه‌ی مدیریت انطباق امنیتی و تحلیل ریسک زیرساخت.' }, items: [] },
+            { key: 'contact', type: 'TEXT', fields: { email: 'Info@ngcorion.com', phone: '02122500058', address: 'تهران' }, items: [] },
+            { key: 'newsletter', type: 'TEXT', fields: { heading: 'عضویت در خبرنامه', placeholder: 'آدرس ایمیل خود را وارد کنید', button_label: 'عضویت' }, items: [] },
+        ]],
+        ['contact', 'تماس با ما', 'contact', [
+            { key: 'hero', type: 'TEXT', fields: { heading: 'ارتباط با تیم NG CORION', subheading: 'برای مشاوره و پشتیبانی در تماس باشید' }, items: [] },
+            { key: 'channels', type: 'CARD_LIST', fields: {}, items: [
+                { label: 'شماره تلفن', value: '02122500058', icon: 'phone' },
+                { label: 'ایمیل', value: 'Info@ngcorion.com', icon: 'mail' },
+                { label: 'پشتیبانی', value: 'Support@taktacom.com', icon: 'support' },
+                { label: 'فروش', value: 'Sales@ngcorion.com', icon: 'sales' },
+                { label: 'اینستاگرام', value: '@ngcorion', icon: 'instagram' },
+            ] },
+        ]],
+    ]
+
+    const structuredPages = structured.map(([schemaKey, title, slug, blocks]) => {
+        const pg = makeCmsPage({
+            kind: 'STRUCTURED',
+            schema_key: schemaKey,
+            title,
+            slug,
+            blocks: blocks.map((b) => ({ ...b, version: 1 })),
+        })
+        pg.status = 'PUBLISHED'
+        pg.published_at = new Date().toISOString()
+        pg.published_slug = pg.slug
+        snapshotCmsVersion(pg, { published: true })
+        pg.published_version_id = db.cmsVersions.at(-1).id
+        pg.current_version_id = pg.published_version_id
+        return pg
+    })
+
+    db.cmsPages.push(about, terms, draft, gone, home, ...structuredPages)
 
     db.cmsRedirects.push({
         id: cmsId(),
