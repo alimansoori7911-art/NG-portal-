@@ -55,6 +55,36 @@ const TRACK_HINT =
 
 const FORM_STEP = 1
 
+/* پیش‌نویس فرم سفارش — دکمه‌ی «اطلاعات ذخیره شود» در دیالوگ بستن.
+   فقط در مرورگر همین کاربر می‌ماند؛ ثبت سفارش یا «بستن صفحه» پاکش
+   می‌کند. دسترسی به storage ممکن است خطا بدهد (حالت خصوصی)، پس هر
+   خواندن و نوشتن در try است و نبودنش فقط یعنی پیش‌نویسی نیست. */
+const DRAFT_KEY = 'ng.orderDraft'
+
+const readDraft = () => {
+    try {
+        return JSON.parse(localStorage.getItem(DRAFT_KEY) ?? 'null')
+    } catch {
+        return null
+    }
+}
+
+const writeDraft = (values) => {
+    try {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(values))
+    } catch {
+        /* ذخیره نشد؛ کاربر فقط پیش‌نویس را از دست می‌دهد */
+    }
+}
+
+const clearDraft = () => {
+    try {
+        localStorage.removeItem(DRAFT_KEY)
+    } catch {
+        /* چیزی برای پاک کردن نیست */
+    }
+}
+
 export default function NewOrderPage() {
     const navigate = useNavigate()
     const user = useAuthStore((s) => s.user)
@@ -78,7 +108,10 @@ export default function NewOrderPage() {
 
     const [step, setStep] = useState(0)
     const [selectedPlan, setSelectedPlan] = useState(null)
+    /* پیش‌نویس ذخیره‌شده‌ی دفعه‌ی قبل، روی مقادیر پروفایل می‌نشیند */
+    const [savedDraft] = useState(readDraft)
     const [orderForm, setOrderForm] = useState(null)
+    const [draftValues, setDraftValues] = useState(null)
     const [formDirty, setFormDirty] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
@@ -87,6 +120,16 @@ export default function NewOrderPage() {
     const isFirstStep = step === 0
 
     const leave = () => navigate('/products/buy')
+
+    const saveAndLeave = () => {
+        if (draftValues) writeDraft(draftValues)
+        leave()
+    }
+
+    const discardAndLeave = () => {
+        clearDraft()
+        leave()
+    }
 
     /* در مرحله‌ی فرم و فقط وقتی چیزی وارد شده، اول تأیید گرفته می‌شود.
        در بقیه‌ی مراحل چیزی برای از دست دادن نیست. */
@@ -126,6 +169,7 @@ export default function NewOrderPage() {
                 quantity: 1,
                 customer_note: buildOrderNote(values),
             })
+            clearDraft()
             setStep(2)
         } catch (err) {
             setSubmitError(err?.message || 'ثبت سفارش ناموفق بود')
@@ -143,8 +187,11 @@ export default function NewOrderPage() {
                 return (
                     <OrderFormStep
                         planName={selectedPlan?.name}
-                        initialValues={orderForm ?? profileDefaults}
+                        initialValues={
+                            orderForm ?? { ...profileDefaults, ...(savedDraft ?? {}) }
+                        }
                         onDirtyChange={setFormDirty}
+                        onValuesChange={setDraftValues}
                         onBack={() => setStep(0)}
                         onClose={requestClose}
                         onSubmit={handleSubmitForm}
@@ -225,9 +272,8 @@ export default function NewOrderPage() {
 
             <CloseOrderModal
                 open={confirmOpen}
-                /* TODO: ذخیره‌ی واقعی پس از آماده شدن بک‌اند */
-                onSave={leave}
-                onDiscard={leave}
+                onSave={saveAndLeave}
+                onDiscard={discardAndLeave}
                 onCancel={() => setConfirmOpen(false)}
             />
         </div>

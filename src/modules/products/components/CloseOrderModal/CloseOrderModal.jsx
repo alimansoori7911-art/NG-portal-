@@ -45,13 +45,13 @@ export default function CloseOrderModal({ open, onSave, onDiscard, onCancel }) {
                 <h2 className={styles.title}>بستن صفحه درخواست</h2>
 
                 <p className={styles.message}>
-                    در صورت بسته شدن صفحه، اطلاعات شما پاک خواهد شد،آیا مالید
-                    اطلاعات درخواست شما ذخیره شود ؟
+                    در صورت بسته شدن صفحه، اطلاعات شما پاک خواهد شد. آیا مایلید
+                    اطلاعات درخواست شما ذخیره شود؟
                 </p>
 
                 <div className={styles.actions}>
-                    {/* TODO: ذخیره‌ی واقعی پس از آماده شدن بک‌اند.
-                        فعلاً مثل «بستن صفحه» عمل می‌کند. */}
+                    {/* فرم در همین مرورگر نگه داشته می‌شود و دفعه‌ی بعد
+                        که فرم سفارش باز شود، پر شده برمی‌گردد. */}
                     <button type="button" className={styles.actionBtn} onClick={onSave}>
                         اطلاعات ذخیره شود
                     </button>

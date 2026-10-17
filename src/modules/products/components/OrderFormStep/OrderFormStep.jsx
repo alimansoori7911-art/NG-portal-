@@ -42,6 +42,7 @@ export default function OrderFormStep({
                                           planName,
                                           initialValues,
                                           onDirtyChange,
+                                          onValuesChange,
                                           onBack,
                                           onClose,
                                           onSubmit,
@@ -64,6 +65,8 @@ export default function OrderFormStep({
            («Cannot update a component while rendering a different one»)
            و ثبت سفارش هیچ‌وقت جلو نمی‌رفت. */
         onDirtyChange?.(Object.values(next).some((v) => v.trim() !== ''))
+        /* مقادیر جاری برای «اطلاعات ذخیره شود» در دیالوگ بستن صفحه */
+        onValuesChange?.(next)
     }
 
     const isValid = REQUIRED_FIELDS.every((key) => form[key].trim() !== '')
