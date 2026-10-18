@@ -679,11 +679,11 @@ const STRUCTURED_SCHEMAS = [
     {
         key: 'home',
         title: 'صفحه‌ی اصلی',
+        /* ✅ طبق CMS_CONTRACT.md — قبلاً قالب قدیمی (intro/banner/cta) بود
+           که هیچ‌کدام در سایت خوانده نمی‌شد. */
         blocks: [
             {
-                key: 'hero',
-                type: 'TEXT',
-                editable: true,
+                key: 'hero', type: 'TEXT', editable: true,
                 fields: [
                     { name: 'heading', kind: 'TEXT', required: true, max_length: 120, allowed_sizes: null },
                     { name: 'subheading', kind: 'TEXT', required: false, max_length: 240, allowed_sizes: null },
@@ -691,50 +691,61 @@ const STRUCTURED_SCHEMAS = [
                 items: null,
             },
             {
-                key: 'intro',
-                type: 'RICH_TEXT',
-                editable: true,
+                key: 'product_intro', type: 'TEXT', editable: true,
                 fields: [
-                    { name: 'body', kind: 'RICH_TEXT', required: false, max_length: null, allowed_sizes: null },
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 160, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 800, allowed_sizes: null },
                 ],
                 items: null,
             },
             {
-                key: 'banner',
-                type: 'IMAGE',
-                editable: true,
-                fields: [
-                    { name: 'image_url', kind: 'IMAGE', required: true, max_length: null, allowed_sizes: [1920, 1280] },
-                    { name: 'alt', kind: 'TEXT', required: true, max_length: 160, allowed_sizes: null },
-                ],
-                items: null,
-            },
-            {
-                /* بلوک تکرارشونده — سقف دارد */
-                key: 'features',
-                type: 'CARD_LIST',
-                editable: true,
+                key: 'features', type: 'CARD_LIST', editable: true,
                 fields: [
                     { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
                 ],
                 items: {
-                    max_items: 4,
+                    max_items: 6,
                     fields: [
                         { name: 'title', kind: 'TEXT', required: true, max_length: 80, allowed_sizes: null },
                         { name: 'description', kind: 'TEXT', required: false, max_length: 300, allowed_sizes: null },
-                        { name: 'icon_url', kind: 'IMAGE', required: false, max_length: null, allowed_sizes: [64] },
                     ],
                 },
             },
             {
-                key: 'cta',
-                type: 'CTA',
-                editable: true,
+                key: 'why_ng', type: 'TEXT', editable: true,
                 fields: [
-                    { name: 'label', kind: 'TEXT', required: true, max_length: 40, allowed_sizes: null },
-                    { name: 'url', kind: 'URL', required: true, max_length: null, allowed_sizes: null },
-                    /* بلوک غیرقابل‌ویرایش هم باید تست شود */
-                    { name: 'variant', kind: 'TEXT', required: false, max_length: 20, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 800, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'plans_intro', type: 'TEXT', editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                ],
+                items: null,
+            },
+            {
+                key: 'company_brand', type: 'CARD_LIST', editable: true,
+                fields: [
+                    { name: 'section_title', kind: 'TEXT', required: false, max_length: 120, allowed_sizes: null },
+                    { name: 'heading', kind: 'TEXT', required: false, max_length: 160, allowed_sizes: null },
+                    { name: 'body', kind: 'TEXT', required: false, max_length: 600, allowed_sizes: null },
+                ],
+                items: {
+                    max_items: 6,
+                    fields: [
+                        { name: 'label', kind: 'TEXT', required: true, max_length: 40, allowed_sizes: null },
+                    ],
+                },
+            },
+            {
+                key: 'clients', type: 'IMAGE', editable: true,
+                fields: [
+                    { name: 'image_url', kind: 'IMAGE', required: false, max_length: null, allowed_sizes: [1200] },
+                    { name: 'alt', kind: 'TEXT', required: false, max_length: 160, allowed_sizes: null },
                 ],
                 items: null,
             },
@@ -1030,6 +1041,8 @@ function seedCms() {
         schema_key: 'home',
         title: 'صفحه‌ی اصلی',
         slug: 'home',
+        /* فقط چند بلوک پر است؛ بقیه خالی‌اند تا سایت متن پیش‌فرض خودش
+           را نشان دهد — همان حالتی که بعد از seed واقعی هم پیش می‌آید. */
         blocks: [
             {
                 key: 'hero',
@@ -1039,35 +1052,14 @@ function seedCms() {
                 items: [],
             },
             {
-                key: 'intro',
-                type: 'RICH_TEXT',
-                version: 1,
-                fields: { body: '<p>معرفی کوتاه محصول.</p>' },
-                items: [],
-            },
-            {
-                key: 'banner',
-                type: 'IMAGE',
-                version: 1,
-                fields: { image_url: 'https://example.com/banner.png', alt: 'تصویر اصلی' },
-                items: [],
-            },
-            {
                 key: 'features',
                 type: 'CARD_LIST',
                 version: 1,
-                fields: { section_title: 'چرا ما' },
+                fields: { section_title: 'مزایا و ویژگی‌های رقابتی' },
                 items: [
-                    { title: 'سرعت', description: 'راه‌اندازی در یک روز', icon_url: '' },
-                    { title: 'پشتیبانی', description: 'پاسخ در کمتر از ۲۴ ساعت', icon_url: '' },
+                    { title: 'سرعت', description: 'راه‌اندازی در یک روز' },
+                    { title: 'پشتیبانی', description: 'پاسخ در کمتر از ۲۴ ساعت' },
                 ],
-            },
-            {
-                key: 'cta',
-                type: 'CTA',
-                version: 1,
-                fields: { label: 'درخواست دمو', url: 'https://ngcorion.com/demo', variant: 'primary' },
-                items: [],
             },
         ],
     })
