@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { cmsService } from '../../../../services/cmsService'
+import { fileService } from '../../../../services/fileService'
 import {
     X,
     Plus,
@@ -11,6 +13,7 @@ import {
     ArrowUp,
     ArrowDown,
     MapPin,
+    Upload,
 } from 'lucide-react'
 import RichTextEditor from '../../../../components/ui/RichTextEditor/RichTextEditor'
 import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
@@ -61,6 +64,74 @@ const isBlank = (v) =>
    `www.x.com` بدون https) در سایت لینک شکسته می‌سازد. */
 const isValidLink = (v) => /^(https?:\/\/|\/|mailto:|tel:|#)/i.test(v.trim())
 const isValidImage = (v) => /^(https?:\/\/|\/)/i.test(v.trim())
+
+/* تصویرهای CMS روی سایت عمومی نشان داده می‌شوند؛ SVG عمداً نیست
+   چون می‌تواند اسکریپت داشته باشد. سقف حجم مثل رسید پرداخت. */
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+
+/* دکمه‌ی آپلود کنار فیلد تصویر.
+
+   ✅ اسپک تازه `POST /admin/cms/pages/{id}/upload-token` را داد: توکن
+   یک‌بارمصرف می‌گیریم، فایل را به `/dl/upload` می‌فرستیم و نشانی
+   `/dl/{file_id}` را در فیلد می‌گذاریم — همان قالبی که بک‌اند گفت. */
+function ImageUpload({ upload, onDone, disabled }) {
+    const inputRef = useRef(null)
+    const [state, setState] = useState({ busy: false, progress: 0, error: null })
+
+    const pick = async (e) => {
+        const file = e.target.files?.[0]
+        e.target.value = ''
+        if (!file) return
+        if (!IMAGE_TYPES.includes(file.type)) {
+            setState({ busy: false, progress: 0, error: 'فقط تصویر PNG، JPG یا WebP' })
+            return
+        }
+        if (file.size > MAX_IMAGE_BYTES) {
+            setState({ busy: false, progress: 0, error: 'حجم تصویر باید کمتر از ۵ مگابایت باشد' })
+            return
+        }
+
+        setState({ busy: true, progress: 0, error: null })
+        try {
+            const url = await upload(file, (progress) =>
+                setState((s) => ({ ...s, progress }))
+            )
+            setState({ busy: false, progress: 0, error: null })
+            onDone(url)
+        } catch (err) {
+            setState({
+                busy: false,
+                progress: 0,
+                error: err?.message || 'آپلود تصویر ناموفق بود',
+            })
+        }
+    }
+
+    return (
+        <span className={styles.upload}>
+            <input
+                ref={inputRef}
+                type="file"
+                accept={IMAGE_TYPES.join(',')}
+                onChange={pick}
+                hidden
+            />
+            <button
+                type="button"
+                className={styles.uploadBtn}
+                onClick={() => inputRef.current?.click()}
+                disabled={disabled || state.busy}
+            >
+                <Upload size={14} aria-hidden="true" />
+                {state.busy
+                    ? `در حال آپلود… ${state.progress ? `${state.progress.toLocaleString('fa-IR')}٪` : ''}`
+                    : 'آپلود تصویر'}
+            </button>
+            {state.error && <span className={styles.fieldError}>{state.error}</span>}
+        </span>
+    )
+}
 
 /* هر ردیف شناسه‌ی محلی می‌گیرد تا جابه‌جایی ردیف‌ها ویرایشگر متن غنیِ
    ردیف دیگری را جای خودش نشان ندهد. در ذخیره حذف می‌شود. */
@@ -154,7 +225,7 @@ function IconPicker({ value, onChange, disabled }) {
  * فیلد با `kind` ناشناخته یک input ساده می‌گیرد: باید قابل ویرایش
  * بماند، نه این‌که ناپدید شود یا فرم را بشکند.
  */
-function BlockField({ spec, blockType, value, onChange, disabled, error }) {
+function BlockField({ spec, blockType, value, onChange, disabled, error, uploadImage }) {
     const label = fieldLabel(spec.name, blockType)
     const kind = String(spec.kind ?? '').toLowerCase()
     const invalid = Boolean(error)
@@ -247,10 +318,14 @@ function BlockField({ spec, blockType, value, onChange, disabled, error }) {
 
             {error && <span className={styles.fieldError}>{error}</span>}
 
+            {isImage && uploadImage && (
+                <ImageUpload upload={uploadImage} onDone={onChange} disabled={disabled} />
+            )}
+
             {isImage && (
                 <span className={styles.hint}>
-                    نشانی تصویر: یا شناسه‌ی فایل آپلودشده به شکل /dl/… یا نشانی
-                    کامل با https://.
+                    تصویر را آپلود کنید (PNG، JPG یا WebP تا ۵ مگابایت)، یا نشانی
+                    کامل آن را با https:// بنویسید.
                     {spec.allowed_sizes?.length > 0 &&
                         ` اندازه‌ی پیشنهادی: ${spec.allowed_sizes
                             .map((n) => n.toLocaleString('fa-IR'))
@@ -343,6 +418,15 @@ export default function CmsBlockEditor({
             ?.querySelector('[data-invalid="true"]')
             ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, [errorCount])
+
+    /* آپلود تصویر برای همین صفحه — توکن هر بار تازه گرفته می‌شود چون
+       یک‌بارمصرف است. */
+    const uploadImage = async (file, onProgress) => {
+        const { upload_token } = await cmsService.getUploadToken(page.id)
+        const res = await fileService.upload(file, upload_token, { onProgress })
+        if (!res?.file_id) throw new Error('سرور شناسه‌ی فایل را برنگرداند')
+        return `/dl/${res.file_id}`
+    }
 
     const specOf = (key) =>
         (page.editable_blocks ?? []).find((b) => b.key === key)
@@ -579,6 +663,7 @@ export default function CmsBlockEditor({
                                             key={f.name}
                                             spec={f}
                                             blockType={spec.type}
+                                            uploadImage={uploadImage}
                                             value={block.fields[f.name]}
                                             disabled={locked || busy}
                                             error={fieldErrors[`${spec.key}.${f.name}`]}
@@ -667,6 +752,7 @@ export default function CmsBlockEditor({
                                                         key={f.name}
                                                         spec={f}
                                                         blockType={spec.type}
+                                                        uploadImage={uploadImage}
                                                         value={item[f.name]}
                                                         disabled={locked || busy}
                                                         error={

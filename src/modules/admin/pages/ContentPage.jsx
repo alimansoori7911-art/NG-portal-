@@ -99,6 +99,7 @@ export default function ContentPage() {
     /* جستجوی برچسب — با Enter یا خروج از کادر اعمال می‌شود، نه با هر
        حرف، تا برای هر حرف یک درخواست نرود. */
     const [tagInput, setTagInput] = useState('')
+    const [titleInput, setTitleInput] = useState('')
 
     const openBlockEditor = (p) => setBlockEditFor(withBlockTitles(p, schemas))
 
@@ -612,6 +613,27 @@ export default function ContentPage() {
                                 className={styles.searchWrap}
                                 onSubmit={(e) => {
                                     e.preventDefault()
+                                    pages.setFilter('q', titleInput)
+                                }}
+                            >
+                                <Search size={15} className={styles.searchIcon} aria-hidden="true" />
+                                <input
+                                    className={styles.searchInput}
+                                    value={titleInput}
+                                    onChange={(e) => setTitleInput(e.target.value)}
+                                    onBlur={() =>
+                                        titleInput !== pages.filters.q &&
+                                        pages.setFilter('q', titleInput)
+                                    }
+                                    placeholder="جستجوی عنوان یا نشانی…"
+                                    aria-label="جستجو در عنوان و نشانی صفحه‌ها"
+                                />
+                            </form>
+
+                            <form
+                                className={styles.searchWrap}
+                                onSubmit={(e) => {
+                                    e.preventDefault()
                                     pages.setFilter('tag', tagInput)
                                 }}
                             >
@@ -803,7 +825,15 @@ export default function ContentPage() {
                             )
                         }}
                         emptyMessage={
-                            pages.loading ? 'در حال دریافت…' : 'صفحه‌ای ساخته نشده است'
+                            pages.loading
+                                ? 'در حال دریافت…'
+                                : pages.filters.q ||
+                                    pages.filters.tag ||
+                                    pages.filters.kind ||
+                                    pages.filters.status ||
+                                    pages.filters.is_public
+                                  ? 'صفحه‌ای با این جستجو یا فیلتر پیدا نشد'
+                                  : 'صفحه‌ای ساخته نشده است'
                         }
                     />
 

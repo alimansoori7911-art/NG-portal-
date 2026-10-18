@@ -95,6 +95,7 @@ export const cmsService = {
         include_deleted = false,
         sort_by = 'created_at',
         sort_order = 'desc',
+        q,
     } = {}) {
         return api
             .get('/admin/cms/pages', {
@@ -105,6 +106,7 @@ export const cmsService = {
                     status,
                     is_public,
                     tag,
+                    q,
                     include_deleted,
                     sort_by,
                     sort_order,
@@ -177,6 +179,14 @@ export const cmsService = {
         return api.get('/admin/cms/editable-pages').then(unwrap)
     },
 
+    /* POST /admin/cms/pages/{id}/upload-token — توکن یک‌بارمصرف آپلود
+       برای تصویرهای همین صفحه. فایل بعد با `fileService.upload` به
+       `/dl/upload` می‌رود و نشانی‌اش `/dl/{file_id}` ذخیره می‌شود.
+       فایل‌های CMS عمومی‌اند، پس مهمان هم می‌تواند ببیندشان. */
+    getUploadToken(pageId) {
+        return api.post(`/admin/cms/pages/${pageId}/upload-token`).then(unwrap)
+    },
+
     /* GET /admin/cms/structured-schemas — قالب صفحه‌های ساختاریافته */
     getStructuredSchemas() {
         return api.get('/admin/cms/structured-schemas').then(unwrap)
@@ -194,10 +204,13 @@ export const cmsService = {
 
     /* ── عمومی (بدون نیاز به ادمین) ── */
 
-    /* GET /cms/pages — مقاله‌های منتشرشده */
-    getPublicPages({ page = 1, limit = 10, tag } = {}) {
+    /* GET /cms/pages — صفحه‌های منتشرشده.
+
+       `kind` لازم است: بدونش صفحه‌های ساختاریافته (خانه، فوتر، …)
+       هم در فهرست «مقاله‌ها» می‌آمدند. */
+    getPublicPages({ page = 1, limit = 10, tag, kind } = {}) {
         return api
-            .get('/cms/pages', { params: { page, limit, tag } })
+            .get('/cms/pages', { params: { page, limit, tag, kind } })
             .then((res) => ({
                 items: res.data?.data ?? [],
                 pagination: res.data?.meta?.pagination ?? null,

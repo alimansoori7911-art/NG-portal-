@@ -179,6 +179,8 @@ function seedInvoices() {
 /* یک تصویر نمونه پشت `/dl/{file_id}` — بک‌اند نشانی تصویرهای CMS را
    نسبی (`/dl/{file_id}`) می‌دهد و فرانت آن را به لینک موقت تبدیل می‌کند. */
 const MOCK_IMAGE_FILE_ID = '01930000-0000-7000-8000-00000000d1a0'
+/* فایل‌هایی که با توکن CMS آپلود شده‌اند — عمومی */
+const mockPublicFiles = new Set()
 const MOCK_IMAGE_SVG =
     '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#0D1726"/><text x="320" y="190" font-size="40" fill="#4792FF" text-anchor="middle" font-family="sans-serif">/dl image</text></svg>'
 
@@ -3321,6 +3323,8 @@ const routes = [
 
                             return {
                                 key: spec.key,
+                                /* ✅ اسپک تازه: `title` روی بلوک قابل ویرایش هم هست */
+                                title: spec.title,
                                 type: spec.type,
                                 editable: spec.editable,
                                 fields: spec.fields.map((f) => ({
@@ -3363,6 +3367,14 @@ const routes = [
 
         const kind = q.get('kind')
         if (kind) rows = rows.filter((p) => p.kind === kind)
+
+        /* ✅ اسپک تازه: جستجوی متنی روی عنوان و اسلاگ */
+        const text = (q.get('q') || '').trim().toLowerCase()
+        if (text) {
+            rows = rows.filter((p) =>
+                [p.title, p.slug].some((v) => String(v ?? '').toLowerCase().includes(text))
+            )
+        }
 
         const status = q.get('status')
         if (status) rows = rows.filter((p) => p.status === status)
@@ -3595,15 +3607,15 @@ const routes = [
 
     ['GET', /^\/cms\/pages$/, (req) => {
         const tag = req.query.get('tag')
-        /* فقط **مقاله** — اسپک می‌گوید «List published articles».
-           صفحه‌ی ساختاریافته (مثل صفحه‌ی اصلی) محتوای مستقل نیست و
-           نباید در فهرست مقاله‌ها بیاید. */
+        /* ✅ اسپک تازه: همه‌ی صفحه‌های منتشرشده‌ی عمومی، با فیلتر
+           اختیاری `kind` — فهرست مقاله‌ها `kind=ARTICLE` می‌فرستد. */
+        const kind = req.query.get('kind')
         let rows = db.cmsPages.filter(
             (p) =>
                 !p.deleted_at &&
                 p.status === 'PUBLISHED' &&
                 p.is_public &&
-                p.kind === 'ARTICLE'
+                (!kind || p.kind === kind)
         )
         if (tag) rows = rows.filter((p) => (p.tags ?? []).some((t) => t.slug === tag))
         return page(
@@ -4154,12 +4166,37 @@ const routes = [
 
        لینک واقعی روی S3 است؛ اینجا به یک data-URL کوچک اشاره می‌کنیم
        تا مسیر دانلود بدون وابستگی به سرویس بیرونی قابل تست باشد. */
-    ['POST', /^\/dl\/[^/]+$/, (ctx) => {
-        /* مثل اسپک لاگین می‌خواهد — تصویرهای CMS برای مهمان باید به
-           تصویر پیش‌فرض برگردند تا بک‌اند این مسیر را عمومی کند. */
+    /* ✅ اسپک تازه: توکن آپلود برای تصویرهای یک صفحه‌ی CMS */
+    ['POST', /^\/admin\/cms\/pages\/[^/]+\/upload-token$/, (ctx) => {
         if (!ctx.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (!(ctx.user.roles ?? []).includes('admin')) {
+            return [403, fail('FORBIDDEN', 'دسترسی ندارید')]
+        }
+        return ok({ upload_token: 'mock-cms-upload-token', expires_in: 600 })
+    }],
+
+    /* آپلود فایل — بدنه‌ی multipart خوانده نمی‌شود؛ هر فایلی که بیاید
+       همان تصویر نمونه حساب می‌شود و برای مهمان هم قابل دریافت است
+       (مثل فایل‌های CMS در بک‌اند واقعی). */
+    ['POST', /^\/dl\/upload$/, () => {
+        const fileId = uuid()
+        mockPublicFiles.add(fileId)
+        return [201, ok({
+            file_id: fileId,
+            filename: 'upload.png',
+            content_type: 'image/png',
+            size_bytes: 1024,
+            checksum_sha256: '0'.repeat(64),
+        })]
+    }],
+
+    ['POST', /^\/dl\/[^/]+$/, (ctx) => {
+        /* ✅ اسپک تازه: فایل‌های CMS بدون لاگین هم دریافت می‌شوند؛ بقیه
+           (رسید، پیوست تیکت) همچنان لاگین می‌خواهند. */
         const fileId = ctx.path.split('/').pop()
-        if (fileId === MOCK_IMAGE_FILE_ID) {
+        const isPublic = fileId === MOCK_IMAGE_FILE_ID || mockPublicFiles.has(fileId)
+        if (!isPublic && !ctx.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
+        if (isPublic) {
             return ok({
                 file_id: fileId,
                 filename: 'sample.svg',

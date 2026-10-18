@@ -27,7 +27,9 @@ export function usePublicPages({ limit = 6, tag } = {}) {
         let cancelled = false
 
         cmsService
-            .getPublicPages({ limit, tag })
+            /* فقط مقاله‌ها — صفحه‌های ساختاریافته (خانه، فوتر و …)
+               مقاله نیستند و نباید در این فهرست بیایند. */
+            .getPublicPages({ limit, tag, kind: 'ARTICLE' })
             .then(({ items, pagination }) => {
                 if (cancelled) return
                 setState({

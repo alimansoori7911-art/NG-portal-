@@ -114,6 +114,7 @@ export function useCmsPages() {
         status: '',
         is_public: '',
         tag: '',
+        q: '',
         include_deleted: false,
     })
 
@@ -143,6 +144,8 @@ export function useCmsPages() {
                             ? undefined
                             : filters.is_public === 'true',
                     tag: filters.tag.trim() || undefined,
+                    /* ✅ اسپک تازه جستجوی متنی روی عنوان و نشانی را آورد */
+                    q: filters.q.trim() || undefined,
                     include_deleted: filters.include_deleted,
                     sort_by: 'updated_at',
                     sort_order: 'desc',
