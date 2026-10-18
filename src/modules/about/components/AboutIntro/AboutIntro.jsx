@@ -30,18 +30,6 @@ const REASONS = [
 function AboutIntro({ cms }) {
     const [activeIndex, setActiveIndex] = useState(0)
 
-    // پیشروی خودکار هر ۵ ثانیه؛ با هر تغییر index (چه خودکار چه با کلیک) تایمر از نو شروع می‌شود
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setActiveIndex((prev) => (prev + 1) % REASONS.length)
-        }, AUTO_ADVANCE_MS)
-        return () => clearTimeout(timer)
-    }, [activeIndex])
-
-    const handleSelect = (index) => {
-        setActiveIndex(index)
-    }
-
     /* سرنامه و کارت‌ها از CMS؛ مقادیر فعلی پیش‌فرض‌اند.
 
        ⚠️ کاروسل به طول آرایه وابسته است، پس اگر ادمین تعداد
@@ -53,6 +41,25 @@ function AboutIntro({ cms }) {
     }) ?? {}
     const cards = cms?.items?.('intro', REASONS) ?? REASONS
     const safeIndex = Math.min(activeIndex, Math.max(0, cards.length - 1))
+
+    /* پیشروی خودکار هر ۵ ثانیه؛ با هر تغییر index (چه خودکار چه با
+       کلیک) تایمر از نو شروع می‌شود.
+
+       ⚠️ دور زدن روی تعداد کارت‌های **CMS** است، نه ۵ کارت پیش‌فرض.
+       قبلاً با کارت کمتر، کاروسل چند دور روی کارت آخر می‌ماند و هیچ
+       دکمه‌ای فعال نبود. */
+    const count = cards.length
+    useEffect(() => {
+        if (count < 2) return
+        const timer = setTimeout(() => {
+            setActiveIndex((prev) => (Math.min(prev, count - 1) + 1) % count)
+        }, AUTO_ADVANCE_MS)
+        return () => clearTimeout(timer)
+    }, [activeIndex, count])
+
+    const handleSelect = (index) => {
+        setActiveIndex(index)
+    }
 
     return (
         <section
@@ -73,7 +80,7 @@ function AboutIntro({ cms }) {
 
                     return (
                         <div
-                            key={reason.title}
+                            key={`${reason.title}-${index}`}
                             className={`${styles.card} ${isActive ? styles.cardActive : styles.cardDimmed}`}
                             style={{ transform: `translateX(${offset * -50}%)` }}
                         >
@@ -88,15 +95,15 @@ function AboutIntro({ cms }) {
             <div className={styles.tabs}>
                 {cards.map((reason, index) => (
                     <button
-                        key={reason.title}
-                        className={`${styles.tabBtn} ${index === activeIndex ? styles.tabBtnActive : ''}`}
+                        key={`${reason.title}-${index}`}
+                        className={`${styles.tabBtn} ${index === safeIndex ? styles.tabBtnActive : ''}`}
                         onClick={() => handleSelect(index)}
                     >
                         {reason.title}
-                        {index === activeIndex && (
+                        {index === safeIndex && (
                             <span className={styles.progressTrack}>
                                 {/* key باعث می‌شود انیمیشن با هر تغییر از نو شروع شود */}
-                                <span key={activeIndex} className={styles.progressFill} />
+                                <span key={safeIndex} className={styles.progressFill} />
                             </span>
                         )}
                     </button>

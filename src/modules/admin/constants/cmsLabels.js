@@ -148,5 +148,19 @@ const BLOCK_HINT = {
     'site_footer.newsletter': 'کادر عضویت در خبرنامه در فوتر.',
 }
 
+/* فیلدهایی که قالب بک‌اند دارد ولی سایت نمایششان نمی‌دهد.
+
+   با تست سرتاسری پیدا شدند: هر فیلد پر شد و روی صفحه‌ی عمومی گشتیم.
+   در ویرایشگر کنارشان نوشته می‌شود تا مدیر محتوا وقتش را صرف متنی
+   نکند که هیچ‌جا دیده نمی‌شود. */
+const UNUSED_FIELDS = {
+    'company.hero': ['heading', 'subheading'],
+    'contact.hero': ['subheading'],
+    'products.demo_cta': ['url', 'variant'],
+}
+
+export const isFieldUnused = (schemaKey, blockKey, fieldName) =>
+    Boolean(UNUSED_FIELDS[`${schemaKey}.${blockKey}`]?.includes(fieldName))
+
 export const blockHint = (schemaKey, blockKey) =>
     BLOCK_HINT[`${schemaKey}.${blockKey}`] ?? null

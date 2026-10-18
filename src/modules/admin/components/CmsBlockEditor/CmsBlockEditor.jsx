@@ -26,6 +26,7 @@ import {
     blockHint,
     blockName,
     fieldLabel,
+    isFieldUnused,
 } from '../../constants/cmsLabels'
 import styles from './CmsBlockEditor.module.css'
 
@@ -225,7 +226,7 @@ function IconPicker({ value, onChange, disabled }) {
  * فیلد با `kind` ناشناخته یک input ساده می‌گیرد: باید قابل ویرایش
  * بماند، نه این‌که ناپدید شود یا فرم را بشکند.
  */
-function BlockField({ spec, blockType, value, onChange, disabled, error, uploadImage }) {
+function BlockField({ spec, blockType, value, onChange, disabled, error, uploadImage, unused }) {
     const label = fieldLabel(spec.name, blockType)
     const kind = String(spec.kind ?? '').toLowerCase()
     const invalid = Boolean(error)
@@ -317,6 +318,10 @@ function BlockField({ spec, blockType, value, onChange, disabled, error, uploadI
             )}
 
             {error && <span className={styles.fieldError}>{error}</span>}
+
+            {unused && (
+                <span className={styles.hint}>روی سایت نمایش داده نمی‌شود.</span>
+            )}
 
             {isImage && uploadImage && (
                 <ImageUpload upload={uploadImage} onDone={onChange} disabled={disabled} />
@@ -664,6 +669,7 @@ export default function CmsBlockEditor({
                                             spec={f}
                                             blockType={spec.type}
                                             uploadImage={uploadImage}
+                                            unused={isFieldUnused(page.schema_key, spec.key, f.name)}
                                             value={block.fields[f.name]}
                                             disabled={locked || busy}
                                             error={fieldErrors[`${spec.key}.${f.name}`]}

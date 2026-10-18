@@ -22,6 +22,12 @@ function AboutHistory({ cms }) {
        ثابت؛ اگر ادمین تعداد را عوض کند، دکمه‌ی بعدی و نوار
        پیشرفت وگرنه غلط می‌شوند. */
     const milestones = cms?.items?.('history', MILESTONES) ?? MILESTONES
+
+    /* عنوان بخش فقط وقتی ادمین در CMS نوشته باشد؛ طرح فعلی تایم‌لاین
+       عنوان ندارد و قبلاً این فیلد در پنل بود ولی هیچ‌جا نمایش داده
+       نمی‌شد. */
+    const { section_title: sectionTitle } =
+        cms?.fields?.('history', { section_title: '' }) ?? {}
     const lastIndex = Math.max(0, milestones.length - 1)
     const safeIndex = Math.min(activeIndex, lastIndex)
 
@@ -33,6 +39,8 @@ function AboutHistory({ cms }) {
 
     return (
         <section className={styles.section}>
+            {sectionTitle && <h2 className={styles.heading}>{sectionTitle}</h2>}
+
             <div className={styles.timeline}>
 
                 <div className={styles.lineTrack}>
@@ -43,7 +51,7 @@ function AboutHistory({ cms }) {
                     const isLit = index <= safeIndex
 
                     return (
-                        <div key={item.year} className={styles.item}>
+                        <div key={`${item.year}-${index}`} className={styles.item}>
                             <div className={`${styles.text} ${isLit ? styles.textLit : ''}`}>
                                 <h3 className={styles.title}>{item.title}</h3>
                                 <p className={styles.desc}>{item.description ?? item.desc}</p>
@@ -61,7 +69,7 @@ function AboutHistory({ cms }) {
                     <button
                         className={styles.arrowBtn}
                         onClick={goPrev}
-                        disabled={activeIndex === 0}
+                        disabled={safeIndex === 0}
                         aria-label="مرحله قبل"
                     >
                         <ChevronUp size={15} />
@@ -69,7 +77,8 @@ function AboutHistory({ cms }) {
                     <button
                         className={styles.arrowBtn}
                         onClick={goNext}
-                        disabled={activeIndex === MILESTONES.length - 1}
+                        /* تعداد از CMS، نه ۵ مرحله‌ی پیش‌فرض */
+                        disabled={safeIndex >= lastIndex}
                         aria-label="مرحله بعد"
                     >
                         <ChevronDown size={15} />

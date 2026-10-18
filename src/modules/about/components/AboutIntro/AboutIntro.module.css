@@ -116,7 +116,12 @@
     border: 1px solid rgba(71, 146, 255, 0.3);
     border-radius: var(--radius-md);
     cursor: pointer;
-    white-space: nowrap;
+    /* عنوان کارت از CMS می‌آید و ممکن است بلند باشد؛ بدون سقف عرض و
+       شکستن خط، یک عنوان بلند در موبایل صفحه را افقی اسکرول‌دار
+       می‌کرد. عنوان‌های کوتاه پیش‌فرض همچنان یک‌خطی‌اند. */
+    max-width: 280px;
+    white-space: normal;
+    line-height: 1.6;
     transform: translateY(0);
     transition: background var(--transition-normal), opacity var(--transition-normal), border-color var(--transition-normal), transform var(--transition-normal);
 }
@@ -219,6 +224,7 @@
 
     .tabBtn {
         width: 100%;
+        max-width: none;
         text-align: center;
     }
 }
