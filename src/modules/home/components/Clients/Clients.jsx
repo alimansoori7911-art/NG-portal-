@@ -1,4 +1,5 @@
 import { useCmsContent } from '../../../../hooks/useCmsContent'
+import { useFileUrl } from '../../../../hooks/useFileUrl'
 import styles from './Clients.module.css'
 import clientsImage from '../../../../assets/images/logo/sec6.png'
 
@@ -19,11 +20,17 @@ function Clients({ cms }) {
         alt: 'مشتریان ما',
     }) ?? { image_url: clientsImage, alt: 'مشتریان ما' }
 
+    /* نشانی CMS ممکن است `/dl/{file_id}` باشد. تا لینکش برسد چیزی
+       نشان داده نمی‌شود (نه لوگوی قدیمی که ناگهان عوض شود) و اگر نرسید
+       همان تصویر پیش‌فرض می‌آید. */
+    const image = useFileUrl(image_url)
+    const src = image.failed ? clientsImage : image.url
+
     return (
         <section className={styles.section}>
 
             <div className={styles.logosWrapper}>
-                <img src={image_url} alt={alt} className={styles.clientsImg} />
+                {src && <img src={src} alt={alt} className={styles.clientsImg} />}
             </div>
         </section>
     )

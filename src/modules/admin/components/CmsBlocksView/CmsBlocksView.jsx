@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import NamedIcon from '../../../../components/ui/icons/NamedIcon'
+import { useFileUrl } from '../../../../hooks/useFileUrl'
 import { blockName, fieldLabel } from '../../constants/cmsLabels'
 import styles from './CmsBlocksView.module.css'
 
@@ -10,14 +11,17 @@ const isImageField = (name) => name === 'image_url' || name === 'icon_url'
 
 /* تصویری که باز نشود جای خالی می‌گذاشت؛ حالا نشانی‌اش با هشدار
    دیده می‌شود تا ادمین بفهمد لینک خراب است. */
-function Image({ src }) {
+function Image({ src: raw }) {
+    /* `/dl/{file_id}` اول به لینک موقت تبدیل می‌شود */
+    const image = useFileUrl(raw)
     const [failed, setFailed] = useState(false)
-    return failed ? (
+    if (image.loading) return <span className={styles.empty}>در حال دریافت تصویر…</span>
+    return failed || image.failed || !image.url ? (
         <span className={styles.broken}>
-            تصویر باز نشد: <span dir="ltr">{src}</span>
+            تصویر باز نشد: <span dir="ltr">{raw}</span>
         </span>
     ) : (
-        <img src={src} alt="" className={styles.image} onError={() => setFailed(true)} />
+        <img src={image.url} alt="" className={styles.image} onError={() => setFailed(true)} />
     )
 }
 

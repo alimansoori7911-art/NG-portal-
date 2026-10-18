@@ -176,6 +176,12 @@ function seedInvoices() {
     ]
 }
 
+/* یک تصویر نمونه پشت `/dl/{file_id}` — بک‌اند نشانی تصویرهای CMS را
+   نسبی (`/dl/{file_id}`) می‌دهد و فرانت آن را به لینک موقت تبدیل می‌کند. */
+const MOCK_IMAGE_FILE_ID = '01930000-0000-7000-8000-00000000d1a0'
+const MOCK_IMAGE_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><rect width="640" height="360" fill="#0D1726"/><text x="320" y="190" font-size="40" fill="#4792FF" text-anchor="middle" font-family="sans-serif">/dl image</text></svg>'
+
 /* خطاهای تزریق‌شده: "POST /auth/login" -> 401 */
 const forcedErrors = new Map()
 
@@ -1106,9 +1112,20 @@ function seedCms() {
         ['products', 'محصولات', 'products', [
             { key: 'hero', type: 'TEXT', fields: { heading: 'محصولات NGCORION', subheading: 'پلتفرم یکپارچه‌ی امنیت زیرساخت' }, items: [] },
             { key: 'demo_cta', type: 'CTA', fields: { label: 'درخواست دمو', url: '/contact', variant: 'primary' }, items: [] },
+            /* تصویر با نشانی نسبی `/dl/{file_id}` — همان شکلی که بک‌اند می‌دهد */
+            { key: 'details', type: 'CARD_LIST', fields: {}, items: [
+                { title_fa: 'مدیریت دارایی ها', title_en: 'Asset management', subtitle: 'امنیت از شناخت دارایی ها آغاز می شود', body: '<p>دید متمرکز و به‌روز از همه‌ی دارایی‌های زیرساخت.</p>', image_url: `/dl/${MOCK_IMAGE_FILE_ID}` },
+            ] },
         ]],
         ['resources', 'مرکز منابع', 'resources', [
             { key: 'hero', type: 'TEXT', fields: { heading: 'مرکز منابع NGCorion', subheading: 'مستندات، راهنماها و مقاله‌ها' }, items: [] },
+            /* بک‌اند تأیید کرد بخش «منابع پیشنهادی» لازم است */
+            { key: 'featured', type: 'CARD_LIST', fields: {}, items: [
+                { title: 'راهنمای نصب و راه‌اندازی', description: 'مراحل نصب و پیکربندی اولیه NGCorion', badge: 'مستندات', icon: 'file-text' },
+                { title: 'شروع سریع', description: 'از نصب تا اولین ارزیابی امنیتی', badge: 'راهنما', icon: 'rocket' },
+                { title: 'بهترین روش‌های Hardening', description: 'نکات کلیدی برای ایمن‌سازی دارایی‌ها', badge: 'امنیت', icon: 'target' },
+                { title: 'معرفی قابلیت‌های NGCorion', description: 'نمای کلی محصول و کاربردها', badge: 'معرفی محصول', icon: 'layers' },
+            ] },
         ]],
         ['site_footer', 'فوتر سایت', 'site-footer', [
             { key: 'about', type: 'TEXT', fields: { heading: 'درباره‌ی NGCorion', body: 'پلتفرم یکپارچه‌ی مدیریت انطباق امنیتی و تحلیل ریسک زیرساخت.' }, items: [] },
@@ -4138,7 +4155,22 @@ const routes = [
        لینک واقعی روی S3 است؛ اینجا به یک data-URL کوچک اشاره می‌کنیم
        تا مسیر دانلود بدون وابستگی به سرویس بیرونی قابل تست باشد. */
     ['POST', /^\/dl\/[^/]+$/, (ctx) => {
+        /* مثل اسپک لاگین می‌خواهد — تصویرهای CMS برای مهمان باید به
+           تصویر پیش‌فرض برگردند تا بک‌اند این مسیر را عمومی کند. */
+        if (!ctx.user) return [401, fail('UNAUTHORIZED', 'وارد شوید')]
         const fileId = ctx.path.split('/').pop()
+        if (fileId === MOCK_IMAGE_FILE_ID) {
+            return ok({
+                file_id: fileId,
+                filename: 'sample.svg',
+                content_type: 'image/svg+xml',
+                size_bytes: MOCK_IMAGE_SVG.length,
+                download_url:
+                    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(MOCK_IMAGE_SVG),
+                checksum_sha256: '0'.repeat(64),
+                expires_in: 3600,
+            })
+        }
         const body = `فایل نمونه — ${fileId}`
         return ok({
             file_id: fileId,

@@ -118,8 +118,14 @@ export const fileService = {
      * لینک presigned است و بعد از `expires_in` ثانیه (حدود یک ساعت)
      * منقضی می‌شود، پس نباید کش شود.
      */
-    getDownload(fileId) {
-        return api.post(`/dl/${fileId}`).then(unwrap)
+    getDownload(fileId, { silent = false } = {}) {
+        /* `silent`: برای تصویرهای صفحه‌های عمومی. اگر سرور برای مهمان
+           ۴۰۱ بدهد، نباید رفرش توکن و «نشست منقضی شد» راه بیفتد؛
+           `_retry` همان پرچمی است که interceptor برای جلوگیری از رفرش
+           دوباره می‌خواند. تصویر فقط به پیش‌فرض برمی‌گردد. */
+        return api
+            .post(`/dl/${fileId}`, null, silent ? { _retry: true } : undefined)
+            .then(unwrap)
     },
 
     /* میان‌بر: از شناسه‌ی فایل تا خودِ URL */

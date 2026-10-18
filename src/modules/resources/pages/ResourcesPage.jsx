@@ -1,4 +1,5 @@
-import { Flame, ArrowLeft } from 'lucide-react'
+import { Flame, ArrowLeft, FileText } from 'lucide-react'
+import NamedIcon from '../../../components/ui/icons/NamedIcon'
 import { Link } from 'react-router-dom'
 import { useCmsContent } from '../../../hooks/useCmsContent'
 import { resolveIcon } from '../../../utils/iconMap'
@@ -60,6 +61,15 @@ export default function ResourcesPage() {
             }
         }
     )
+
+    /* منابع پیشنهادی — فقط از CMS، بدون متن پیش‌فرض.
+
+       قبلاً کارت‌های ثابتی بود که وعده‌ی PDFهایی را می‌داد که وجود
+       نداشتند («به‌زودی منتشر می‌شود») و برداشته شد. حالا تا ادمین در
+       بلوک `featured` ردیفی نگذارد، این بخش اصلاً نمایش داده نمی‌شود. هر
+       کارت به مقاله‌های برچسب هم‌نام «نشان» خودش می‌رود؛ همان الگوی
+       دسته‌بندی‌ها. */
+    const featured = cms?.items?.('featured', []) ?? []
 
     const popularHead = cms?.fields?.('popular', { section_title: 'منابع پرطرفدار' }) ?? {}
     const popular = cms?.items?.('popular', POPULAR) ?? POPULAR
@@ -141,6 +151,45 @@ export default function ResourcesPage() {
                             )}
                         </ul>
                     </section>
+
+                    {featured.length > 0 && (
+                        <section className={styles.section}>
+                            <SectionHeader
+                                title="منابع پیشنهادی"
+                                subtitle="مهم‌ترین و پرکاربردترین منابع برای شروع کار یا عمیق‌تر شدن در موضوعات مختلف."
+                            />
+
+                            <ul className={styles.featuredGrid}>
+                                {featured.map(({ title, description, badge, icon }, i) => (
+                                    <li key={`${title}-${i}`} className={styles.featured}>
+                                        <div className={styles.featuredTop}>
+                                            <span className={styles.featuredIcon} aria-hidden="true">
+                                                <NamedIcon name={icon} fallback={FileText} size={18} />
+                                            </span>
+                                            {badge && (
+                                                <span className={styles.featuredBadge}>{badge}</span>
+                                            )}
+                                        </div>
+                                        <h3 className={styles.featuredTitle}>{title}</h3>
+                                        {description && (
+                                            <p className={styles.featuredText}>{description}</p>
+                                        )}
+                                        <Link
+                                            to={
+                                                badge
+                                                    ? `/resources/articles?tag=${encodeURIComponent(badge)}`
+                                                    : '/resources/articles'
+                                            }
+                                            className={`${styles.cardLink} ${styles.featuredLink}`}
+                                        >
+                                            مشاهده
+                                            <ArrowLeft size={14} aria-hidden="true" />
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
 
                     <div className={styles.split}>
                         <aside className={styles.popular}>

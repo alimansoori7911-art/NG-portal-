@@ -15,6 +15,7 @@ import {
 import RichTextEditor from '../../../../components/ui/RichTextEditor/RichTextEditor'
 import ConfirmDialog from '../../../../components/ui/ConfirmDialog/ConfirmDialog'
 import { useUnsavedChanges } from '../../../../hooks/useUnsavedChanges'
+import { useFileUrl } from '../../../../hooks/useFileUrl'
 import { ICON_CHOICES, resolveIcon } from '../../../../utils/iconMap'
 import NamedIcon from '../../../../components/ui/icons/NamedIcon'
 import {
@@ -236,7 +237,7 @@ function BlockField({ spec, blockType, value, onChange, disabled, error }) {
                     inputMode={isNumber ? 'numeric' : undefined}
                     placeholder={
                         isImage
-                            ? 'https://…/image.png'
+                            ? '/dl/… یا https://…/image.png'
                             : isUrl
                               ? '/contact یا https://…'
                               : undefined
@@ -248,7 +249,8 @@ function BlockField({ spec, blockType, value, onChange, disabled, error }) {
 
             {isImage && (
                 <span className={styles.hint}>
-                    تصویر را جایی آپلود کنید و نشانی کاملش را اینجا بگذارید.
+                    نشانی تصویر: یا شناسه‌ی فایل آپلودشده به شکل /dl/… یا نشانی
+                    کامل با https://.
                     {spec.allowed_sizes?.length > 0 &&
                         ` اندازه‌ی پیشنهادی: ${spec.allowed_sizes
                             .map((n) => n.toLocaleString('fa-IR'))
@@ -265,9 +267,13 @@ function BlockField({ spec, blockType, value, onChange, disabled, error }) {
     )
 }
 
-function ImagePreview({ src }) {
+function ImagePreview({ src: raw }) {
+    /* `/dl/{file_id}` (نشانی نسبی بک‌اند) اول به لینک موقت تبدیل می‌شود */
+    const image = useFileUrl(raw)
     const [failed, setFailed] = useState(false)
-    return failed ? (
+    const src = image.url
+    if (image.loading) return null
+    return failed || image.failed || !src ? (
         <span className={styles.fieldError}>
             تصویر از این نشانی باز نشد؛ نشانی را بررسی کنید.
         </span>

@@ -1,3 +1,4 @@
+import { useFileUrl } from '../../../../hooks/useFileUrl'
 import { productAnchor } from '../../utils/productAnchor'
 import { richTextToParagraphs } from '../../../../utils/richText'
 import styles from './ProductsDetails.module.css'
@@ -44,12 +45,25 @@ const DETAILS = [
     },
 ]
 
-/* `image_url` در CMS اختیاری است؛ نبودش یعنی تصویر محلیِ همان
-   محصول (از روی لنگر)، وگرنه تصویر همان ردیف. */
-const imageFor = (item, i) =>
-    item.image_url ||
+/* تصویر محلیِ همان محصول (از روی لنگر)، وگرنه تصویر همان ردیف —
+   برای وقتی که CMS تصویری نداده یا تصویرش باز نشد. */
+const localImageFor = (item, i) =>
     DETAILS.find((d) => productAnchor(d) === productAnchor(item))?.image_url ||
     DETAILS[i]?.image_url
+
+/* `image_url` در CMS اختیاری است و ممکن است `/dl/{file_id}` باشد */
+function DetailImage({ item, index }) {
+    const fallback = localImageFor(item, index)
+    const image = useFileUrl(item.image_url || fallback)
+    const src = image.failed ? fallback : image.url
+    if (!src) return null
+
+    return (
+        <div className={styles.imageWrapper}>
+            <img src={src} alt={item.title_fa} className={styles.image} />
+        </div>
+    )
+}
 
 function ProductsDetails({ cms }) {
     const details = cms?.items?.('details', DETAILS) ?? DETAILS
@@ -57,7 +71,6 @@ function ProductsDetails({ cms }) {
     return (
         <div className={styles.wrapper}>
             {details.map((item, i) => {
-                const image = imageFor(item, i)
                 /* `body` متن غنی است و چند پاراگراف دارد؛ هر پاراگراف
                    با کلاس خودش رندر می‌شود، نه HTML خام. */
                 const paragraphs = richTextToParagraphs(item.body)
@@ -70,11 +83,7 @@ function ProductsDetails({ cms }) {
                     >
 
                         {/* عکس — سمت چپ (در RTL flex-direction: row یعنی چپ) */}
-                        {image && (
-                            <div className={styles.imageWrapper}>
-                                <img src={image} alt={item.title_fa} className={styles.image} />
-                            </div>
-                        )}
+                        <DetailImage item={item} index={i} />
 
                         {/* محتوا — سمت راست */}
                         <div className={styles.content}>
