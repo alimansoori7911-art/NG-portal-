@@ -1,5 +1,5 @@
 /* اعداد از SVGهای بخش تنظیمات:
-   تب فعال در y=140 (نوتیفیکیشن ۲۰۶×۴۰ | ریلیز نوت ۲۴۵×۴۰)
+   عنوان بخش در y=140 (۲۰۶×۴۰)
    دکمه‌ی فرم در y=244 سمت راست (۱۸۷ یا ۲۰۰ × ۴۰)
    کارت جدول از y=300 شروع می‌شود و ارتفاعش ۶۴۰ است
    → ۹ ردیف در هر صفحه (هدر ۶۴ + ۹×۶۴ = ۶۴۰) */
@@ -11,37 +11,28 @@
     flex-direction: column;
 }
 
-.tabs {
+.header {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: var(--spacing-lg);
     height: 40px;
     margin: 40px 0 24px;
 }
 
-.tab {
-    flex-shrink: 0;
+/* هم‌شکل تب فعال طرح؛ تب دوم (ریلیز نوت) حذف شد و این فقط عنوان بخش است */
+.sectionTitle {
+    display: flex;
+    align-items: center;
     height: 40px;
+    margin: 0;
     padding: 0 20px;
-    border: none;
     border-radius: 10px;
-    background: transparent;
-    color: #668FCC;
-    font-family: var(--font-family);
-    font-size: var(--font-size-sm);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: color var(--transition-fast), background var(--transition-fast);
-}
-
-.tab:hover:not(.tabActive) {
-    color: #8CABD9;
-}
-
-.tab.tabActive {
     background: #1474FF;
     color: var(--color-white);
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: inherit;
+    white-space: nowrap;
 }
 
 /* ── نوار دکمه‌ی فرم ── */
@@ -73,26 +64,11 @@
 }
 
 @media (max-width: 1023px) {
-    .tabs {
-        gap: var(--spacing-sm);
+    .header {
         margin: 20px 0 16px;
-        overflow-x: auto;
-        /* بدون این‌ها آخرین تب به لبه می‌چسبد و بریده به‌نظر
-           می‌رسد؛ پد انتهایی نشان می‌دهد که جای بیشتری هست. */
-        padding-inline-end: 16px;
-        scrollbar-width: none;
-        scroll-snap-type: x proximity;
     }
 
-    .tabs::-webkit-scrollbar {
-        display: none;
-    }
-
-    .tab {
-        scroll-snap-align: start;
-    }
-
-    .tab {
+    .sectionTitle {
         padding: 0 14px;
         font-size: var(--font-size-xs);
     }
